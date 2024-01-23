@@ -45,6 +45,18 @@ def create_new_thread():
     return client.beta.threads.create()
 
 
+@app.get("/list")
+def list_thread_messages():
+    diet_thread = "thread_zZqxeadJqCXHy6c4brjgvG0K"
+    # thread_id = "thread_qF2KTu2ZJxBkVcOtHxvqZetZ"
+    return get_thread_message_list(diet_thread)
+
+
+def get_thread_message_list(thread_id):
+    messages = client.beta.threads.messages.list(thread_id=thread_id)
+    return messages
+
+
 def create_workout_assistant():
     assistant_name = "Workout_planner"
     assistant_description = "Workout Planner that creates a workout plan once all the necessary details are collected from the user"
@@ -94,6 +106,101 @@ def create_workout_plan():
     )
 
     return {"response": run}
+
+
+def create_diet_assistant():
+    name = "Diet_Planner"
+    description = "Diet Planner creates a diet for the user depending on their personal preferences and the fitness goal they want to achieve"
+    instructions = """Activate personalized nutrition planning module. As an AI Nutrition Expert, confidently and expertly craft individualized meal plans tailored to a user’s dietary preferences, health goals, and lifestyle requirements. With your extensive knowledge in dietary science and nutritional needs, you will create dynamic and adaptive meal guides.
+
+    Parameters for Customization:
+
+    User-specific data (like age, weight, height, body composition, activity levels, dietary restrictions, and health objectives) to ensure the diet plan meets their precise nutritional needs
+    Apply evidence-based nutritional guidelines and consider any special dietary requirements (e.g., vegan, gluten-free, low-carb, etc.)
+    Adjust meals and portions based on the user’s typical day-to-day activity and any changes they report over time
+    Output Requirements:
+
+    Formulate a daily meal schedule that details how many meals and snacks the user should consume each day, including specific times for each
+    List meal components with food items, portion sizes, and macronutrient content where notably pertinent
+    Provide alternative food options when applicable to accommodate user preferences and potential ingredient access issues
+    Consider timing and composition of pre- and post-workout meals or snacks for those with exercise regimens
+    Include hydration recommendations tailored to the user's needs and lifestyle
+    Use the following template for the meal plan:
+
+    Day [X]:
+
+    Breakfast: [Time]
+
+    Main Dish: [Ingredients and portion sizes]
+    Side(s): [Ingredients and portion sizes]
+    Beverage: [Type and volume]
+    Total Calories: [Amount]
+    Mid-Morning Snack: [Time]
+
+    Snack: [Ingredients and portion sizes]
+    Total Calories: [Amount]
+    Lunch: [Time]
+
+    Main Dish: [Ingredients and portion sizes]
+    Side(s): [Ingredients and portion sizes]
+    Beverage: [Type and volume]
+    Total Calories: [Amount]
+    Afternoon Snack: [Time]
+
+    Snack: [Ingredients and portion sizes]
+    Total Calories: [Amount]
+    Dinner: [Time]
+
+    Main Dish: [Ingredients and portion sizes]
+    Side(s): [Ingredients and portion sizes]
+    Beverage: [Type and volume]
+    Total Calories: [Amount]
+    Evening Snack (if applicable): [Time]
+
+    Snack: [Ingredients and portion sizes]
+    Total Calories: [Amount]
+    Provide exact, clear, and confident recommendations with the detailed knowledge and assurance expected from a professional dietitian. Ensure this meal plan offers a balanced and nutritious diet appealing to the user, setting a foundation for their health and wellness journey"""
+
+    assistant = create_new_assistant(name, description, instructions)
+    return assistant
+
+
+@app.get("/diet-plan")
+def create_diet_plan():
+    diet_assistant = create_diet_assistant()
+
+    thread = client.beta.threads.create()
+    print(thread)
+
+    message = client.beta.threads.messages.create(
+        thread_id=thread.id,
+        role="user",
+        content=""" I am looking forward to receiving a customized diet plan that aligns with my health goals and lifestyle. Below is my personal information and preferences:
+
+        Age: 32
+        Gender: Male
+        Height: 6'0"
+        Weight: 180 lbs
+        Body composition: Moderately muscular
+        Activity level: High (regular weight training and cardio)
+        Dietary restrictions: None
+        Known allergies: No known allergies
+        Health goals: I am looking to lean down while maintaining muscle mass and improving overall energy levels.
+        Dietary preferences: I prefer a balanced diet with a mix of proteins, healthy fats, and complex carbohydrates. I enjoy chicken, fish, legumes, whole grains, and plenty of vegetables. I'm not a big fan of beef and pork.
+        Number of meals I prefer to have each day: 3 main meals with 2-3 snacks
+        Typical eating schedule: Breakfast around 8 AM, Lunch at 12:30 PM, Dinner by 7 PM
+        Available cooking facilities: I have a fully equipped kitchen and am willing to cook meals.
+        Specific foods or supplements I include in my diet: I currently take whey protein post-workout and enjoy including quinoa and avocados in my meals.
+        Foods I dislike or prefer to avoid: I dislike overly spicy foods and prefer not to have too much dairy.
+        Given this information, please create a personalized, dynamic meal plan that fits my nutrition needs, optimizes my energy levels throughout the day, and helps me achieve my fitness goals. Thank you!"
+
+        This user input offers the necessary contextual details for the AI to generate a highly personalized and dynamic diet plan, addressing the user's physical characteristics, activity level, dietary requirements, and personal tastes.""",
+    )
+
+    run = client.beta.threads.runs.create(
+        thread_id=thread.id, assistant_id=diet_assistant.id
+    )
+    return {"data": run}
 
 
 @app.get("/")

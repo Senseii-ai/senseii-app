@@ -1,5 +1,6 @@
 # This file holds all the interactions with the assistants
 from openai_utils.assistants.client import get_openai_client
+import logging
 
 client = get_openai_client()
 
@@ -20,12 +21,16 @@ def get_assistant(name: str):
 
 
 # create assistant
-def create_assistant(name, description, instructions: str):
-    if check_if_exists() is None:
+def create_assistant(name: str, description: str, instructions: str, model: str):
+    assistant = check_if_exists(name)
+    if assistant is None:
+        logging.info("Assistant does not exist, creating new")
         assistant = client.beta.assistants.create(
-            name, description, instructions, model="gpt-4-1106-preview"
+            name, description, instructions, model
         )
+        logging.info("Assistant created successfully")
         return assistant
+    return assistant
 
 
 # check if an assistant already exists

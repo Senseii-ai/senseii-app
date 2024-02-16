@@ -11,5 +11,17 @@ class UserModel(BaseModel):
     """
 
     id: PyObjectID | None = Field(alias="_id", default=None)
-    name: str = Field(...)
-    email: Email
+    name: str = ...
+    email: EmailStr = ...
+    threads: list[str]
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        populate_by_name=True,
+        json_schema_extra={
+            "example:" {
+                "name": "John Doe",
+                "email": "johndoe@example.com",
+                
+            }
+        }
+    )

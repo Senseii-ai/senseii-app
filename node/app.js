@@ -2,7 +2,11 @@ const express = require('express');
 require('dotenv').config();
 const connectDB = require('./db/connect');
 
+const userRouter = require('./routes/user');
+
 const app = express();
+
+app.use('/api', userRouter);
 
 app.get('/ping', (req, res) => {
   res.send('Pong');

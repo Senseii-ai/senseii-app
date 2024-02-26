@@ -1,12 +1,11 @@
 import express, { Express, Request, Response } from 'express';
 require('dotenv').config();
 import connectDB from './db/connect';
-
-// const userRouter = require('./routes/user');
+import userRouter from './routes/user';
 
 const app: Express = express();
 
-//app.use('/api', userRouter);
+app.use('/api', userRouter);
 
 app.get('/ping', (req: Request, res: Response) => {
   res.send('Pong');

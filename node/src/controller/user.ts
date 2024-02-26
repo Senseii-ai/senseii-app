@@ -1,14 +1,26 @@
-import UserSchema from '../models/users';
+import { UserModel } from '../models/users';
 import { Request, Response } from 'express';
+import { hashPassword } from '../utils/crypt';
 
-const addNewUser = async (req: Request, res: Response) => {
-  const user = new UserSchema({
-    email: 'prateksingh9741@gmailll.com',
-    password: '12345',
-  });
+const CreateNewUser = async (req: Request, res: Response) => {
+  const { email, password }: { email: string; password: string } = req.body;
 
-  await user.save();
-  res.send('User Added successfully');
+  try {
+    const user = await UserModel.findOne({ email: email });
+    if (user) {
+      return res.status(409).json({ message: 'email already used' });
+    }
+    const hashedPassword: string = await hashPassword(password);
+    const newUser = await UserModel.create({
+      email: email,
+      password: hashedPassword,
+    });
+
+    if (!newUser) throw new Error('Unable to SignUp');
+    res.status(201).json({ message: 'User Created Successfully' });
+  } catch (error) {
+    console.error('Error in Sign Up', error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
 };
-
-export default addNewUser;
+export default CreateNewUser;

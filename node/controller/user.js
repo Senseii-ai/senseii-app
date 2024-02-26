@@ -2,7 +2,7 @@ const UserSchema = require('../models/users');
 
 const addNewUser = async (req, res) => {
   const user = new UserSchema({
-    email: 'prateeksingh9741@gmai.com',
+    email: 'prateeksingh9741@gmailll.com',
     password: '12345',
   });
 

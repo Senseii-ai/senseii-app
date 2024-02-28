@@ -1,6 +1,6 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
-interface User extends Document {
+interface User {
   email: string;
   password: string;
   accessToken?: string;

@@ -5,9 +5,10 @@ import userRouter from './routes/user';
 
 const app: Express = express();
 
+app.use(express.json());
 app.use('/api', userRouter);
 
-app.get('/ping', (req: Request, res: Response) => {
+app.post('/ping', (req: Request, res: Response) => {
   res.send('Pong');
 });
 

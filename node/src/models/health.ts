@@ -71,6 +71,14 @@ export interface IExerciseSessionRecord extends IRecord {
   length?: ILength;
 }
 
+export interface IExerciseSegment {
+  timeMeta: ITimeMeta;
+  segmentType: number;
+  repititions: number;
+}
+
+export interface IExerciseSessionRecord extends IRecord {}
+
 // [TODO] handle Exercise Route interface
 
 // const testData: IActiveCaloriesBurnedRecord = {

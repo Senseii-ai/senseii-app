@@ -1,109 +1,129 @@
 import mongoose, { Schema, Types, Document } from 'mongoose';
-
-export interface IDevice {
-  manufacturer?: string;
-  model?: string;
-  type: number;
-}
-export interface IMetaData {
-  clientId: string;
-  dataOrigin: string;
-  lastModifiedTime: Date;
-  clientRecordId?: string;
-  clientRecordVersion: number;
-  device?: IDevice;
-  recordingMethod: number;
-}
-
-export interface IRecord {
-  metaDate: IMetaData;
-}
-
-interface IEnergy {
-  calories?: number;
-  kiloCalories: number;
-  joules: number;
-  kiloJoules: number;
-}
-
-interface ITimeMeta {
-  startTime: Date;
-  endTime: Date;
-  startTimeZoneOffset?: number;
-  endZoneOffset?: number;
-}
+import {
+  IRecord,
+  IEnergy,
+  ICyclingPedalingCadenceRecordSample,
+  ILength,
+} from './main';
 
 export interface IActiveCaloriesBurnedRecord extends IRecord {
-  timeMeta: ITimeMeta;
+  startTime: Date;
+  startZoneOffset: number;
+  endTime: Date;
+  endZoneOffset: number;
   energy: IEnergy;
 }
 
-export interface ICyclingPedalingCadenceRecordSample {
-  time: Date;
-  revolutionPerMinute: number;
-}
-
 export interface ICyclingPedalingCadenceRecord extends IRecord {
-  timeMeta: ITimeMeta;
+  startTime: Date;
+  startZoneOffset: number;
+  endTime: Date;
+  endZoneOffset: number;
   samples: ICyclingPedalingCadenceRecordSample[];
 }
 
-export interface ILength {
-  feet?: number;
-  inches?: number;
-  kilometer: number;
-  meters: number;
-  miles?: number;
-}
-
 export interface IDistanceRecord extends IRecord {
-  timeMeta: ITimeMeta;
+  startTime: Date;
+  startZoneOffset: number;
+  endTime: Date;
+  endZoneOffset: number;
   distance: ILength;
 }
 
 export interface IELevationGainedRecord extends IRecord {
-  timeMeta: ITimeMeta;
+  startTime: Date;
+  startZoneOffset: number;
+  endTime: Date;
+  endZoneOffset: number;
   elevation: ILength;
 }
 
-export interface IExerciseSessionRecord extends IRecord {
-  timeMeta: ITimeMeta;
+export interface IExerciseLap {
+  startTime: Date;
+  endTime: Date;
   length?: ILength;
 }
 
 export interface IExerciseSegment {
-  timeMeta: ITimeMeta;
+  startTime: Date;
+  endTime: Date;
   segmentType: number;
   repititions: number;
 }
 
 export interface IExerciseSessionRecord extends IRecord {
-  timeMeta: ITimeMeta;
+  startTime: Date;
+  startZoneOffset?: number;
+  endTime: Date;
+  endZoneOffset?: number;
   exerciseType: number;
-  title: string;
+  title?: string;
+  notes?: string;
+  segments: IExerciseSegment[];
+  laps: IExerciseLap[];
+  // implement exercise route
 }
 
-// [TODO] handle Exercise Route interface
+export interface IFloorsClimbedRecord extends IRecord {
+  startTime: Date;
+  startZoneOffset?: number;
+  endTime: Date;
+  endZoneOffset?: number;
+  floors: number;
+}
 
-// const testData: IActiveCaloriesBurnedRecord = {
-//   metaDate: {
-//     clientId: '1234',
-//     dataOrigin: String(Date.now()),
-//     lastModifiedTime: new Date(),
-//     clientRecordId: '12345',
-//     clientRecordVersion: 4,
-//     device: {
-//       type: 2,
-//     },
-//     recordingMethod: 4,
-//   },
-//   timeMeta: {
-//     startTime: new Date(),
-//     endTime: new Date(),
-//   },
-//   energy: {
-//     KiloCalories: 20,
-//     KiloJoules: 20,
-//     Joules: 20,
-//   },
-// };
+export interface IPowerRecordSample {
+  time: Date;
+  // implement Power interface
+  power: number;
+}
+export interface IPowerRecord extends IRecord {
+  startTime: Date;
+  startZoneOffset?: number;
+  endTime: Date;
+  endZoneOffset?: number;
+  samples: IPowerRecordSample[];
+}
+
+export interface ISpeedRecordSample {
+  time: Date;
+  // implement speed valocity interface
+  speed: number;
+}
+
+export interface ISpeedRecord extends IRecord {
+  startTime: Date;
+  startZoneOffset?: number;
+  endTime: Date;
+  endZoneOffset?: number;
+  samples: ISpeedRecordSample[];
+}
+
+export interface IStepsCadenceRecordSample {
+  time: Date;
+  rate: number;
+}
+
+export interface IStepsCadenceRecord extends IRecord {
+  startTime: Date;
+  startZoneOffset?: number;
+  endTime: Date;
+  endZoneOffset?: number;
+  samples: IStepsCadenceRecordSample[];
+}
+
+export interface IStepsRecord extends IRecord {
+  startTime: Date;
+  startZoneOffset?: number;
+  endTime: Date;
+  endZoneOffset?: number;
+  steps: number;
+}
+
+export interface ITotalCaloriesBurnedRecord extends IRecord {
+  startTime: Date;
+  startZoneOffset?: number;
+  endTime: Date;
+  endZoneOffset?: number;
+  energy: IEnergy;
+}

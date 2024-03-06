@@ -1,26 +1,29 @@
-- [ ] ActiveCaloriesBurned
 - [ ] CervicalMucusRecord
-- [ ] CyclingPedalingCadenceRecord
-- [ ] DistanceRecord
-- [ ] ElevationRecord
-- [ ] ExerciseLap
-- [ ] ExerciseRoute
-- [ ] ExerciseRouteResult
-- [ ] ExerciseSegment
-- [ ] ExerciseSessionRecord
-- [ ] FloorsClimbedRecord
-- [ ] IntermenstrualBleedingRecord
+- [ ] IntermenstrualBleedingRecord 
 - [ ] MenstrualFlowRecord
 - [ ] MenstruationPeriodRecord
 - [ ] NutritionRecord
 - [ ] OvulationTestRecord
-- [ ] PowerRecord
-- [ ] SexualActivityRecord 
 - [ ] SleepSessionRecord
-- [ ] SpeedRecord
-- [ ] StepsCadenceRecord
-- [ ] StepsRecord
-- [ ] TotalCaloriesBurnedRecord
+
+## Activity Records
+
+- [x] SpeedRecord --
+- [x] StepsCadenceRecord --
+- [x] StepsRecord --
+- [x] TotalCaloriesBurnedRecord --
+- [x] PowerRecord --
+- [x] SexualActivityRecord --
+- [x] ExerciseSegment --
+- [x] ExerciseSessionRecord --
+- [x] FloorsClimbedRecord --
+- [x] CyclingPedalingCadenceRecord --
+- [x] DistanceRecord --
+- [x] ElevationRecord --
+- [x] ExerciseLap --
+- [x] ActiveCaloriesBurned
+- [ ] ExerciseRoute --
+- [ ] ExerciseRouteResult --
 
 ## Vital Measurement Records
 
@@ -38,6 +41,7 @@
 - [x] BodyWaterMassRecord --
 - [x] HydrationRecord --
 - [x] LeanBodyMassRecord --
+
 ## Body Measurement records
 
 - [x] HeightRecord 

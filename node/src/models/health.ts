@@ -1,36 +1,11 @@
 import mongoose, { Schema, Types, Document } from 'mongoose';
-
-export interface IDevice {
-  manufacturer?: string;
-  model?: string;
-  type: number;
-}
-export interface IMetaData {
-  clientId: string;
-  dataOrigin: string;
-  lastModifiedTime: Date;
-  clientRecordId?: string;
-  clientRecordVersion: number;
-  device?: IDevice;
-  recordingMethod: number;
-}
-
-export interface IRecord {
-  metaDate: IMetaData;
-}
+import { ITimeMeta, IDevice, IMetaData, IRecord } from './main';
 
 interface IEnergy {
   calories?: number;
   kiloCalories: number;
   joules: number;
   kiloJoules: number;
-}
-
-interface ITimeMeta {
-  startTime: Date;
-  endTime: Date;
-  startTimeZoneOffset?: number;
-  endZoneOffset?: number;
 }
 
 export interface IActiveCaloriesBurnedRecord extends IRecord {
@@ -77,7 +52,14 @@ export interface IExerciseSegment {
   repititions: number;
 }
 
-export interface IExerciseSessionRecord extends IRecord {}
+export interface IExerciseSessionRecord extends IRecord {
+  timeMeta: ITimeMeta;
+  exerciseType: number;
+  title?: string;
+  segments: IExerciseSegment[];
+  notes?: string;
+  laps: ExerciseLap[];
+}
 
 // [TODO] handle Exercise Route interface
 

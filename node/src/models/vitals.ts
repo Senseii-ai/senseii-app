@@ -1,5 +1,4 @@
-import e from 'express';
-import { IRecord, MEAL_TYPE } from './main';
+import { IRecord } from './health';
 
 export interface IBloodGlucoseRecord extends IRecord {
   time: Date;

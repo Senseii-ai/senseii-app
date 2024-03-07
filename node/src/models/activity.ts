@@ -1,10 +1,9 @@
-import mongoose, { Schema, Types, Document } from 'mongoose';
 import {
   IRecord,
   IEnergy,
   ICyclingPedalingCadenceRecordSample,
   ILength,
-} from './main';
+} from './health';
 
 export interface IActiveCaloriesBurnedRecord extends IRecord {
   startTime: Date;

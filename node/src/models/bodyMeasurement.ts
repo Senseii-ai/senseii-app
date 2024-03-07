@@ -1,6 +1,4 @@
-import { IRecord, ITimeMeta, IMetaData, IDevice } from './main';
-
-const BodyTemperatureMesaurementLocation = {};
+import { IRecord } from './health';
 
 export interface BasalBodyTemperatureRecord extends IRecord {
   time: Date;
@@ -32,38 +30,4 @@ export interface ILeanBodyMassRecord extends IRecord {
   time: Date;
   zoneOffset?: number;
   mass: number;
-}
-
-// -------------------------------------------------------
-export interface IHeartRateRecordSample {
-  time: Date;
-  beatsPerMinute: number;
-}
-
-export interface IHEartRateRecord extends IRecord {
-  startTime: Date;
-  startZoneOffset?: number;
-  endTime: Date;
-  endZoneOffset?: number;
-  samples: IHeartRateRecordSample[];
-}
-
-export interface IHeartRateVariabilityRmssdRecord extends IRecord {
-  time: Date;
-  zoneOffSet?: number;
-  heartRateVariabilityMillis: number;
-}
-
-export interface IHeightRecord extends IRecord {
-  time: Date;
-  zoneOffset?: number;
-  height: number;
-}
-
-export interface IHydrationRecord extends IRecord {
-  startTime: Date;
-  startZoneOffset?: number;
-  endTime: Date;
-  endZoneOffset?: number;
-  volume: number;
 }

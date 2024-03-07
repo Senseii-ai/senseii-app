@@ -370,4 +370,44 @@ const healthDataRecordsSchema = new Schema<HealthDataRecords>({
       },
     ],
   },
+
+  bodyMeasurement: {
+    basalBodyTemperature: [
+      {
+        time: { type: Date, required: true },
+        zoneOffset: { type: Number },
+        temperature: { type: Number, required: true },
+        measurementLocation: { type: Number, required: true },
+      },
+    ],
+
+    basalMetabolicRate: [
+      {
+        time: { type: Date, required: true },
+        zoneOffset: { type: Number },
+        basalMetabolicRate: { type: Number, required: true },
+      },
+    ],
+    boneMass: [
+      {
+        time: { type: Date, required: true },
+        zoneOffset: { type: Number },
+        mass: { type: Number, required: true },
+      },
+    ],
+    height: [
+      {
+        time: { type: Date, required: true },
+        zoneOffset: { type: Number },
+        height: { type: Number, required: true },
+      },
+    ],
+    leanBodyMass: [
+      {
+        time: { type: Date, required: true },
+        zoneOffset: { type: Number },
+        mass: { type: Number, required: true },
+      },
+    ],
+  },
 });

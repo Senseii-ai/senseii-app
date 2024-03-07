@@ -1,6 +1,6 @@
 import { IRecord } from './health';
 
-export interface BasalBodyTemperatureRecord extends IRecord {
+export interface IBasalBodyTemperatureRecord extends IRecord {
   time: Date;
   zoneOffset?: number;
   temperature: number;
@@ -24,10 +24,4 @@ export interface IHeightRecord extends IRecord {
   time: Date;
   zoneOffset?: number;
   height: number;
-}
-
-export interface ILeanBodyMassRecord extends IRecord {
-  time: Date;
-  zoneOffset?: number;
-  mass: number;
 }

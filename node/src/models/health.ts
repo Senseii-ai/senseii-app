@@ -111,55 +111,55 @@ const healthDataRecordsSchema = new Schema<HealthDataRecords>({
   vitals: {
     bloodGlucose: [
       {
-        time: {type: Date, required: true,},
-        zoneOffset: {type: Number},
-        level: {type: Number, required: true,},
-        mealType: {type: Number, required: true,},
-        specimenSource: {type: Number, required: true},
-        relationToMeal: {type: Number, require: true,},
+        time: { type: Date, required: true },
+        zoneOffset: { type: Number },
+        level: { type: Number, required: true },
+        mealType: { type: Number, required: true },
+        specimenSource: { type: Number, required: true },
+        relationToMeal: { type: Number, require: true },
       },
     ],
     bloodPressure: [
       {
-        time: {type: Date, required: true},
-        zoneOffset: {type: Number},
-        systolic: {type: Number, required: true},
-        diastolic: {type: Number,required: true},
-        bodyPosition: {type: Number,required: true},
-        measurementLocation: {type: Number,required: true},
+        time: { type: Date, required: true },
+        zoneOffset: { type: Number },
+        systolic: { type: Number, required: true },
+        diastolic: { type: Number, required: true },
+        bodyPosition: { type: Number, required: true },
+        measurementLocation: { type: Number, required: true },
       },
     ],
     waterMass: [
       {
-        time: {type: Date, required: true,},
-        zoneOffset: {type: Number},
-        mass: {type: Number, require: true},
+        time: { type: Date, required: true },
+        zoneOffset: { type: Number },
+        mass: { type: Number, require: true },
       },
     ],
     heartRate: [
       {
-        startTime: {type: Date, required: true,},
-        startZoneOffset: {type: Number,},
-        endTime: {type: Date, required: true,},
-        endZoneOffset: {type: Number,},
+        startTime: { type: Date, required: true },
+        startZoneOffset: { type: Number },
+        endTime: { type: Date, required: true },
+        endZoneOffset: { type: Number },
         samples: [
           {
-            time: {type: Date, required: true,},
-            beatsPerMinute: {type: Number,required: true,},
+            time: { type: Date, required: true },
+            beatsPerMinute: { type: Number, required: true },
           },
         ],
       },
     ],
     heartRateVariability: [
       {
-        time: {type: Date, required: true,},
-        zoneOffset: {type: Number,},
-        heartRateVariabilityMillis: {type: Number, required: true,},
+        time: { type: Date, required: true },
+        zoneOffset: { type: Number },
+        heartRateVariabilityMillis: { type: Number, required: true },
       },
     ],
     hydrationRecord: [
       {
-        startTime: {type: Date, required: true,},
+        startTime: { type: Date, required: true },
         startZoneOffset: { type: Number },
         endTime: { type: Date, required: true },
         endZoneOffset: { type: Number },
@@ -200,7 +200,174 @@ const healthDataRecordsSchema = new Schema<HealthDataRecords>({
         zoneOffset: { type: Number },
         vo2MillilitersPerMinuteKilogram: { type: Number, required: true },
         measurementMethod: { type: Number, required: true },
-      }.
-    ]
+      },
+    ],
+  },
+
+  activity: {
+    activeCaloriesBurned: [
+      {
+        startTime: { type: Date, required: true },
+        startZoneOffset: { type: Number },
+        endTime: { type: Date, required: true },
+        endZoneOffset: { type: Number },
+        energy: {
+          calories: { type: Number, required: true },
+          kiloCalories: { type: Number },
+          joules: { type: Number },
+          kiloJoules: { type: Number },
+        },
+      },
+    ],
+    cyclingPedalingCadence: [
+      {
+        startTime: { type: Date, required: true },
+        startZoneOffset: { type: Number },
+        endTime: { type: Date, required: true },
+        endZoneOffset: { type: Number },
+        samples: [
+          {
+            time: {
+              type: Date,
+              required: true,
+            },
+            revolutionPerMinute: {
+              type: Number,
+              required: true,
+            },
+          },
+        ],
+      },
+    ],
+    distance: [
+      {
+        startTime: { type: Date, required: true },
+        startZoneOffset: { type: Number },
+        endTime: { type: Date, required: true },
+        endZoneOffset: { type: Number },
+        distance: {
+          feet: { type: Number },
+          inches: { type: Number },
+          kilometer: { type: Number, required: true },
+          meters: { type: Number, required: true },
+          miles: { type: Number },
+        },
+      },
+    ],
+    elevationGained: [
+      {
+        startTime: { type: Date, required: true },
+        startZoneOffset: { type: Number },
+        endTime: { type: Date, required: true },
+        endZoneOffset: { type: Number },
+        elevation: {
+          feet: { type: Number },
+          inches: { type: Number },
+          kilometer: { type: Number, required: true },
+          meters: { type: Number },
+          miles: { type: Number },
+        },
+      },
+    ],
+    exerciseSession: [
+      {
+        startTime: { type: Date, required: true },
+        startZoneOffset: { type: Number },
+        endTime: { type: Date, required: true },
+        endZoneOffset: { type: Number },
+        exerciseType: { type: Number, required: true },
+        title: { type: String },
+        notes: { type: String },
+        segments: [
+          {
+            startTime: { type: Date, required: true },
+            endTime: { type: Date, required: true },
+            segmentType: { type: Number, required: true },
+            repititions: { type: Number, required: true },
+          },
+        ],
+        laps: [
+          {
+            startTime: { type: Date, required: true },
+            endTime: { type: Date, required: true },
+            length: {
+              feet: { type: Number },
+              inches: { type: Number },
+              kilometer: { type: Number, required: true },
+              meters: { type: Number, required: true },
+              miles: { type: Number },
+            },
+          },
+        ],
+      },
+    ],
+    floorsClimbed: [
+      {
+        startTime: { type: Date, required: true },
+        startZoneOffset: { type: Number },
+        endTime: { type: Date, required: true },
+        endZoneOffset: { type: Number },
+        floors: { type: Number, required: true },
+      },
+    ],
+    power: [
+      {
+        startTime: { type: Date, required: true },
+        startZoneOffset: { type: Number },
+        endTime: { type: Date, required: true },
+        endZoneOffset: { type: Number },
+        samples: {
+          time: { type: Date, required: true },
+          power: { type: Number, required: true },
+        },
+      },
+    ],
+    speed: [
+      {
+        startTime: { type: Date, required: true },
+        startZoneOffset: { type: Number },
+        endTime: { type: Date, required: true },
+        endZoneOffset: { type: Number },
+        samples: {
+          time: { type: Date, required: true },
+          speed: { type: Number, required: true },
+        },
+      },
+    ],
+    stepsCadence: [
+      {
+        startTime: { type: Date, required: true },
+        startZoneOffset: { type: Number },
+        endTime: { type: Date, required: true },
+        endZoneOffset: { type: Number },
+        samples: {
+          time: { type: Date, required: true },
+          rate: { type: Number, required: true },
+        },
+      },
+    ],
+    stepsRecord: [
+      {
+        startTime: { type: Date, required: true },
+        startZoneOffset: { type: Number },
+        endTime: { type: Date, required: true },
+        endZoneOffset: { type: Number },
+        steps: { type: Number, required: true },
+      },
+    ],
+    totalCaloriesBurned: [
+      {
+        startTime: { type: Date, required: true },
+        startZoneOffset: { type: Number },
+        endTime: { type: Date, required: true },
+        endZoneOffset: { type: Number },
+        energy: {
+          calories: { type: Number, required: true },
+          kiloCalories: { type: Number },
+          joules: { type: Number },
+          kiloJoules: { type: Number },
+        },
+      },
+    ],
   },
 });

@@ -22,33 +22,33 @@ export interface ILength {
 
 export interface IActiveCaloriesBurnedRecord extends IRecord {
   startTime: Date;
-  startZoneOffset: number;
+  startZoneOffset?: number;
   endTime: Date;
-  endZoneOffset: number;
+  endZoneOffset?: number;
   energy: IEnergy;
 }
 
 export interface ICyclingPedalingCadenceRecord extends IRecord {
   startTime: Date;
-  startZoneOffset: number;
+  startZoneOffset?: number;
   endTime: Date;
-  endZoneOffset: number;
+  endZoneOffset?: number;
   samples: ICyclingPedalingCadenceRecordSample[];
 }
 
 export interface IDistanceRecord extends IRecord {
   startTime: Date;
-  startZoneOffset: number;
+  startZoneOffset?: number;
   endTime: Date;
-  endZoneOffset: number;
+  endZoneOffset?: number;
   distance: ILength;
 }
 
 export interface IELevationGainedRecord extends IRecord {
   startTime: Date;
-  startZoneOffset: number;
+  startZoneOffset?: number;
   endTime: Date;
-  endZoneOffset: number;
+  endZoneOffset?: number;
   elevation: ILength;
 }
 

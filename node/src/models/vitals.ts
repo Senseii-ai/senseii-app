@@ -78,14 +78,6 @@ export interface IHydrationRecord extends IRecord {
   volume: number;
 }
 
-// Captures the user's lean body mass. Each record represents a single instantaneous measurement.
-export interface ILeanBodyMassRecord extends IRecord {
-  time: Date;
-  zoneOffset?: number;
-  // implement LeanBodyMass in typescript
-  mass: number;
-}
-
 // Captures the amount of oxygen circulating in the blood, measured as a percentage of oxygen-saturated hemoglobin. Each record represents a single blood oxygen saturation reading at the time of measurement.
 export interface IOxygenSaturationRecord extends IRecord {
   time: Date;
@@ -116,3 +108,139 @@ export interface IVo2MaxRecord extends IRecord {
   vo2MillilitersPerMinuteKilogram: number;
   measurementMethod: number;
 }
+
+export interface IVitals {
+  user: Schema.Types.ObjectId;
+  vitals: {
+    bloodGlucose: IBloodGlucoseRecord[];
+    bloodPressure: IBloodPressureRecord[];
+    bodyFat: IBodyFatRecord[];
+    bodyTemperature: IBodyTemperatureRecord[];
+    waterMass: IWaterMassRecord[];
+    heartRate: IHeartRateRecord[];
+    heartRateVariability: IHeartRateVariabilityRmssdRecord[];
+    hydrationRecord: IHydrationRecord[];
+    oxygenSaturation: IOxygenSaturationRecord[];
+    respiratoryRate: IRespiratoryRateRecord[];
+    restingHeartRate: IRestingHeartRateRecord[];
+    vo2Max: IVo2MaxRecord[];
+  };
+}
+
+export const UserVitalsSchema = new Schema<IVitals>({
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: 'Users',
+    required: true,
+  },
+  vitals: {
+    bloodGlucose: [
+      {
+        time: { type: Date, required: true },
+        zoneOffset: { type: Number },
+        level: { type: Number, required: true },
+        mealType: { type: Number, required: true },
+        specimenSource: { type: Number, required: true },
+        relationToMeal: { type: Number, required: true },
+      },
+    ],
+    bloodPressure: [
+      {
+        time: { type: Date, required: true },
+        zoneOffset: { type: Number },
+        systolic: { type: Number, required: true },
+        diastolic: { type: Number, required: true },
+        bodyPosition: { type: Number, required: true },
+        measurementLocation: { type: Number, required: true },
+      },
+    ],
+    bodyFat: [
+      {
+        time: { type: Date, required: true },
+        zoneOffset: { type: Number },
+        percentage: { type: Number, required: true },
+      },
+    ],
+    bodyTemperature: [
+      {
+        time: { type: Date, required: true },
+        zoneOffset: { type: Number },
+        temperature: { type: Number, required: true },
+        measurementLocation: { type: Number, required: true },
+      },
+    ],
+    waterMass: [
+      {
+        time: { type: Date, required: true },
+        zoneOffset: { type: Number },
+        mass: { type: Number, required: true },
+      },
+    ],
+    heartRate: [
+      {
+        startTime: { type: Date, required: true },
+        startZoneOffset: { type: Number },
+        endTime: { type: Date, required: true },
+        endZoneOffset: { type: Number },
+        samples: [
+          {
+            time: { type: Date, required: true },
+            beatsPerMinute: { type: Number, required: true },
+          },
+        ],
+      },
+    ],
+    heartRateVariability: [
+      {
+        time: { type: Date, required: true },
+        zoneOffset: { type: Number },
+        heartRateVariabilityMillis: { type: Number, required: true },
+      },
+    ],
+    hydrationRecord: [
+      {
+        startTime: { type: Date, required: true },
+        startZoneOffset: { type: Number },
+        endTime: { type: Date, required: true },
+        endZoneOffset: { type: Number },
+        volume: { type: Number, required: true },
+      },
+    ],
+    leanBodyMass: [
+      {
+        time: { type: Date, required: true },
+        zoneOffset: { type: Number },
+        mass: { type: Number, required: true },
+      },
+    ],
+    oxygenSaturation: [
+      {
+        time: { type: Date, required: true },
+        zoneOffset: { type: Number },
+        percentage: { type: Number, required: true },
+      },
+    ],
+    respiratoryRate: [
+      {
+        time: { type: Date, required: true },
+        zoneOffset: { type: Number },
+        rate: { type: Number, required: true },
+      },
+    ],
+    restingHeartRate: [
+      {
+        time: { type: Date, required: true },
+        zoneOffset: { type: Number },
+        beatsPerMinute: { type: Number, required: true },
+      },
+    ],
+    vo2Max: [
+      {
+        time: { type: Date, required: true },
+        zoneOffset: { type: Number },
+        vo2MillilitersPerMinuteKilogram: { type: Number, required: true },
+        measurementMethod: { type: Number, required: true },
+      },
+    ],
+  },
+});

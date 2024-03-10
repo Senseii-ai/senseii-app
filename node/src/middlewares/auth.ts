@@ -2,8 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
 import { verifyToken } from '../utils/crypt';
 
-interface IAuthRequest extends Request {
-  user?: string | JwtPayload;
+export interface IAuthRequest extends Request {
+  user?: JwtPayload;
 }
 
 // check out JSDoc
@@ -23,6 +23,7 @@ export const authenticateUser = async (
       return;
     }
 
+    // look into this typescript error later
     try {
       const user = verifyToken(token);
       req.user = user;

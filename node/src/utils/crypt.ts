@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 
 export const getRefreshToken = (email: string) => {
   return jwt.sign(email, getRefreshTokenKey());
@@ -41,4 +41,13 @@ export const comparePassword = async (
 
 export const hashPassword = async (password: string): Promise<string> => {
   return await bcrypt.hash(password, getSalt());
+};
+
+export const verifyToken = (token: string): string | JwtPayload => {
+  try {
+    return jwt.verify(token, getAccessTokenKey());
+  } catch (error) {
+    console.error('Token Verification failed', error);
+    throw new Error('Invalid token');
+  }
 };

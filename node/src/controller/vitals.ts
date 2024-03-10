@@ -1,7 +1,6 @@
 import { VitalModel, IVitals, IBloodGlucoseRecord } from '../models/vitals';
 import { Request, Response, NextFunction } from 'express';
 import { IAuthRequest } from '../middlewares/auth';
-import { ObjectId } from 'mongoose';
 import Joi from 'joi';
 
 // validate the records on runtime
@@ -11,18 +10,33 @@ const bloodGlucoseRecordSchema = Joi.object({
     value: Joi.number().required(),
     unit: Joi.string().valid('milligramsPerDeciliter', 'millimolesPerLiter'),
   }),
-  metaData: Joi.object({
-    clientId: Joi.string().required(),
-    dataOrigin: Joi.string().required(),
-    lastModifiedTime: Joi.date().required(),
-    clientRecordVersion: Joi.number().required(),
-    recordingMethod: Joi.number().required(),
-  }),
   mealType: Joi.number().required(),
   specimenSource: Joi.number().required(),
   relationToMeal: Joi.number().required(),
   recordType: Joi.string().valid('BloodGlucose').required(),
 });
+
+// getBloodGlucoseRecords
+export const getBloodGlucoseRecords = async (
+  req: IAuthRequest,
+  res: Response
+) => {
+  try {
+    const userID = req.user?.userID;
+    const data = await VitalModel.findOne({ user: userID });
+
+    if (!data) {
+      res.status(404).json({ message: 'Records not Found' });
+      throw new Error('Vitals Records not found');
+    }
+
+    const bloodGlucoseRecords: IBloodGlucoseRecord[] = data.vitals.bloodGlucose;
+    res.status(200).json(bloodGlucoseRecords);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
 
 // newBloodGlucoseRecords (array of records)
 export const newBloodGlucoseRecords = async (

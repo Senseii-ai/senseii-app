@@ -6,6 +6,11 @@ export interface IBloodGlucose {
   unit: 'milligramsPerDeciliter' | 'millimolesPerLiter';
 }
 
+export interface IPressure {
+  value: number;
+  unit: 'millimetersOfMercury';
+}
+
 // Captures the concentration of glucose in the blood. Each record represents a single instantaneous blood glucose reading.
 export interface IBloodGlucoseRecord extends IRecord {
   time: Date;
@@ -22,8 +27,8 @@ export interface IBloodGlucoseRecord extends IRecord {
 export interface IBloodPressureRecord extends IRecord {
   time: Date;
   zoneOffset?: number;
-  systolic: number;
-  diastolic: number;
+  systolic: IPressure;
+  diastolic: IPressure;
   bodyPosition: number;
   measurementLocation: number;
 }

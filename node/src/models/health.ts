@@ -15,7 +15,7 @@ export interface IMetaData {
 }
 
 export interface IRecord {
-  metaData: IMetaData;
+  metaData?: IMetaData;
 }
 
 export interface ITimeMeta {

@@ -3,6 +3,7 @@ import {
   IBloodGlucoseRecord,
   IBloodPressureRecord,
   IBodyFatRecord,
+  IBodyTemperatureRecord,
 } from '../models/vitals';
 import { Response } from 'express';
 import { IAuthRequest } from '../middlewares/auth';
@@ -244,6 +245,89 @@ export const getBodyFatRecords = async (req: IAuthRequest, res: Response) => {
 
     const bodyFatRecords: IBodyFatRecord[] = data.vitals.bodyFat;
     res.status(200).json(bodyFatRecords);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+// body temperature
+
+const validateBodyTemperatureRecordSchema = Joi.object({
+  time: Joi.date().required(),
+  temperature: Joi.object({
+    value: Joi.number().required(),
+    unit: Joi.string().valid('celsius', 'fahrenheit'),
+  }),
+  measurementLocation: Joi.number().optional(),
+  recordType: Joi.string().valid('BodyTemperature').required(),
+});
+
+export const newBodyTemperatureRecords = async (
+  req: IAuthRequest,
+  res: Response
+) => {
+  try {
+    const userID = req.user?.userID;
+    const data = Array.isArray(req.body) ? req.body : [req.body];
+
+    // validate the data
+    for (const record of data) {
+      const { error } = validateBodyTemperatureRecordSchema.validate(record);
+      if (error) {
+        res.status(400).json({ message: error.details[0].message });
+        throw new Error('Invalid Body Temperature Record');
+      }
+    }
+
+    // create new body temperature records
+    const newBodyTemperatureRecords: IBodyTemperatureRecord[] = data.map(
+      (record) => ({
+        time: new Date(record.time),
+        temperature: {
+          value: record.temperature.value,
+          unit: record.temperature.unit,
+        },
+        measurementLocation: record.measurementLocation,
+        recordType: record.recordType,
+      })
+    );
+
+    const updatedVitals = await VitalModel.findOneAndUpdate(
+      { user: userID },
+      { $push: { bodyTemperature: { $each: newBodyTemperatureRecords } } },
+      { new: true }
+    );
+
+    if (!updatedVitals) {
+      res.status(404).json({ message: 'Record not found' });
+      throw new Error('Error updating body temperature records');
+    }
+
+    return res.status(200).json({ message: 'Records added successfully' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+export const getBodyTemperatureRecords = async (
+  req: IAuthRequest,
+  res: Response
+) => {
+  try {
+    const userID = req.user?.userID;
+    const data = await VitalModel.findOne({ user: userID });
+
+    if (!data) {
+      res.status(404).json({ message: 'Records not Found' });
+      throw new Error('Body Temperature Records not found');
+    }
+
+    const bodyTemperatureRecords: IBodyTemperatureRecord[] =
+      data.vitals.bodyTemperature;
+
+    res.status(200).json(bodyTemperatureRecords);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });

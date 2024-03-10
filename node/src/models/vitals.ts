@@ -11,6 +11,11 @@ export interface IPressure {
   unit: 'millimetersOfMercury';
 }
 
+export interface ITemperature {
+  value: number;
+  unit: 'celsius' | 'fahrenheit';
+}
+
 // Captures the concentration of glucose in the blood. Each record represents a single instantaneous blood glucose reading.
 export interface IBloodGlucoseRecord extends IRecord {
   time: Date;
@@ -45,8 +50,8 @@ export interface IBodyFatRecord extends IRecord {
 export interface IBodyTemperatureRecord extends IRecord {
   time: Date;
   zoneOffset?: number;
-  temperature: number;
-  measurementLocation: number;
+  temperature: ITemperature;
+  measurementLocation?: number;
 }
 
 // Captures the user's body water mass. Each record represents a single instantaneous measurement.
@@ -170,8 +175,22 @@ export const UserVitalsSchema = new Schema<IVitals>({
       {
         time: { type: Date, required: true },
         zoneOffset: { type: Number },
-        systolic: { type: Number, required: true },
-        diastolic: { type: Number, required: true },
+        systolic: {
+          value: { type: Number, required: true },
+          unit: {
+            type: String,
+            enum: ['millimetersOfMercury'],
+            required: true,
+          },
+        },
+        diastolic: {
+          value: { type: Number, required: true },
+          unit: {
+            type: String,
+            enum: ['millimetersOfMercury'],
+            required: true,
+          },
+        },
         bodyPosition: { type: Number, required: true },
         measurementLocation: { type: Number, required: true },
       },
@@ -187,8 +206,15 @@ export const UserVitalsSchema = new Schema<IVitals>({
       {
         time: { type: Date, required: true },
         zoneOffset: { type: Number },
-        temperature: { type: Number, required: true },
-        measurementLocation: { type: Number, required: true },
+        temperature: {
+          value: { type: Number, required: true },
+          unit: {
+            type: String,
+            enum: ['celsius', 'fahrenheit'],
+            required: true,
+          },
+        },
+        measurementLocation: { type: Number },
       },
     ],
     waterMass: [

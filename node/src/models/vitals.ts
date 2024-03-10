@@ -1,15 +1,21 @@
 import { IRecord } from './health';
-import { Schema } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
+
+export interface IBloodGlucose {
+  value: number;
+  unit: 'milligramsPerDeciliter' | 'millimolesPerLiter';
+}
 
 // Captures the concentration of glucose in the blood. Each record represents a single instantaneous blood glucose reading.
 export interface IBloodGlucoseRecord extends IRecord {
   time: Date;
   zoneOffset?: number;
   // implement BloodGlucoseUnit in typescript
-  level: number;
+  level: IBloodGlucose;
   mealType: number;
   specimenSource: number;
   relationToMeal: number;
+  recordType: 'BloodGlucose';
 }
 
 // Captures the blood pressure of a user. Each record represents a single instantaneous blood pressure reading.
@@ -136,9 +142,20 @@ export const UserVitalsSchema = new Schema<IVitals>({
   vitals: {
     bloodGlucose: [
       {
+        recordType: 'BloodGlucose',
         time: { type: Date, required: true },
         zoneOffset: { type: Number },
-        level: { type: Number, required: true },
+        level: {
+          value: {
+            type: Number,
+            required: true,
+          },
+          unit: {
+            type: String,
+            enum: ['milligramsPerDeciliter', 'millimolesPerLiter'],
+            required: true,
+          },
+        },
         mealType: { type: Number, required: true },
         specimenSource: { type: Number, required: true },
         relationToMeal: { type: Number, required: true },
@@ -244,3 +261,5 @@ export const UserVitalsSchema = new Schema<IVitals>({
     ],
   },
 });
+
+export const VitalModel = mongoose.model<IVitals>('Vitals', UserVitalsSchema);

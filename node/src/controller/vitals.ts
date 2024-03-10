@@ -1,5 +1,10 @@
-import { VitalModel, IVitals, IBloodGlucoseRecord } from '../models/vitals';
-import { Request, Response, NextFunction } from 'express';
+import {
+  VitalModel,
+  IBloodGlucoseRecord,
+  IBloodPressureRecord,
+  IBodyFatRecord,
+} from '../models/vitals';
+import { Response } from 'express';
 import { IAuthRequest } from '../middlewares/auth';
 import Joi from 'joi';
 
@@ -54,7 +59,8 @@ export const newBloodGlucoseRecords = async (
     for (const record of data) {
       const { error } = bloodGlucoseRecordSchema.validate(record);
       if (error) {
-        return res.status(400).json({ message: error.details[0].message });
+        res.status(400).json({ message: error.details[0].message });
+        throw new Error('Invalid Blood Glucose Record');
       }
     }
 
@@ -89,6 +95,157 @@ export const newBloodGlucoseRecords = async (
     return res.status(200).json({ message: 'Records added successfully' });
   } catch (error) {
     console.error(error);
-    return res;
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+// validate the bloodPressure records on runtime
+const validateBloodPressureRecordSchema = Joi.object({
+  time: Joi.date().required(),
+  systolic: {
+    value: Joi.number().required(),
+    unit: Joi.string().valid('millimetersOfMercury'),
+  },
+  diastolic: {
+    value: Joi.number().required(),
+    unit: Joi.string().valid('millimetersOfMercury'),
+  },
+  bodyPosition: Joi.number().required(),
+  measurementLocation: Joi.number().required(),
+});
+
+// newBloodPressureRecords
+export const newBloodPressureRecords = async (
+  req: IAuthRequest,
+  res: Response
+) => {
+  try {
+    const userID = req.user?.userID;
+    const data = Array.isArray(req.body) ? req.body : [req.body];
+
+    // validate the records
+    for (const record of data) {
+      const { error } = validateBloodPressureRecordSchema.validate(record);
+      if (error) {
+        res.status(400).json({ message: error.details[0].message });
+        throw new Error('Invalid Blood Pressure Record');
+      }
+    }
+
+    const newBloodPressureRecords: IBloodPressureRecord[] = data.map(
+      (record) => ({
+        time: new Date(record.time),
+        systolic: {
+          value: record.systolic.value,
+          unit: record.systolic.unit,
+        },
+        diastolic: {
+          value: record.diastolic.value,
+          unit: record.diastolic.unit,
+        },
+        bodyPosition: record.bodyPosition,
+        measurementLocation: record.measurementLocation,
+      })
+    );
+
+    const updatedVitals = await VitalModel.findOneAndUpdate(
+      { user: userID },
+      { $push: { bloodPressure: { $each: newBloodPressureRecords } } }
+    );
+
+    if (!updatedVitals) {
+      res.status(404).json({ message: 'Record not found' });
+      throw new Error('Error updating blood pressure records');
+    }
+
+    return res.status(200).json({ message: 'Records added successfully' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+export const getBloodPressureRecords = async (
+  req: IAuthRequest,
+  res: Response
+) => {
+  try {
+    const userID = req.user?.userID;
+    const data = await VitalModel.findOne({ user: userID });
+
+    if (!data) {
+      res.status(404).json({ message: 'Records not Found' });
+      throw new Error('Blood Pressure Records not found');
+    }
+
+    const bloodPressureRecords: IBloodPressureRecord[] =
+      data.vitals.bloodPressure;
+    res.status(200).json(bloodPressureRecords);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+const validateBodyFatRecordSchema = Joi.object({
+  time: Joi.date().required(),
+  percentage: Joi.number().required(),
+  recordType: Joi.string().valid('BodyFat').required(),
+});
+
+export const newBodyFatRecords = async (req: IAuthRequest, res: Response) => {
+  try {
+    const userID = req.user?.userID;
+    const data = Array.isArray(req.body) ? req.body : [req.body];
+
+    // validate the data
+    for (const record of data) {
+      const { error } = validateBodyFatRecordSchema.validate(record);
+      if (error) {
+        res.status(400).json({ message: error.details[0].message });
+        throw new Error('Invalid Body Fat Record');
+      }
+    }
+
+    // create new body fat records
+    const newBodyFatRecords: IBodyFatRecord[] = data.map((record) => ({
+      time: new Date(record.time),
+      percentage: record.percentage,
+      recordType: record.recordType,
+    }));
+
+    const updatedVitals = await VitalModel.findOneAndUpdate(
+      { user: userID },
+      { $push: { bodyFat: { $each: newBodyFatRecords } } },
+      { new: true }
+    );
+
+    if (!updatedVitals) {
+      res.status(404).json({ message: 'Record not found' });
+      throw new Error('Error updating body fat records');
+    }
+
+    return res.status(200).json({ message: 'Records added successfully' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+export const getBodyFatRecords = async (req: IAuthRequest, res: Response) => {
+  try {
+    const userID = req.user?.userID;
+    const data = await VitalModel.findOne({ user: userID });
+
+    if (!data) {
+      res.status(404).json({ message: 'Records not Found' });
+      throw new Error('Body Fat Records not found');
+    }
+
+    const bodyFatRecords: IBodyFatRecord[] = data.vitals.bodyFat;
+    res.status(200).json(bodyFatRecords);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
 };

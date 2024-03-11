@@ -27,6 +27,11 @@ export interface IWaterMass {
     | 'pounds';
 }
 
+export interface IVolume {
+  value: number;
+  unit: 'liters' | 'fluidOuncesUs' | 'milliliters';
+}
+
 // Captures the concentration of glucose in the blood. Each record represents a single instantaneous blood glucose reading.
 export interface IBloodGlucoseRecord extends IRecord {
   time: Date;
@@ -107,8 +112,7 @@ export interface IHydrationRecord extends IRecord {
   startZoneOffset?: number;
   endTime: Date;
   endZoneOffset?: number;
-  // implement Volume in typescript
-  volume: number;
+  volume: IVolume;
   recordType: 'Hydration';
 }
 
@@ -302,7 +306,14 @@ export const UserVitalsSchema = new Schema<IVitals>({
         startZoneOffset: { type: Number },
         endTime: { type: Date, required: true },
         endZoneOffset: { type: Number },
-        volume: { type: Number, required: true },
+        volume: {
+          value: { type: Number, required: true },
+          unit: {
+            type: String,
+            enum: ['liters', 'fluidOuncesUs', 'milliliters'],
+            required: true,
+          },
+        },
       },
     ],
     oxygenSaturation: [

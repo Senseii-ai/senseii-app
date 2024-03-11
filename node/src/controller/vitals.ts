@@ -7,6 +7,11 @@ import {
   IWaterMassRecord,
   IHeartRateRecord,
   IHeartRateVariabilityRmssdRecord,
+  IHydrationRecord,
+  IOxygenSaturationRecord,
+  IRespiratoryRateRecord,
+  IRestingHeartRateRecord,
+  IVo2MaxRecord,
 } from '../models/vitals';
 import { Response } from 'express';
 import { IAuthRequest } from '../middlewares/auth';
@@ -517,6 +522,448 @@ export const getHeartRateVariabilityRecords = async (
     const heartRateVariabilityRecords: IHeartRateVariabilityRmssdRecord[] =
       data.vitals.heartRateVariability;
     return res.status(200).json(heartRateVariabilityRecords);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+// create new HeartRateVariability Records
+export const newHeartRateVariabilityRecords = async (
+  req: IAuthRequest,
+  res: Response
+) => {
+  try {
+    const userID: string = req.user?.userID;
+    const data = Array.isArray(req.body) ? req.body : [req.body];
+
+    // vlaidate the records
+    for (const record of data) {
+      const { error } =
+        validateHeartRateVariabilityRecordSchema.validate(record);
+      if (error) {
+        console.error('Invalid Heart Rate Variability record');
+        throw new Error(error.details[0].message);
+      }
+    }
+
+    // create new Heart Rate Variability records
+    const newHeartRateVariabilityRecords: IHeartRateVariabilityRmssdRecord[] =
+      data.map((record) => {
+        return {
+          recordType: record.recordType,
+          time: new Date(record.time),
+          heartRateVariabilityMillis: record.heartRateVariabilityMillis,
+        };
+      });
+
+    const updatedVitals = await VitalModel.findOneAndUpdate(
+      { user: userID },
+      {
+        $push: {
+          'vitals.heartRateVariability': {
+            $each: newHeartRateVariabilityRecords,
+          },
+        },
+      },
+      { new: true, upsert: true }
+    );
+
+    if (!updatedVitals) {
+      throw new Error('Error updating heart rate variability records');
+    }
+
+    // succesfully pushed the records.
+    return res.status(200).json({ message: 'Records added successfully' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+// hydration record
+const validateHydrationRecordSchema = Joi.object({
+  recordType: Joi.string().valid('Hydration').required(),
+  startTime: Joi.date().required(),
+  endTime: Joi.date().required(),
+  volume: Joi.object({
+    value: Joi.number().required(),
+    unit: Joi.string()
+      .valid('liters', 'milliliters', 'fluidOuncesUs')
+      .required(),
+  }),
+});
+
+// get Hydration Records
+export const getHydrationRecords = async (req: IAuthRequest, res: Response) => {
+  try {
+    const userID: string = req.user?.userID;
+    const data = await VitalModel.findOne({ user: userID });
+
+    if (!data) {
+      throw new Error('Hydration Records not found');
+    }
+
+    const hydrationRecords: IHydrationRecord[] = data.vitals.hydrationRecord;
+    return res.status(200).json(hydrationRecords);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+// create new Hydration Records
+export const newHydrationRecords = async (req: IAuthRequest, res: Response) => {
+  try {
+    const userID = req.user?.userID;
+    const data = Array.isArray(req.body) ? req.body : [req.body];
+
+    // validate the data
+    for (const record of data) {
+      const { error } = validateHydrationRecordSchema.validate(record);
+      if (error) {
+        console.error('Invalid Hydration record');
+        throw new Error(error.details[0].message);
+      }
+    }
+
+    // create new hydration records
+    const newHydrationRecords: IHydrationRecord[] = data.map((record) => {
+      return {
+        recordType: record.recordType,
+        startTime: record.startTime,
+        endTime: record.endTime,
+        volume: {
+          value: record.volume.value,
+          unit: record.volume.unit,
+        },
+      };
+    });
+
+    const updatedVitals = await VitalModel.findOneAndUpdate(
+      { user: userID },
+      { $push: { 'vitals.hydrationRecord': { $each: newHydrationRecords } } },
+      { new: true, upsert: true }
+    );
+
+    if (!updatedVitals) {
+      throw new Error('Error updating hydration records');
+    }
+
+    // succesfully pushed the records.
+    return res.status(200).json({ message: 'Records added successfully' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+// oxygen saturation records
+const validateOxygenSaturationRecordSchema = Joi.object({
+  recordType: Joi.string().valid('OxygenSaturation').required(),
+  time: Joi.date().required(),
+  percentage: Joi.number().required(),
+});
+
+// get Oxygen Saturation Records
+export const getOxygenSaturationRecords = async (
+  req: IAuthRequest,
+  res: Response
+) => {
+  try {
+    const userID = req.user?.userID;
+    const data = await VitalModel.findOne({ user: userID });
+
+    if (!data) {
+      throw new Error('Oxygen Saturation Records not found');
+    }
+
+    const oxygenSaturationRecords: IOxygenSaturationRecord[] =
+      data.vitals.oxygenSaturation;
+    return res.status(200).json(oxygenSaturationRecords);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+// create new Oxygen Saturation Records
+export const newOxygenSaturationRecords = async (
+  req: IAuthRequest,
+  res: Response
+) => {
+  try {
+    const userID = req.user?.userID;
+    const data = Array.isArray(req.body) ? req.body : [req.body];
+
+    // validate the data
+    for (const record of data) {
+      const { error } = validateOxygenSaturationRecordSchema.validate(record);
+      if (error) {
+        console.error('Invalid Oxygen Saturation Record');
+        throw new Error(error.details[0].message);
+      }
+    }
+
+    // create new oxygen saturation records
+    const newOxygenSaturationRecords: IOxygenSaturationRecord[] = data.map(
+      (record) => {
+        return {
+          recordType: record.recordType,
+          time: new Date(record.time),
+          percentage: record.percentage,
+        };
+      }
+    );
+
+    const updatedVitals = await VitalModel.findOneAndUpdate(
+      { user: userID },
+      {
+        $push: {
+          'vitals.oxygenSaturation': { $each: newOxygenSaturationRecords },
+        },
+      },
+      { new: true, upsert: true }
+    );
+
+    if (!updatedVitals) {
+      throw new Error('Error updating oxygen saturation records');
+    }
+
+    // succesfully pushed the records.
+    return res.status(200).json({ message: 'Records added successfully' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+// respiratory Rate
+const validateRespiratoryRateRecordsSchema = Joi.object({
+  recordType: Joi.string().valid('RespiratoryRate').required(),
+  time: Joi.date().required(),
+  rate: Joi.number().required(),
+});
+
+// get Respiratory Rate Records
+export const getRespiratoryRateRecords = async (
+  req: IAuthRequest,
+  res: Response
+) => {
+  try {
+    const userID = req.user?.userID;
+    const data = await VitalModel.findOne({ user: userID });
+
+    if (!data) {
+      throw new Error('Respiratory Rate Records not found');
+    }
+
+    const respiratoryRateRecords: IRespiratoryRateRecord[] =
+      data.vitals.respiratoryRate;
+
+    return res.status(200).json(respiratoryRateRecords);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+// create new Respiratory Rate Records
+export const newRespiratoryRateRecords = async (
+  req: IAuthRequest,
+  res: Response
+) => {
+  try {
+    const userID = req.user?.userID;
+    const data = Array.isArray(req.body) ? req.body : [req.body];
+
+    // validate the data
+    for (const record of data) {
+      const { error } = validateRespiratoryRateRecordsSchema.validate(record);
+      if (error) {
+        console.error('Invalid Respiratory Rate Record');
+        throw new Error(error.details[0].message);
+      }
+    }
+
+    // create new respiratory rate records
+    const newRespiratoryRateRecords: IRespiratoryRateRecord[] = data.map(
+      (record) => {
+        return {
+          recordType: record.recordType,
+          time: new Date(record.time),
+          rate: record.rate,
+        };
+      }
+    );
+
+    const updatedVitals = await VitalModel.findOneAndUpdate(
+      { user: userID },
+      {
+        $push: {
+          'vitals.respiratoryRate': { $each: newRespiratoryRateRecords },
+        },
+      },
+      { new: true, upsert: true }
+    );
+
+    if (!updatedVitals) {
+      throw new Error('Error updating respiratory rate records');
+    }
+
+    // succesfully pushed the records.
+    return res.status(200).json({ message: 'Records added successfully' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+// resting Heart Rate
+const validateRestingHeartRateRecordsSchema = Joi.object({
+  recordType: Joi.string().valid('RestingHeartRate').required(),
+  time: Joi.date().required(),
+  beatsPerMinute: Joi.number().required(),
+});
+
+// get Resting Heart Rate Records
+export const getRestingHeartRateRecords = async (
+  req: IAuthRequest,
+  res: Response
+) => {
+  try {
+    const userID = req.user?.userID;
+    const data = await VitalModel.findOne({ user: userID });
+
+    if (!data) {
+      throw new Error('Resting Heart Rate Records not found');
+    }
+
+    const restingHeartRateRecords: IRestingHeartRateRecord[] =
+      data.vitals.restingHeartRate;
+
+    return res.status(200).json(restingHeartRateRecords);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+// new Resting Heart Rate Records
+export const newRestingHeartRateRecords = async (
+  req: IAuthRequest,
+  res: Response
+) => {
+  try {
+    const userID = req.user?.userID;
+    const data = Array.isArray(req.body) ? req.body : [req.body];
+
+    // validate the data
+    for (const record of data) {
+      const { error } = validateRestingHeartRateRecordsSchema.validate(record);
+      if (error) {
+        console.error('Invalid Resting Heart Rate Record');
+        throw new Error(error.details[0].message);
+      }
+    }
+
+    // create new resting heart rate records
+    const newRestingHeartRateRecords: IRestingHeartRateRecord[] = data.map(
+      (record) => {
+        return {
+          recordType: record.recordType,
+          time: new Date(record.time),
+          beatsPerMinute: record.beatsPerMinute,
+        };
+      }
+    );
+
+    const updatedVitals = await VitalModel.findOneAndUpdate(
+      { user: userID },
+      {
+        $push: {
+          'vitals.restingHeartRate': { $each: newRestingHeartRateRecords },
+        },
+      },
+      { new: true, upsert: true }
+    );
+
+    if (!updatedVitals) {
+      throw new Error('Error updating resting heart rate records');
+    }
+
+    // succesfully pushed the records.
+    return res.status(200).json({ message: 'Records added successfully' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+// Vo2 Max
+const validateVo2MaxRecordsSchema = Joi.object({
+  recordType: Joi.string().valid('Vo2Max').required(),
+  time: Joi.date().required(),
+  measurementMethod: Joi.number().required(),
+  vo2MillilitersPerMinuteKilogram: Joi.number().required(),
+});
+
+// get Vo2 Max Records
+export const getVo2MaxRecords = async (req: IAuthRequest, res: Response) => {
+  try {
+    const userID = req.user?.userID;
+    const data = await VitalModel.findOne({ user: userID });
+
+    if (!data) {
+      throw new Error('Vo2 Max Records not found');
+    }
+
+    const vo2MaxRecords: IVo2MaxRecord[] = data.vitals.vo2Max;
+
+    return res.status(200).json(vo2MaxRecords);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+// new Vo2 Max Records
+export const newVo2MaxRecords = async (req: IAuthRequest, res: Response) => {
+  try {
+    const userID = req.user?.userID;
+    const data = Array.isArray(req.body) ? req.body : [req.body];
+
+    // validate the data
+    for (const record of data) {
+      const { error } = validateVo2MaxRecordsSchema.validate(record);
+      if (error) {
+        console.error('Invalid Vo2 Max Record');
+        throw new Error(error.details[0].message);
+      }
+    }
+
+    // create new vo2 max records
+    const newVo2MaxRecords: IVo2MaxRecord[] = data.map((record) => {
+      return {
+        recordType: record.recordType,
+        time: new Date(record.time),
+        measurementMethod: record.measurementMethod,
+        vo2MillilitersPerMinuteKilogram: record.vo2MillilitersPerMinuteKilogram,
+      };
+    });
+
+    const updatedVitals = await VitalModel.findOneAndUpdate(
+      { user: userID },
+      { $push: { 'vitals.vo2Max': { $each: newVo2MaxRecords } } },
+      { new: true, upsert: true }
+    );
+
+    if (!updatedVitals) {
+      throw new Error('Error updating vo2 max records');
+    }
+
+    // succesfully pushed the records.
+    return res.status(200).json({ message: 'Records added successfully' });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });

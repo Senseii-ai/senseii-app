@@ -9,6 +9,10 @@ import { Response } from 'express';
 import { IAuthRequest } from '../middlewares/auth';
 import Joi from 'joi';
 
+export const testVitals = async (req: IAuthRequest, res: Response) => {
+  res.send('testing route');
+};
+
 // validate the records on runtime
 const bloodGlucoseRecordSchema = Joi.object({
   time: Joi.date().required(),
@@ -32,7 +36,6 @@ export const getBloodGlucoseRecords = async (
     const data = await VitalModel.findOne({ user: userID });
 
     if (!data) {
-      res.status(404).json({ message: 'Records not Found' });
       throw new Error('Vitals Records not found');
     }
 
@@ -40,7 +43,7 @@ export const getBloodGlucoseRecords = async (
     res.status(200).json(bloodGlucoseRecords);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
@@ -60,8 +63,8 @@ export const newBloodGlucoseRecords = async (
     for (const record of data) {
       const { error } = bloodGlucoseRecordSchema.validate(record);
       if (error) {
-        res.status(400).json({ message: error.details[0].message });
-        throw new Error('Invalid Blood Glucose Record');
+        console.error('Invalid Blood Glucose Record');
+        throw new Error(error.details[0].message);
       }
     }
 
@@ -84,12 +87,11 @@ export const newBloodGlucoseRecords = async (
     // update the user's blood glucose records in one go.
     const updatedVitals = await VitalModel.findOneAndUpdate(
       { user: userID },
-      { $push: { bloodGlucose: { $each: newBloodGlucoseRecords } } },
-      { new: true }
+      { $push: { 'vitals.bloodGlucose': { $each: newBloodGlucoseRecords } } },
+      { new: true, upsert: true }
     );
 
     if (!updatedVitals) {
-      res.status(404).send({ message: 'Record not found' });
       throw new Error('Error updating blood glucose records');
     }
 
@@ -102,6 +104,7 @@ export const newBloodGlucoseRecords = async (
 
 // validate the bloodPressure records on runtime
 const validateBloodPressureRecordSchema = Joi.object({
+  recordType: Joi.string().valid('BloodPressure').required(),
   time: Joi.date().required(),
   systolic: {
     value: Joi.number().required(),
@@ -128,13 +131,14 @@ export const newBloodPressureRecords = async (
     for (const record of data) {
       const { error } = validateBloodPressureRecordSchema.validate(record);
       if (error) {
-        res.status(400).json({ message: error.details[0].message });
-        throw new Error('Invalid Blood Pressure Record');
+        console.error('Invalid Blood Pressure Record');
+        throw new Error(error.details[0].message);
       }
     }
 
     const newBloodPressureRecords: IBloodPressureRecord[] = data.map(
       (record) => ({
+        recordType: record.recordType,
         time: new Date(record.time),
         systolic: {
           value: record.systolic.value,
@@ -151,11 +155,12 @@ export const newBloodPressureRecords = async (
 
     const updatedVitals = await VitalModel.findOneAndUpdate(
       { user: userID },
-      { $push: { bloodPressure: { $each: newBloodPressureRecords } } }
+      { $push: { 'vitals.bloodPressure': { $each: newBloodPressureRecords } } },
+      { new: true, upsert: true }
     );
 
     if (!updatedVitals) {
-      res.status(404).json({ message: 'Record not found' });
+      console.error(updatedVitals);
       throw new Error('Error updating blood pressure records');
     }
 
@@ -175,7 +180,6 @@ export const getBloodPressureRecords = async (
     const data = await VitalModel.findOne({ user: userID });
 
     if (!data) {
-      res.status(404).json({ message: 'Records not Found' });
       throw new Error('Blood Pressure Records not found');
     }
 
@@ -203,8 +207,8 @@ export const newBodyFatRecords = async (req: IAuthRequest, res: Response) => {
     for (const record of data) {
       const { error } = validateBodyFatRecordSchema.validate(record);
       if (error) {
-        res.status(400).json({ message: error.details[0].message });
-        throw new Error('Invalid Body Fat Record');
+        console.error('Invalid Body Fat Record');
+        throw new Error(error.details[0].message);
       }
     }
 
@@ -217,12 +221,11 @@ export const newBodyFatRecords = async (req: IAuthRequest, res: Response) => {
 
     const updatedVitals = await VitalModel.findOneAndUpdate(
       { user: userID },
-      { $push: { bodyFat: { $each: newBodyFatRecords } } },
-      { new: true }
+      { $push: { 'vitals.bodyFat': { $each: newBodyFatRecords } } },
+      { new: true, upsert: true }
     );
 
     if (!updatedVitals) {
-      res.status(404).json({ message: 'Record not found' });
       throw new Error('Error updating body fat records');
     }
 
@@ -239,12 +242,11 @@ export const getBodyFatRecords = async (req: IAuthRequest, res: Response) => {
     const data = await VitalModel.findOne({ user: userID });
 
     if (!data) {
-      res.status(404).json({ message: 'Records not Found' });
       throw new Error('Body Fat Records not found');
     }
 
     const bodyFatRecords: IBodyFatRecord[] = data.vitals.bodyFat;
-    res.status(200).json(bodyFatRecords);
+    return res.status(200).json(bodyFatRecords);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
@@ -275,8 +277,8 @@ export const newBodyTemperatureRecords = async (
     for (const record of data) {
       const { error } = validateBodyTemperatureRecordSchema.validate(record);
       if (error) {
-        res.status(400).json({ message: error.details[0].message });
-        throw new Error('Invalid Body Temperature Record');
+        console.error('Invalid Body Temperature Record');
+        throw new Error(error.details[0].message);
       }
     }
 
@@ -295,12 +297,15 @@ export const newBodyTemperatureRecords = async (
 
     const updatedVitals = await VitalModel.findOneAndUpdate(
       { user: userID },
-      { $push: { bodyTemperature: { $each: newBodyTemperatureRecords } } },
-      { new: true }
+      {
+        $push: {
+          'vitals.bodyTemperature': { $each: newBodyTemperatureRecords },
+        },
+      },
+      { new: true, upsert: true }
     );
 
     if (!updatedVitals) {
-      res.status(404).json({ message: 'Record not found' });
       throw new Error('Error updating body temperature records');
     }
 
@@ -320,14 +325,13 @@ export const getBodyTemperatureRecords = async (
     const data = await VitalModel.findOne({ user: userID });
 
     if (!data) {
-      res.status(404).json({ message: 'Records not Found' });
       throw new Error('Body Temperature Records not found');
     }
 
     const bodyTemperatureRecords: IBodyTemperatureRecord[] =
       data.vitals.bodyTemperature;
 
-    res.status(200).json(bodyTemperatureRecords);
+    return res.status(200).json(bodyTemperatureRecords);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });

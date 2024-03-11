@@ -2,13 +2,15 @@ import express, { Express, Request, Response } from 'express';
 require('dotenv').config();
 import connectDB from './db/connect';
 import userRouter from './routes/user';
+import VitalRouter from './routes/vitals';
 
 const app: Express = express();
 
 app.use(express.json());
 app.use('/api', userRouter);
+app.use('/api/vitals', VitalRouter);
 
-app.post('/ping', (req: Request, res: Response) => {
+app.get('/ping', (req: Request, res: Response) => {
   res.send('Pong');
 });
 

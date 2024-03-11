@@ -4,6 +4,9 @@ import {
   IBloodPressureRecord,
   IBodyFatRecord,
   IBodyTemperatureRecord,
+  IWaterMassRecord,
+  IHeartRateRecord,
+  IHeartRateVariabilityRmssdRecord,
 } from '../models/vitals';
 import { Response } from 'express';
 import { IAuthRequest } from '../middlewares/auth';
@@ -160,7 +163,6 @@ export const newBloodPressureRecords = async (
     );
 
     if (!updatedVitals) {
-      console.error(updatedVitals);
       throw new Error('Error updating blood pressure records');
     }
 
@@ -176,7 +178,7 @@ export const getBloodPressureRecords = async (
   res: Response
 ) => {
   try {
-    const userID = req.user?.userID;
+    const userID: string = req.user?.userID;
     const data = await VitalModel.findOne({ user: userID });
 
     if (!data) {
@@ -332,6 +334,189 @@ export const getBodyTemperatureRecords = async (
       data.vitals.bodyTemperature;
 
     return res.status(200).json(bodyTemperatureRecords);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+// water mass
+const validateWaterMassRecord = Joi.object({
+  recordType: Joi.string().valid('WaterMass').required(),
+  time: Joi.date().required(),
+  mass: Joi.object({
+    value: Joi.number().required(),
+    unit: Joi.string()
+      .valid(
+        'grams',
+        'kilograms',
+        'milligrams',
+        'micrograms',
+        'ounces',
+        'pounds'
+      )
+      .required(),
+  }),
+});
+
+// get Water Mass Records
+export const getWaterMassRecords = async (req: IAuthRequest, res: Response) => {
+  try {
+    const userID: string = req.user?.userID;
+    const data = await VitalModel.findOne({ user: userID });
+
+    if (!data) {
+      throw new Error('Water Mass Records not found');
+    }
+
+    const waterMassRecords: IWaterMassRecord[] = data.vitals.waterMass;
+    return res.status(200).json(waterMassRecords);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+// create new Water Mass Records
+export const newWaterMassRecords = async (req: IAuthRequest, res: Response) => {
+  try {
+    const userID: string = req.user?.userID;
+    const data = Array.isArray(req.body) ? req.body : [req.body];
+
+    // validate the records
+    for (const record of data) {
+      const { error } = validateWaterMassRecord.validate(record);
+      if (error) {
+        console.error('Invalid Water mass record');
+        throw new Error(error.details[0].message);
+      }
+    }
+
+    // create new water mass records
+    const newWaterMassRecords: IWaterMassRecord[] = data.map((record) => {
+      return {
+        recordType: record.recordType,
+        time: new Date(record.time),
+        mass: {
+          value: record.mass.value,
+          unit: record.mass.unit,
+        },
+      };
+    });
+
+    const updatedVitals = await VitalModel.findOneAndUpdate(
+      { user: userID },
+      { $push: { 'vitals.waterMass': { $each: newWaterMassRecords } } },
+      { new: true, upsert: true }
+    );
+
+    if (!updatedVitals) {
+      throw new Error('Error updating water mass records');
+    }
+
+    // succesfully pushed the records.
+    return res.status(200).json({ message: 'Records added successfully' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+// heart Rate records
+const validateHeartRateRecord = Joi.object({
+  recordType: Joi.string().valid('HeartRate').required(),
+  startTime: Joi.date().required(),
+  endTime: Joi.date().required(),
+  samples: Joi.array().items(
+    Joi.object({
+      beatsPerMinute: Joi.number().required(),
+      time: Joi.date().required(),
+    }).required()
+  ),
+});
+
+// get Heart Rate Records
+export const getHeartRateRecords = async (req: IAuthRequest, res: Response) => {
+  try {
+    const userID: string = req.user?.userID;
+    const data = await VitalModel.findOne({ user: userID });
+
+    if (!data) {
+      throw new Error('Heart Rate Records not found');
+    }
+
+    const heartRateRecords: IHeartRateRecord[] = data.vitals.heartRate;
+    return res.status(200).json(heartRateRecords);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+// create new Heart Rate Records
+export const newHeartRateRecords = async (req: IAuthRequest, res: Response) => {
+  try {
+    const userID: string = req.user?.userID;
+    const data = Array.isArray(req.body) ? req.body : [req.body];
+
+    // validate the records
+    for (const record of data) {
+      const { error } = validateHeartRateRecord.validate(record);
+      if (error) {
+        console.error('Invalid Heart Rate record');
+        throw new Error(error.details[0].message);
+      }
+    }
+
+    // create new heart rate records
+    const newHeartRateRecords: IHeartRateRecord[] = data.map((record) => ({
+      recordType: record.recordType,
+      startTime: record.startTime,
+      endTime: record.endTime,
+      samples: record.samples,
+    }));
+
+    const updatedVitals = await VitalModel.findOneAndUpdate(
+      { user: userID },
+      { $push: { 'vitals.heartRate': { $each: newHeartRateRecords } } },
+      { new: true, upsert: true }
+    );
+
+    if (!updatedVitals) {
+      throw new Error('Error updating heart rate records');
+    }
+
+    // succesfully pushed the records.
+    return res.status(200).json({ message: 'Records added successfully' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+// heart Rate Variability
+const validateHeartRateVariabilityRecordSchema = Joi.object({
+  recordType: Joi.string().valid('HeartRateVariability').required(),
+  time: Joi.date().required(),
+  heartRateVariabilityMillis: Joi.number().required(),
+});
+
+// get HeartRateVariability Records
+export const getHeartRateVariabilityRecords = async (
+  req: IAuthRequest,
+  res: Response
+) => {
+  try {
+    const userID: string = req.user?.userID;
+    const data = await VitalModel.findOne({ user: userID });
+
+    if (!data) {
+      throw new Error('Heart Rate Variability Records not found');
+    }
+
+    const heartRateVariabilityRecords: IHeartRateVariabilityRmssdRecord[] =
+      data.vitals.heartRateVariability;
+    return res.status(200).json(heartRateVariabilityRecords);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });

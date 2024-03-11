@@ -16,6 +16,17 @@ export interface ITemperature {
   unit: 'celsius' | 'fahrenheit';
 }
 
+export interface IWaterMass {
+  value: number;
+  unit:
+    | 'grams'
+    | 'kilograms'
+    | 'milligrams'
+    | 'micrograms'
+    | 'ounces'
+    | 'pounds';
+}
+
 // Captures the concentration of glucose in the blood. Each record represents a single instantaneous blood glucose reading.
 export interface IBloodGlucoseRecord extends IRecord {
   time: Date;
@@ -62,7 +73,7 @@ export interface IWaterMassRecord extends IRecord {
   time: Date;
   zoneOffset?: number;
   // implement WaterMass in typescript
-  mass: number;
+  mass: IWaterMass;
   recordType: 'WaterMass';
 }
 
@@ -240,7 +251,21 @@ export const UserVitalsSchema = new Schema<IVitals>({
         recordType: { type: String, required: true, default: 'WaterMass' },
         time: { type: Date, required: true },
         zoneOffset: { type: Number },
-        mass: { type: Number, required: true },
+        mass: {
+          value: { type: Number, required: true },
+          unit: {
+            type: String,
+            enum: [
+              'grams',
+              'kilograms',
+              'milligrams',
+              'micrograms',
+              'ounces',
+              'pounds',
+            ],
+            required: true,
+          },
+        },
       },
     ],
     heartRate: [

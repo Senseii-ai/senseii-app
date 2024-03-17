@@ -41,3 +41,4 @@ def check_if_exists(name: str):
         if name == assistant.name:
             return assistant
     return None
+

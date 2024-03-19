@@ -1,8 +1,16 @@
 # This file holds all the interactions with the assistants
-from openai_utils.assistants.client import get_openai_client
+from openai.assistants.client import get_openai_client
 import logging
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 client = get_openai_client()
+
+def get_core_assistant():
+    assistant_id = os.environ.get("CORE_ASSISTANT_ID") 
+    return get_assistant(assistant_id)
 
 
 # get all assistants.
@@ -16,8 +24,9 @@ def get_all_assistant():
 
 
 # get one assistant.
-def get_assistant(name: str):
-    return client.beta.assistants.retrieve(name)
+def get_assistant(assistant_id: str):
+
+    return client.beta.assistants.retrieve(assistant_id)
 
 
 # create assistant

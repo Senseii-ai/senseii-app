@@ -1,5 +1,5 @@
 # This file is going to be used to manage threads.
-from openai_utils.assistants.client import get_openai_client
+from openai.assistants.client import get_openai_client
 
 client = get_openai_client()
 

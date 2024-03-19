@@ -14,5 +14,6 @@ interface Goal {
 }
 
 interface Goals {
-
+  user: Types.ObjectId;
+  goals: Goal[];
 }

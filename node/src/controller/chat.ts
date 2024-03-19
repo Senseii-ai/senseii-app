@@ -1,28 +1,46 @@
-import OpenAI from "openai";
 import { Response } from "express";
 import { IAuthRequest } from "../middlewares/auth";
+import { getOpenAIClient } from "../openai/client";
+import {
+  continueThread,
+  getNewThreadWithMessages,
+} from "../openai/assistants/threads";
+import { ThreadCreateParams} from "openai/resources/beta/threads/threads";
+import { createRun } from "../openai/assistants/run";
+import { getCoreAssistantId } from "../openai/assistants/assistant";
+import { MessageCreateParams } from "openai/resources/beta/threads/messages/messages";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const OpenAIClient = getOpenAIClient();
 
 export const chat = async (req: IAuthRequest, res: Response) => {
   try {
-    console.log(" I was executed")
-    const completion = await openai.chat.completions.create({
-      messages: [
-        {
-          role: "system",
-          content: "You are a helpful assistant.",
-        },
-      ],
-      model: "gpt-4-turbo-preview",
-    });
+  } catch (error) {}
+};
 
-    console.log(completion.choices[0]);
-    return res
-      .status(200)
-      .json({ message: completion.choices[0].message.content });
+// the user initiates a new chat
+export const startChat = async (req: IAuthRequest, res: Response) => {
+  try {
+    const { messages } : {messages: ThreadCreateParams.Message[]} = req.body;
+    const coreAssistantId = await getCoreAssistantId()
+    // since thread does not exist, create a new one
+    const thread = await getNewThreadWithMessages(messages, OpenAIClient);
+    // create a run with the messages
+    const response = createRun(thread.id, coreAssistantId, OpenAIClient)
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    console.error(error)
+    throw error
   }
 };
+
+// the user consinues an old chat
+export const continueChat = async(req: IAuthRequest, res: Response)=> {
+  try {
+    const {threadId, message} : {threadId: string, message:MessageCreateParams }= req.body;
+    const coreAssistantId : string = getCoreAssistantId()
+    const response = continueThread(threadId, OpenAIClient, message, coreAssistantId)
+    return response
+  }catch(error){
+    console.error(error)
+    throw error
+  }
+}

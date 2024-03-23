@@ -35,7 +35,7 @@ export const startChat = async (req: IAuthRequest, res: Response) => {
 // the user consinues an old chat
 export const continueChat = async(req: IAuthRequest, res: Response)=> {
   try {
-    const {threadId, message} : {threadId: string, message:MessageCreateParams }= req.body;
+    const {threadId, message} : {threadId: string, message:string}= req.body;
     const coreAssistantId : string = getCoreAssistantId()
     const response = continueThread(threadId, OpenAIClient, message, coreAssistantId)
     return response

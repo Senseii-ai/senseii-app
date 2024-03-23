@@ -19,7 +19,8 @@ const responsePoller = async(run: Run, client: OpenAI): Promise<MessagesPage> =>
     try {
      let runCheck = run
      let messages
-    while (incompleteRunStatus.includes(run.status)){
+     console.log(" I came till here")
+    while (incompleteRunStatus.includes(runCheck.status)){
         await new Promise(resolve => setTimeout(resolve, 1000))
         runCheck = await client.beta.threads.runs.retrieve(run.thread_id, run.id)
     }

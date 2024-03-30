@@ -23,7 +23,6 @@ export const chatCore = async (req: IAuthRequest, res: Response) => {
       userMessage,
       assistant
     );
-    // console.log(response)
     return res.status(200).json(response);
   } catch (error) {
     console.error(error);

@@ -19,7 +19,6 @@ app.use("/api/chat", ChatRouter)
 app.use('/api/threads', threadRouter)
 
 app.get('/ping', (req: Request, res: Response) => {
-  const userMessage = req.body.message
   res.send("pong")
 });
 

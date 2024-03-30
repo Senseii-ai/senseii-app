@@ -37,8 +37,8 @@ export const continueChat = async(req: IAuthRequest, res: Response)=> {
   try {
     const {threadId, message} : {threadId: string, message:string}= req.body;
     const coreAssistantId : string = getCoreAssistantId()
-    const response = continueThread(threadId, OpenAIClient, message, coreAssistantId)
-    return response
+    const response = await continueThread(threadId, OpenAIClient, message, coreAssistantId)
+    return res.status(200).json(response)
   }catch(error){
     console.error(error)
     throw error

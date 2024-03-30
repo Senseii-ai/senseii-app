@@ -12,6 +12,7 @@ export const createRun = async (threadId: string, assistantId: string, client: O
     )
 
    const messages = await responsePoller(run, client)
+   console.log("The messages were recieved")
    return messages
 }
 

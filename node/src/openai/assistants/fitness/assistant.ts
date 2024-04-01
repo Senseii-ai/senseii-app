@@ -1,0 +1,1 @@
+// this assistant will have functinality to call the core assistant if any of the intormation is missing, that function will ping the core assistant by passing the necessary information.

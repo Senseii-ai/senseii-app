@@ -2,10 +2,15 @@
 
 import OpenAI from "openai";
 import { createMessage } from "./threads";
-import { Run } from "openai/resources/beta/threads/runs/runs";
+import {
+  RequiredActionFunctionToolCall,
+  Run,
+} from "openai/resources/beta/threads/runs/runs";
 import { threadId } from "worker_threads";
 import { Message } from "openai/resources/beta/threads/messages/messages";
 import chalk from "chalk";
+import { parseFunctionArguments } from "./utils";
+import { IFunctionType, getSupportedFunctions } from "./functions";
 
 const runStatus = {
   QUEUED: "queued",
@@ -27,6 +32,7 @@ export const addMessageAndCreateRun = async (
     const run = await client.beta.threads.runs.create(threadId, {
       assistant_id: assistantId,
     });
+    // TODO: implement responsePoller
     const messages = await responsePoller(run, client, threadId);
     if (messages.length > 0) {
       console.log(chalk.green("run succesful"));
@@ -48,13 +54,35 @@ export const createRun = async (
     const run = await client.beta.threads.runs.create(threadId, {
       assistant_id: assistantId,
     });
-
+    // TODO: implement responsePoller
     const response = await responsePoller(run, client, threadId);
     if (response.length > 0) {
       return response;
     }
   } catch (error) {
     console.log(chalk.red("error creating run"));
+    throw error;
+  }
+};
+
+// this function runs and aggregates the output of all the tools that are requried to be run.
+export const runTools = async (tools: RequiredActionFunctionToolCall[]) => {
+  try {
+    // get a list of all the supported functions in the system
+    const supportedFunctions = getSupportedFunctions();
+    for (const tool of tools) {
+      const functionName = tool.function.name;
+      // requested function is supported by the system. get the function name and run it.
+      // TODO: Make it more typesafe
+      if (functionName in supportedFunctions) {
+        const functionDefinition: IFunctionType =
+          supportedFunctions[functionName];
+        const funcName = functionDefinition.name;
+        const fun = functionDefinition.function();
+      }
+    }
+  } catch (error) {
+    console.error(chalk.red("error running tools"));
     throw error;
   }
 };
@@ -79,7 +107,10 @@ const responsePoller = async (
     if (run.status === "requires_action") {
       console.log("REQUIRES ACTION");
       // TODO: run tools
-      messages = await responsePoller(run, client, threadId);
+      // get an array of all the tool calls needed to be run in parallel.
+      const toolsCalls = run.required_action?.submit_tool_outputs.tool_calls;
+      // get the output of the tool here and continue the run
+      const messages = await responsePoller(run, client, threadId);
     }
 
     // check if run is complete

@@ -5,9 +5,11 @@ import { getNutritionAssistantId } from "./assistant";
 import { FunctionDefinition } from "openai/resources";
 import { createMessage } from "../threads";
 import { addMessageAndCreateRun } from "../run";
+import { IFunctionType } from "../functions";
 
 const NutritionAssistantId = getNutritionAssistantId();
 
+export type NutritionToolArguments = ICreateNutritionPlanArguments 
 interface IBasicInformation {
   age: number;
   weight: number;
@@ -64,7 +66,8 @@ interface IConstraints {
   };
 }
 
-// this interface will be used to model database collections.
+// TODO: maybe move this into the model section.
+// this interface is for saving the user preference in the database
 interface IUserPreferences {
   type: "userPreferences"
   basicInformation: IBasicInformation;
@@ -75,8 +78,18 @@ interface IUserPreferences {
   constraints: IConstraints;
 }
 
-// create nutrition plan
+// this interface is for parsing the user preferences from the text using the core assistant.
+export interface ICreateNutritionPlanArguments {
+  type : "createNutritionPlan"
+  basicInformation: IBasicInformation
+  lifeStyle: ILifeStyle
+  dietPreferences: IDietPreferences
+  healthGoals: IHealthGoals
+  eatingHabits: IEatingHabits
+  constraints: IConstraints
+}
 
+// create nutrition plan
 export const CreateNutritionPlan = async (
   client: OpenAI,
   userPreferences: string,
@@ -256,3 +269,11 @@ export const createNutritionPlanSchema = () => {
   };
   return createNutritionPlanSchema;
 };
+
+// TODO: create a function variable for every function supported by the Nutrition Assistant
+export const createNutritionPlanFunction: IFunctionType= {
+  name : "createNutritionPlan",
+  function: createNutritionPlan,
+  funcitonDefinition: createNutritionPlanSchema,
+  functionalityType: "Nutrition"
+}

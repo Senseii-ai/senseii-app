@@ -1,16 +1,17 @@
 // this file will handle the run related tasks and actions
-
 import OpenAI from "openai";
 import { createMessage } from "./threads";
 import {
   RequiredActionFunctionToolCall,
   Run,
 } from "openai/resources/beta/threads/runs/runs";
-import { threadId } from "worker_threads";
 import { Message } from "openai/resources/beta/threads/messages/messages";
 import chalk from "chalk";
 import { parseFunctionArguments } from "./utils";
-import { IFunctionType, getSupportedFunctions } from "./functions";
+import {
+  IFunctionType,
+  getSupportedFunctions,
+} from "./functions";
 
 const runStatus = {
   QUEUED: "queued",
@@ -68,19 +69,25 @@ export const createRun = async (
 // this function runs and aggregates the output of all the tools that are requried to be run.
 export const runTools = async (tools: RequiredActionFunctionToolCall[]) => {
   try {
-    // get a list of all the supported functions in the system
     const supportedFunctions = getSupportedFunctions();
+    const functionPromises: Promise<any>[] = [];
     for (const tool of tools) {
       const functionName = tool.function.name;
-      // requested function is supported by the system. get the function name and run it.
       // TODO: Make it more typesafe
       if (functionName in supportedFunctions) {
-        const functionDefinition: IFunctionType =
-          supportedFunctions[functionName];
-        const funcName = functionDefinition.name;
-        const fun = functionDefinition.function();
+        const functionTool = supportedFunctions[functionName];
+        const functionArguments = tool.function.arguments;
+        const functionDefinition = functionTool.funcitonDefinition;
+        const parsedFunctionArguments = await parseFunctionArguments(
+          functionArguments,
+          functionTool
+        );
+        functionPromises.push(functionDefinition(parsedFunctionArguments));
       }
     }
+
+    // resolve all the promises
+    const result = await Promise.all(functionPromises);
   } catch (error) {
     console.error(chalk.red("error running tools"));
     throw error;

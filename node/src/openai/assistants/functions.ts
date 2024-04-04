@@ -10,34 +10,11 @@ export interface IFunctionType {
   functionalityType: "Nutrition" | "Core" | "Fitness"
 }
 
-
-export const supportedFunctions: Record <string, IFunctionType> = {
+// Record of all the supported functions in the system.
+const supportedFunctions: Record <string, IFunctionType> = {
   "createNutritionPlan": createNutritionPlanFunction
 }
 
 export const getSupportedFunctions = ()=>{
   return supportedFunctions
 }
-
-
-
-// TODO: implement this
-// const fitnessAssistantFunctions = getFitnessAssistantFunctions()
-
-// export type ISupportedFunctionKeys = NutritionFunctionKeys 
-
-// export const isSupportedFunctionKey = (key: string): key is ISupportedFunctionKeys=>{
-//     return key in 
-// }
-
-// const supportedFunctions : Record < ISupportedFunctionKeys, IFunctionType> = {
-//     "createNutritionPlan": createNutritionPlanFunction
-// }
-
-// // returns a record of all the supported functions in the application.
-// export const getSupportedFunctions = ()=> {
-//     return supportedFunctions
-// }
-
-
-// export type IFunctionArguments = NutritionToolArguments | CoreToolArguments 

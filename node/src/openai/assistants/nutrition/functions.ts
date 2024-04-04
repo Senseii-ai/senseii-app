@@ -5,9 +5,12 @@ import { getNutritionAssistantId } from "./assistant";
 import { FunctionDefinition } from "openai/resources";
 import { IFunctionType } from "../functions";
 
+// get the Nutrition Assistant Id from the env files
 const NutritionAssistantId = getNutritionAssistantId();
 
-export type NutritionToolArguments = ICreateNutritionPlanArguments 
+// A general type containing arguments for all types of functions supported by nutrition assistant.
+export type NutritionToolArguments = ICreateNutritionPlanArguments
+
 interface IBasicInformation {
   age: number;
   weight: number;
@@ -26,13 +29,13 @@ interface ILifeStyle {
 
 interface IDietPreferences {
   preference:
-    | "vegetarian"
-    | "non-vegetarian"
-    | "vegan"
-    | "pescatarian"
-    | "omnivore"
-    | "ketogenic"
-    | "paleo";
+  | "vegetarian"
+  | "non-vegetarian"
+  | "vegan"
+  | "pescatarian"
+  | "omnivore"
+  | "ketogenic"
+  | "paleo";
   allergies: string[];
   intolerances: string[];
   dislikedFood?: string[];
@@ -49,9 +52,9 @@ interface IEatingHabits {
   mealsPerDay: number;
   mealComplexity: "simple" | "moderate" | "complex";
   cookingTime:
-    | "less than 30 minutes"
-    | "30-60 minutes"
-    | "more than 60 minutes";
+  | "less than 30 minutes"
+  | "30-60 minutes"
+  | "more than 60 minutes";
 }
 
 interface IConstraints {
@@ -88,7 +91,7 @@ export const CreateNutritionPlan = async (
 
 // this interface is for parsing the user preferences from the text using the core assistant.
 export interface ICreateNutritionPlanArguments {
-  type : "createNutritionPlan"
+  type: "createNutritionPlan"
   basicInformation: IBasicInformation
   lifeStyle: ILifeStyle
   dietPreferences: IDietPreferences
@@ -107,7 +110,7 @@ export const createNutritionPlan = async (
   constraints: IConstraints
 ) => {
   // call the nutrition assistant to create the workout plan
-  
+
 };
 
 // createNutritionPlanSchema returns the schema for the create nutrition plan function.
@@ -270,8 +273,8 @@ export const createNutritionPlanSchema = () => {
 };
 
 // TODO: create a function variable for every function supported by the Nutrition Assistant
-export const createNutritionPlanFunction: IFunctionType= {
-  name : "createNutritionPlan",
+export const createNutritionPlanFunction: IFunctionType = {
+  name: "createNutritionPlan",
   function: createNutritionPlan,
   funcitonDefinition: createNutritionPlanSchema,
   functionalityType: "Nutrition"

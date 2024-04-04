@@ -4,12 +4,12 @@ import { createMessage } from "./threads";
 import {
   RequiredActionFunctionToolCall,
   Run,
+  RunSubmitToolOutputsParams,
 } from "openai/resources/beta/threads/runs/runs";
 import { Message } from "openai/resources/beta/threads/messages/messages";
 import chalk from "chalk";
 import { parseFunctionArguments } from "./utils";
 import {
-  IFunctionType,
   getSupportedFunctions,
 } from "./functions";
 
@@ -70,10 +70,12 @@ export const createRun = async (
 export const runTools = async (tools: RequiredActionFunctionToolCall[]) => {
   try {
     const supportedFunctions = getSupportedFunctions();
-    const functionPromises: Promise<any>[] = [];
+    // an array of final output of each tool run
+    const functionOutput: RunSubmitToolOutputsParams.ToolOutput[] = []
     for (const tool of tools) {
       const functionName = tool.function.name;
-      // TODO: Make it more typesafe
+      // TODO: Make it more typesafe.
+      // TODO: Make it parallel using proper implementation of promises.
       if (functionName in supportedFunctions) {
         const functionTool = supportedFunctions[functionName];
         const functionArguments = tool.function.arguments;
@@ -82,12 +84,15 @@ export const runTools = async (tools: RequiredActionFunctionToolCall[]) => {
           functionArguments,
           functionTool
         );
-        functionPromises.push(functionDefinition(parsedFunctionArguments));
+        const output = await functionDefinition(parsedFunctionArguments)
+        const formattedOutput: RunSubmitToolOutputsParams.ToolOutput = {
+          output: output,
+          tool_call_id: tool.id
+        }
+        functionOutput.push(formattedOutput)
       }
     }
-
-    // resolve all the promises
-    const result = await Promise.all(functionPromises);
+    return functionOutput
   } catch (error) {
     console.error(chalk.red("error running tools"));
     throw error;
@@ -116,8 +121,16 @@ const responsePoller = async (
       // TODO: run tools
       // get an array of all the tool calls needed to be run in parallel.
       const toolsCalls = run.required_action?.submit_tool_outputs.tool_calls;
-      // get the output of the tool here and continue the run
+      if (!toolsCalls) {
+        throw new Error("Tool calls could not be found")
+      }
+      // run the tools
+      const output = await runTools(toolsCalls)
+      // submit the output and continue the run
+      await client.beta.threads.runs.submitToolOutputs(threadId, run.id, { tool_outputs: output })
+
       const messages = await responsePoller(run, client, threadId);
+      return messages
     }
 
     // check if run is complete

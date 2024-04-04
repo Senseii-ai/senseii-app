@@ -3,8 +3,6 @@
 import OpenAI from "openai";
 import { getNutritionAssistantId } from "./assistant";
 import { FunctionDefinition } from "openai/resources";
-import { createMessage } from "../threads";
-import { addMessageAndCreateRun } from "../run";
 import { IFunctionType } from "../functions";
 
 const NutritionAssistantId = getNutritionAssistantId();
@@ -78,6 +76,16 @@ interface IUserPreferences {
   constraints: IConstraints;
 }
 
+// wrapper functoin.
+export const CreateNutritionPlan = async (
+  client: OpenAI,
+  userPreferences: string,
+  userGoal: string,
+  threadId: string
+) => {
+  // pass
+};
+
 // this interface is for parsing the user preferences from the text using the core assistant.
 export interface ICreateNutritionPlanArguments {
   type : "createNutritionPlan"
@@ -89,16 +97,7 @@ export interface ICreateNutritionPlanArguments {
   constraints: IConstraints
 }
 
-// create nutrition plan
-export const CreateNutritionPlan = async (
-  client: OpenAI,
-  userPreferences: string,
-  userGoal: string,
-  threadId: string
-) => {
-  // pass
-};
-
+// this function creates the nutrition plan for the user.
 export const createNutritionPlan = async (
   basicInformation: IBasicInformation,
   lifeStyle: ILifeStyle,

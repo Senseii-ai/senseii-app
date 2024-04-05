@@ -1,10 +1,7 @@
 import { IAuthRequest } from "../middlewares/auth";
-import { getCoreAssistantId } from "../openai/assistants/assistant";
-import { createRun } from "../openai/assistants/run";
+import { getCoreAssistantId } from "../openai/assistants/core/assistant";
 import {
   continueThread,
-  getNewEmptyThread,
-  retrieveMessages,
 } from "../openai/assistants/threads";
 import { getOpenAIClient } from "../openai/client";
 import { Response } from "express";
@@ -15,7 +12,7 @@ export const chatCore = async (req: IAuthRequest, res: Response) => {
   try {
     const thread = "thread_L78Nc9I2bRWFFdDpbTmaUntn";
     console.log(" I am here", thread);
-    const assistant = getCoreAssistantId();
+    const assistant = getCoreAssistantId()
     const userMessage = req.body.message;
     const response = await continueThread(
       thread,

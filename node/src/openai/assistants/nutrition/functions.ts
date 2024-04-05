@@ -79,6 +79,10 @@ interface IUserPreferences {
   constraints: IConstraints;
 }
 
+export interface hello {
+  userName: string
+}
+
 // wrapper functoin.
 export const CreateNutritionPlan = async (
   client: OpenAI,

@@ -5,27 +5,35 @@ import {
   continueThread,
   getNewThreadWithMessages,
 } from "../openai/assistants/threads";
-import { ThreadCreateParams} from "openai/resources/beta/threads/threads";
+import { ThreadCreateParams } from "openai/resources/beta/threads/threads";
 import { createRun } from "../openai/assistants/run";
-import { getCoreAssistantId } from "../openai/assistants/assistant";
+import { getCoreAssistantId } from "../openai/assistants/core/assistant";
+import chalk from "chalk";
 import { MessageCreateParams } from "openai/resources/beta/threads/messages/messages";
 
 const OpenAIClient = getOpenAIClient();
 
-export const chat = async (req: IAuthRequest, res: Response) => {
-  try {
-  } catch (error) {}
-};
+export interface IMessage {
+  role: "user"
+  content: string
+}
 
 // the user initiates a new chat
 export const startChat = async (req: IAuthRequest, res: Response) => {
   try {
-    const { messages } : {messages: ThreadCreateParams.Message[]} = req.body;
-    const coreAssistantId = await getCoreAssistantId()
-    // since thread does not exist, create a new one
-    const thread = await getNewThreadWithMessages(messages, OpenAIClient);
+    const { message } = req.body;
+    const inputMessage: MessageCreateParams = {
+      role: message.role,
+      content: message.content
+    }
+    const coreAssistantId = getCoreAssistantId()
+    // since thread does not exist, ceate a new one
+    const thread = await getNewThreadWithMessages(inputMessage, OpenAIClient);
+    console.log(chalk.green(thread.id))
     // create a run with the messages
-    const response = createRun(thread.id, coreAssistantId, OpenAIClient)
+    const response = await createRun(thread.id, OpenAIClient, coreAssistantId)
+    // return the response
+    return res.status(200).json(response)
   } catch (error) {
     console.error(error)
     throw error
@@ -33,13 +41,21 @@ export const startChat = async (req: IAuthRequest, res: Response) => {
 };
 
 // the user consinues an old chat
-export const continueChat = async(req: IAuthRequest, res: Response)=> {
+export const continueChat = async (req: IAuthRequest, res: Response) => {
   try {
-    const {threadId, message} : {threadId: string, message:string}= req.body;
-    const coreAssistantId : string = getCoreAssistantId()
+    const { threadId, message } = req.body;
+    if (typeof threadId !== "string") {
+      throw new Error("threadId or message not provided")
+    }
+
+    const inputMessage: MessageCreateParams = {
+      role: "user",
+      content: message?.content
+    }
+    const coreAssistantId: string = getCoreAssistantId()
     const response = await continueThread(threadId, OpenAIClient, message, coreAssistantId)
     return res.status(200).json(response)
-  }catch(error){
+  } catch (error) {
     console.error(error)
     throw error
   }

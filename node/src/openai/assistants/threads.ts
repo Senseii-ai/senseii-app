@@ -51,18 +51,11 @@ export const createMessage = async (
 export const continueThread = async (
   threadId: string,
   client: OpenAI,
-  message: string,
+  message: MessageCreateParams,
   assistantId: string
 ) => {
   try {
-    console.log("USER SENT THIS MESSAGE", message);
-    console.log("THIS IS THE THREAD ID", threadId);
-    const newMessage = client.beta.threads.messages.create(threadId, {
-      role: "user",
-      content: message,
-    });
-    const thread = await getThreadById(threadId, client);
-    console.log("This is thread", thread);
+    const newMessage = client.beta.threads.messages.create(threadId, message);
     const response = await createRun(threadId, client, assistantId);
     return response;
   } catch (error) {
@@ -72,12 +65,13 @@ export const continueThread = async (
 };
 
 export const getNewThreadWithMessages = async (
-  messages: ThreadCreateParams.Message[],
+  message: ThreadCreateParams.Message,
   client: OpenAI
 ) => {
+  const messages = [message] // converting a single message into an array
   const thread = await client.beta.threads.create({
-    messages: messages,
-  });
+    messages: messages
+  })
   return thread;
 };
 

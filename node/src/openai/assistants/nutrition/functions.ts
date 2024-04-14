@@ -114,7 +114,6 @@ export const createNutritionPlan = async (
   constraints: IConstraints
 ) => {
   // call the nutrition assistant to create the workout plan
-
 };
 
 // createNutritionPlanSchema returns the schema for the create nutrition plan function.

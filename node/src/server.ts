@@ -6,9 +6,9 @@ import VitalRouter from './routes/vitals';
 import ChatRouter from "./routes/chat"
 import threadRouter from "./routes/threads"
 import cors from 'cors';
-
 const app: Express = express();
 app.use(cors());
+const port = 9090
 
 app.use(express.json());
 app.use('/api', userRouter);
@@ -23,10 +23,12 @@ app.get('/ping', (req: Request, res: Response) => {
 });
 
 const start = async () => {
-  connectDB();
-  app.listen(9090, () => {
+  await connectDB();
+  app.listen(port, () => {
     console.log('listening to port 9090');
   });
+
+  // swaggerDocs(app, port)
 };
 
 start();

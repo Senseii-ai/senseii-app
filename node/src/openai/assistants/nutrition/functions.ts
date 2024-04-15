@@ -1,15 +1,21 @@
 // this will contain the functions that can be used in the nutrition assistant
 
 import OpenAI from "openai";
-import { getNutritionAssistantId } from "./assistant";
+import { getNutritionAssistant } from "./assistant";
 import { FunctionDefinition } from "openai/resources";
 import { IFunctionType } from "../functions";
+import chalk from "chalk";
+import { Assistant } from "openai/resources/beta/assistants/assistants";
+import { createRun } from "../run";
+import { createEmptyThread } from "../../../controller/threads";
+import { getOpenAIClient } from "../../client";
+import { getNewEmptyThread, getNewThreadWithMessages } from "../threads";
+import { Message, MessageCreateParams } from "openai/resources/beta/threads/messages/messages";
 
-// get the Nutrition Assistant Id from the env files
-const NutritionAssistantId = getNutritionAssistantId();
 
 // A general type containing arguments for all types of functions supported by nutrition assistant.
 export type NutritionToolArguments = ICreateNutritionPlanArguments
+const openAIClient = getOpenAIClient()
 
 interface IBasicInformation {
   age: number;
@@ -83,14 +89,25 @@ export interface hello {
   userName: string
 }
 
-// wrapper functoin.
+
+// wrapper function.
 export const CreateNutritionPlan = async (
-  client: OpenAI,
-  userPreferences: string,
-  userGoal: string,
-  threadId: string
+  functionArguments: ICreateNutritionPlanArguments
 ) => {
-  // pass
+  try {
+    const client = getOpenAIClient()
+    const nutritionAssistant = await getNutritionAssistant(client)
+    const response = await createNutritionPlan(nutritionAssistant, functionArguments)
+    if (response && response[0].content[0].type === "text") {
+      return response[0].content[0].text
+    }
+    throw new Error("Error generating nutrition plan")
+  } catch (error) {
+    console.error(chalk.red(error))
+    throw error
+  }
+
+
 };
 
 // this interface is for parsing the user preferences from the text using the core assistant.
@@ -106,14 +123,30 @@ export interface ICreateNutritionPlanArguments {
 
 // this function creates the nutrition plan for the user.
 export const createNutritionPlan = async (
-  basicInformation: IBasicInformation,
-  lifeStyle: ILifeStyle,
-  dietPreferences: IDietPreferences,
-  healthGoals: IHealthGoals,
-  eatingHabits: IEatingHabits,
-  constraints: IConstraints
+  assistant: Assistant,
+  funcArguments: ICreateNutritionPlanArguments
 ) => {
-  // call the nutrition assistant to create the workout plan
+  // TODO: look into validating the data before moving ahead.
+  // TODO: Also look into storing the information in database related to the user.
+
+  try {
+    const userInformation = JSON.stringify(funcArguments)
+    const prompt = `Create Nutrition Plan for this user with following preferences. ${userInformation}`
+
+    // create thread, run it and then delete it later.
+    const message: MessageCreateParams = {
+      role: "user",
+      content: prompt
+    }
+    const newThread = await getNewThreadWithMessages(message, openAIClient)
+    const response = await createRun(newThread.id, openAIClient, assistant.id)
+    return response
+
+
+  } catch (error) {
+    console.error(chalk.red(error))
+    throw error
+  }
 };
 
 // createNutritionPlanSchema returns the schema for the create nutrition plan function.
@@ -278,7 +311,9 @@ export const createNutritionPlanSchema = () => {
 // TODO: create a function variable for every function supported by the Nutrition Assistant
 export const createNutritionPlanFunction: IFunctionType = {
   name: "createNutritionPlan",
-  function: createNutritionPlan,
+  function: CreateNutritionPlan,
   funcitonDefinition: createNutritionPlanSchema,
   functionalityType: "Nutrition"
 }
+
+

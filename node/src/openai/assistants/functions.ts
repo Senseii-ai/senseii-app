@@ -12,7 +12,7 @@ export interface IFunctionType {
 
 // Record of all the supported functions in the system.
 const supportedFunctions: Record<string, IFunctionType> = {
-  "createNutritionPlan": createNutritionPlanFunction
+  "create_nutrition_plan": createNutritionPlanFunction
 }
 
 export const getSupportedFunctions = () => {

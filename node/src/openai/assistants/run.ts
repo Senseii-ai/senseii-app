@@ -79,14 +79,13 @@ export const runTools = async (tools: RequiredActionFunctionToolCall[]) => {
       if (functionName in supportedFunctions) {
         const functionTool = supportedFunctions[functionName];
         const functionArguments = tool.function.arguments;
-        const functionDefinition = functionTool.funcitonDefinition;
         const parsedFunctionArguments = await parseFunctionArguments(
           functionArguments,
           functionTool
         );
-        const output = await functionDefinition(parsedFunctionArguments)
+        const output = await functionTool.function(parsedFunctionArguments)
         const formattedOutput: RunSubmitToolOutputsParams.ToolOutput = {
-          output: output,
+          output: output.value,
           tool_call_id: tool.id
         }
         functionOutput.push(formattedOutput)
@@ -115,7 +114,6 @@ const responsePoller = async (
       run = await client.beta.threads.runs.retrieve(threadId, run.id);
     }
 
-    // check if tool call is needed
     if (run.status === "requires_action") {
       console.log("REQUIRES ACTION");
       // TODO: run tools
@@ -124,10 +122,10 @@ const responsePoller = async (
       if (!toolsCalls) {
         throw new Error("Tool calls could not be found")
       }
-      // run the tools
+      console.log(chalk.green("reached here"))
       const output = await runTools(toolsCalls)
-      // submit the output and continue the run
-      await client.beta.threads.runs.submitToolOutputs(threadId, run.id, { tool_outputs: output })
+      run = await client.beta.threads.runs.submitToolOutputs(threadId, run.id, { tool_outputs: output })
+      console.log(chalk.black("tool output submitted"), run.status)
 
       const messages = await responsePoller(run, client, threadId);
       return messages

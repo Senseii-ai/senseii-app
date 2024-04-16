@@ -17,23 +17,34 @@ import { Message, MessageCreateParams } from "openai/resources/beta/threads/mess
 export type NutritionToolArguments = ICreateNutritionPlanArguments
 const openAIClient = getOpenAIClient()
 
-interface IBasicInformation {
+/**
+ * TODO: You get the following information here
+ * height: IBodyMeasurement
+ * 
+ */
+export interface IBasicInformation {
   age: number;
-  weight: number;
-  height: number;
+  weight: {
+    value: number,
+    unit: "Kilograms" | "Grams" | "Pounds"
+  }
+  height: {
+    value: number,
+    unit: "Centimeters"
+  }
   gender: string;
 }
 
-interface ILifeStyle {
+export interface ILifeStyle {
   dailyRoutine: "sedenatry" | "light" | "moderate" | "heavy" | "very heavy";
-  exerciseRoutine?: {
+  exerciseRoutine?: [{
     exerciseType: "cardio" | "strength" | "flexibility" | "balance" | "none";
     frequency: "daily" | "weekly" | "monthly";
-  };
+  }];
 }
 
 
-interface IDietPreferences {
+export interface IDietPreferences {
   preference:
   | "vegetarian"
   | "non-vegetarian"
@@ -48,13 +59,13 @@ interface IDietPreferences {
   favouriteFood?: string[];
 }
 
-interface IHealthGoals {
+export interface IHealthGoals {
   weightGoal?: "gain" | "loss" | "maintain";
   specificNutritionGoal: string;
   medicalConditions: string[];
 }
 
-interface IEatingHabits {
+export interface IEatingHabits {
   mealsPerDay: number;
   mealComplexity: "simple" | "moderate" | "complex";
   cookingTime:
@@ -63,7 +74,7 @@ interface IEatingHabits {
   | "more than 60 minutes";
 }
 
-interface IConstraints {
+export interface IConstraints {
   financial: {
     budget: number;
     budgetType: "daily" | "weekly" | "monthly";
@@ -72,23 +83,6 @@ interface IConstraints {
     location: string;
   };
 }
-
-// TODO: maybe move this into the model section.
-// this interface is for saving the user preference in the database
-interface IUserPreferences {
-  type: "userPreferences"
-  basicInformation: IBasicInformation;
-  lifeStyle: ILifeStyle;
-  dietPreferences: IDietPreferences;
-  healthGoals: IHealthGoals;
-  eatingHabits: IEatingHabits;
-  constraints: IConstraints;
-}
-
-export interface hello {
-  userName: string
-}
-
 
 // wrapper function.
 export const CreateNutritionPlan = async (
@@ -101,6 +95,8 @@ export const CreateNutritionPlan = async (
     if (response && response[0].content[0].type === "text") {
       return response[0].content[0].text
     }
+
+    // const jsonObject = JSON.parse(response[0].content[0])
     throw new Error("Error generating nutrition plan")
   } catch (error) {
     console.error(chalk.red(error))

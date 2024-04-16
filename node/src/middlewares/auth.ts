@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
 import { verifyToken } from '../utils/crypt';
 
+// TODO: test if JWT payload can be replaced with a userID string.
 export interface IAuthRequest extends Request {
   user?: JwtPayload;
 }

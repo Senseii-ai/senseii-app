@@ -10,49 +10,52 @@ import { createRun } from "../run";
 import { createEmptyThread } from "../../../controller/threads";
 import { getOpenAIClient } from "../../client";
 import { getNewEmptyThread, getNewThreadWithMessages } from "../threads";
-import { Message, MessageCreateParams } from "openai/resources/beta/threads/messages/messages";
-
+import {
+  Message,
+  MessageCreateParams,
+} from "openai/resources/beta/threads/messages/messages";
 
 // A general type containing arguments for all types of functions supported by nutrition assistant.
-export type NutritionToolArguments = ICreateNutritionPlanArguments
-const openAIClient = getOpenAIClient()
+export type NutritionToolArguments = ICreateNutritionPlanArguments;
+const openAIClient = getOpenAIClient();
 
 /**
  * TODO: You get the following information here
  * height: IBodyMeasurement
- * 
+ *
  */
 export interface IBasicInformation {
   age: number;
   weight: {
-    value: number,
-    unit: "Kilograms" | "Grams" | "Pounds"
-  }
+    value: number;
+    unit: "Kilograms" | "Grams" | "Pounds";
+  };
   height: {
-    value: number,
-    unit: "Centimeters"
-  }
+    value: number;
+    unit: "Centimeters";
+  };
   gender: string;
 }
 
 export interface ILifeStyle {
   dailyRoutine: "sedenatry" | "light" | "moderate" | "heavy" | "very heavy";
-  exerciseRoutine?: [{
-    exerciseType: "cardio" | "strength" | "flexibility" | "balance" | "none";
-    frequency: "daily" | "weekly" | "monthly";
-  }];
+  exerciseRoutine?: [
+    {
+      exerciseType: "cardio" | "strength" | "flexibility" | "balance" | "none";
+      frequency: "daily" | "weekly" | "monthly";
+    },
+  ];
 }
-
 
 export interface IDietPreferences {
   preference:
-  | "vegetarian"
-  | "non-vegetarian"
-  | "vegan"
-  | "pescatarian"
-  | "omnivore"
-  | "ketogenic"
-  | "paleo";
+    | "vegetarian"
+    | "non-vegetarian"
+    | "vegan"
+    | "pescatarian"
+    | "omnivore"
+    | "ketogenic"
+    | "paleo";
   allergies: string[];
   intolerances: string[];
   dislikedFood?: string[];
@@ -69,9 +72,9 @@ export interface IEatingHabits {
   mealsPerDay: number;
   mealComplexity: "simple" | "moderate" | "complex";
   cookingTime:
-  | "less than 30 minutes"
-  | "30-60 minutes"
-  | "more than 60 minutes";
+    | "less than 30 minutes"
+    | "30-60 minutes"
+    | "more than 60 minutes";
 }
 
 export interface IConstraints {
@@ -86,62 +89,61 @@ export interface IConstraints {
 
 // wrapper function.
 export const CreateNutritionPlan = async (
-  functionArguments: ICreateNutritionPlanArguments
+  functionArguments: ICreateNutritionPlanArguments,
 ) => {
   try {
-    const client = getOpenAIClient()
-    const nutritionAssistant = await getNutritionAssistant(client)
-    const response = await createNutritionPlan(nutritionAssistant, functionArguments)
+    const client = getOpenAIClient();
+    const nutritionAssistant = await getNutritionAssistant(client);
+    const response = await createNutritionPlan(
+      nutritionAssistant,
+      functionArguments,
+    );
     if (response && response[0].content[0].type === "text") {
-      return response[0].content[0].text
+      return response[0].content[0].text;
     }
 
     // const jsonObject = JSON.parse(response[0].content[0])
-    throw new Error("Error generating nutrition plan")
+    throw new Error("Error generating nutrition plan");
   } catch (error) {
-    console.error(chalk.red(error))
-    throw error
+    console.error(chalk.red(error));
+    throw error;
   }
-
-
 };
 
 // this interface is for parsing the user preferences from the text using the core assistant.
 export interface ICreateNutritionPlanArguments {
-  type: "createNutritionPlan"
-  basicInformation: IBasicInformation
-  lifeStyle: ILifeStyle
-  dietPreferences: IDietPreferences
-  healthGoals: IHealthGoals
-  eatingHabits: IEatingHabits
-  constraints: IConstraints
+  type: "createNutritionPlan";
+  basicInformation: IBasicInformation;
+  lifeStyle: ILifeStyle;
+  dietPreferences: IDietPreferences;
+  healthGoals: IHealthGoals;
+  eatingHabits: IEatingHabits;
+  constraints: IConstraints;
 }
 
 // this function creates the nutrition plan for the user.
 export const createNutritionPlan = async (
   assistant: Assistant,
-  funcArguments: ICreateNutritionPlanArguments
+  funcArguments: ICreateNutritionPlanArguments,
 ) => {
   // TODO: look into validating the data before moving ahead.
   // TODO: Also look into storing the information in database related to the user.
 
   try {
-    const userInformation = JSON.stringify(funcArguments)
-    const prompt = `Create Nutrition Plan for this user with following preferences. ${userInformation}`
+    const userInformation = JSON.stringify(funcArguments);
+    const prompt = `Create Nutrition Plan for this user with following preferences. ${userInformation}`;
 
     // create thread, run it and then delete it later.
     const message: MessageCreateParams = {
       role: "user",
-      content: prompt
-    }
-    const newThread = await getNewThreadWithMessages(message, openAIClient)
-    const response = await createRun(newThread.id, openAIClient, assistant.id)
-    return response
-
-
+      content: prompt,
+    };
+    const newThread = await getNewThreadWithMessages(message, openAIClient);
+    const response = await createRun(newThread.id, openAIClient, assistant.id);
+    return response;
   } catch (error) {
-    console.error(chalk.red(error))
-    throw error
+    console.error(chalk.red(error));
+    throw error;
   }
 };
 
@@ -149,8 +151,7 @@ export const createNutritionPlan = async (
 export const createNutritionPlanSchema = () => {
   const createNutritionPlanSchema: FunctionDefinition = {
     name: "create_nutrition_plan",
-    description:
-      `Creates a nutrition plan for the user when core assistant has all the necessary information needed to create the diet plan.
+    description: `Creates a nutrition plan for the user when core assistant has all the necessary information needed to create the diet plan.
       List of information:
       - basicInformation: The basic information of the user which includes age [required], weight[required], height [required], gender [required].
       - lifestyle: The lifestyle of the user which includes daily routine and exercise routine [required], daily routine [optional].
@@ -309,7 +310,5 @@ export const createNutritionPlanFunction: IFunctionType = {
   name: "createNutritionPlan",
   function: CreateNutritionPlan,
   funcitonDefinition: createNutritionPlanSchema,
-  functionalityType: "Nutrition"
-}
-
-
+  functionalityType: "Nutrition",
+};

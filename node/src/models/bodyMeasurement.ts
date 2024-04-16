@@ -53,6 +53,13 @@ export const UserBodyMeasurementSchema = new Schema<IBodyMeasurement>({
     required: true,
   },
   bodyMeasurement: {
+    weight: [
+      {
+        time: { type: Date, required: true },
+        zoneOffset: { type: Number },
+        mass: { type: Number, required: true },
+      }
+    ],
     basalBodyTemperature: [
       {
         time: { type: Date, required: true },

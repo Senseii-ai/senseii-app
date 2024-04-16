@@ -6,7 +6,9 @@ import {
   getRefreshToken,
   hashPassword,
 } from '../utils/crypt';
+
 import RefreshTokenModel from '../models/refreshToken';
+import Joi from 'joi';
 
 export const CreateNewUser = async (req: Request, res: Response) => {
   const { email, password }: { email: string; password: string } = req.body;
@@ -30,9 +32,26 @@ export const CreateNewUser = async (req: Request, res: Response) => {
   }
 };
 
-export const LoginUser = async (req: Request, res: Response) => {
-  const { email, password }: { email: string; password: string } = req.body;
+// TODO implement validate route for accessToken.
 
+
+// userLoginCredsSchema is a Joi schema to validate the request body
+const userLoginCredsSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().required(),
+});
+
+
+// TODO: Implement proper response types, telling if the request was successful or not.
+export const LoginUser = async (req: Request, res: Response) => {
+
+  // validate if the request body is valid.
+  const isValid = userLoginCredsSchema.validate(req.body.loginCredentials)
+  if (!isValid){
+    return res.status(400).json({message: 'Invalid Request Body'})
+  }
+
+  const { email, password }: { email: string; password: string } = req.body.loginCredentials;
   try {
     const user = await UserModel.findOne({ email: email });
     console.log('this is user', user);
@@ -56,9 +75,10 @@ export const LoginUser = async (req: Request, res: Response) => {
       expiresAt: expiresAt,
     });
 
-    res.status(200).json({ accessToken, refreshToken });
+    const userId = user._id
+    return res.status(200).json({ accessToken, refreshToken, userId});
   } catch (error) {
     console.error(error);
-    res.status(400).json({ message: 'Internal Server Error' });
+    return res.status(400).json({ message: 'Internal Server Error' });
   }
 };

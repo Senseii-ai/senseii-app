@@ -4,7 +4,7 @@ import { Types } from "mongoose";
 // hobbies
 // exams
 
-interface Goal {
+export interface IUserGoal {
   user: Types.ObjectId;
   goalName: string;
   description: string;
@@ -13,7 +13,7 @@ interface Goal {
   selected: boolean;
 }
 
-interface Goals {
+export interface IUserGoals {
   user: Types.ObjectId;
-  goals: Goal[];
+  goals: IUserGoal[];
 }

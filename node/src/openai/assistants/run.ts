@@ -9,9 +9,7 @@ import {
 import { Message } from "openai/resources/beta/threads/messages/messages";
 import chalk from "chalk";
 import { parseFunctionArguments } from "./utils";
-import {
-  getSupportedFunctions,
-} from "./functions";
+import { getSupportedFunctions } from "./functions";
 
 const runStatus = {
   QUEUED: "queued",
@@ -26,7 +24,7 @@ export const addMessageAndCreateRun = async (
   threadId: string,
   message: string,
   client: OpenAI,
-  assistantId: string
+  assistantId: string,
 ) => {
   try {
     const addedMessage = await createMessage(message, client, threadId);
@@ -49,7 +47,7 @@ export const addMessageAndCreateRun = async (
 export const createRun = async (
   threadId: string,
   client: OpenAI,
-  assistantId: string
+  assistantId: string,
 ) => {
   try {
     const run = await client.beta.threads.runs.create(threadId, {
@@ -71,7 +69,7 @@ export const runTools = async (tools: RequiredActionFunctionToolCall[]) => {
   try {
     const supportedFunctions = getSupportedFunctions();
     // an array of final output of each tool run
-    const functionOutput: RunSubmitToolOutputsParams.ToolOutput[] = []
+    const functionOutput: RunSubmitToolOutputsParams.ToolOutput[] = [];
     for (const tool of tools) {
       const functionName = tool.function.name;
       // TODO: Make it more typesafe.
@@ -81,17 +79,17 @@ export const runTools = async (tools: RequiredActionFunctionToolCall[]) => {
         const functionArguments = tool.function.arguments;
         const parsedFunctionArguments = await parseFunctionArguments(
           functionArguments,
-          functionTool
+          functionTool,
         );
-        const output = await functionTool.function(parsedFunctionArguments)
+        const output = await functionTool.function(parsedFunctionArguments);
         const formattedOutput: RunSubmitToolOutputsParams.ToolOutput = {
-          output: output.value,
-          tool_call_id: tool.id
-        }
-        functionOutput.push(formattedOutput)
+          output: output,
+          tool_call_id: tool.id,
+        };
+        functionOutput.push(formattedOutput);
       }
     }
-    return functionOutput
+    return functionOutput;
   } catch (error) {
     console.error(chalk.red("error running tools"));
     throw error;
@@ -102,7 +100,7 @@ export const runTools = async (tools: RequiredActionFunctionToolCall[]) => {
 const responsePoller = async (
   run: Run,
   client: OpenAI,
-  threadId: string
+  threadId: string,
 ): Promise<Message[]> => {
   try {
     const incompleteState = ["queued", "cancelling", "in_progress"];
@@ -120,15 +118,17 @@ const responsePoller = async (
       // get an array of all the tool calls needed to be run in parallel.
       const toolsCalls = run.required_action?.submit_tool_outputs.tool_calls;
       if (!toolsCalls) {
-        throw new Error("Tool calls could not be found")
+        throw new Error("Tool calls could not be found");
       }
-      console.log(chalk.green("reached here"))
-      const output = await runTools(toolsCalls)
-      run = await client.beta.threads.runs.submitToolOutputs(threadId, run.id, { tool_outputs: output })
-      console.log(chalk.black("tool output submitted"), run.status)
+      console.log(chalk.green("reached here"));
+      const output = await runTools(toolsCalls);
+      run = await client.beta.threads.runs.submitToolOutputs(threadId, run.id, {
+        tool_outputs: output,
+      });
+      console.log(chalk.black("tool output submitted"), run.status);
 
       const messages = await responsePoller(run, client, threadId);
-      return messages
+      return messages;
     }
 
     // check if run is complete

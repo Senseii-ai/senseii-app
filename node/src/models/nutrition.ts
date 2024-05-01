@@ -122,6 +122,6 @@ export const UserPerferences = new Schema<IUserPreferences>({
   },
 });
 export const VitalModel = mongoose.model<IUserPreferences>(
-  "Vitals",
+  "UserPreferences",
   UserPerferences,
 );

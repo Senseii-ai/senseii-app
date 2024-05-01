@@ -13,6 +13,7 @@ import { getNewEmptyThread, getNewThreadWithMessages } from "../threads";
 import {
   Message,
   MessageCreateParams,
+  Text,
 } from "openai/resources/beta/threads/messages/messages";
 
 // A general type containing arguments for all types of functions supported by nutrition assistant.
@@ -90,19 +91,20 @@ export interface IConstraints {
 // wrapper function.
 export const CreateNutritionPlan = async (
   functionArguments: ICreateNutritionPlanArguments,
-) => {
+): Promise<string> => {
   try {
     const client = getOpenAIClient();
     const nutritionAssistant = await getNutritionAssistant(client);
+    let output: string = "";
     const response = await createNutritionPlan(
       nutritionAssistant,
       functionArguments,
     );
     if (response && response[0].content[0].type === "text") {
-      return response[0].content[0].text;
+      output = response[0].content[0].text.value;
     }
-    // const jsonObject = JSON.parse(response[0].content[0])
-    throw new Error("Error generating nutrition plan");
+    console.log(chalk.green("This is the output", JSON.stringify(response)));
+    return output;
   } catch (error) {
     console.error(chalk.red(error));
     throw error;

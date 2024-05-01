@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import { continueChat, startChat } from "../controller/chat";
+import { continueChat, startChat, chatNutrition } from "../controller/chat";
 import { chatCore } from "../controller/testChat";
 
 const router: Router = express.Router()
@@ -8,9 +8,42 @@ const router: Router = express.Router()
 // /start : starts a new chat
 // /continue: continues the chat if id is provided
 // /testChat: is deprecated
+//
+/**
+ * @openapi
+ * /continueChat
+ * post:
+ *  summary: continues a chat, if the thread id is provided.
+ *  requestBody:
+ *    required: true
+ *    content:
+ *      application/json:
+ *      schema:
+ *        type: object
+ *        properties:
+ *          threadId:
+ *            type: string
+ *            description: Unique thread ID belonging to a chat
+ *          message:
+ *            type: object
+ *            description: The user message
+ *            properties:
+ *              role:
+ *                type: string
+ *                enum: "user"
+ *                description: the role of the user
+ *                content:
+ *                 type: string
+ *                 description: the content of the message
+ *   response:
+ *     200:
+ *       description: Chat created successfully
+ *       content: application/json
+ *       # remaining here
+ *            
+ */
 
 router.route("/continue").post(continueChat)
-router.route("/testChat").post(chatCore)
 
 /**
   * @openapi
@@ -42,5 +75,8 @@ router.route("/testChat").post(chatCore)
   *       # remaining here
   */
 router.route("/startChat").post(startChat)
+
+router.route("/nutritionChat").post(chatNutrition)
+router.route("/testChat").post(chatCore)
 
 export default router

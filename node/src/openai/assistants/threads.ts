@@ -67,12 +67,12 @@ export const continueThread = async (
 export const getNewThreadWithMessages = async (
   message: ThreadCreateParams.Message,
   client: OpenAI
-) => {
-  const messages = [message] // converting a single message into an array
+): Promise<string> => {
+  const messages = [message]
   const thread = await client.beta.threads.create({
     messages: messages
   })
-  return thread;
+  return thread.id;
 };
 
 export const getNewEmptyThread = async (client: OpenAI) => {

@@ -101,7 +101,6 @@ export const CreateNutritionPlan = async (
     if (response && response[0].content[0].type === "text") {
       return response[0].content[0].text;
     }
-
     // const jsonObject = JSON.parse(response[0].content[0])
     throw new Error("Error generating nutrition plan");
   } catch (error) {
@@ -136,11 +135,13 @@ export const createNutritionPlan = async (
     // create thread, run it and then delete it later.
     const message: MessageCreateParams = {
       role: "user",
-      content: prompt,
-    };
-    const newThread = await getNewThreadWithMessages(message, openAIClient);
-    const response = await createRun(newThread.id, openAIClient, assistant.id);
-    return response;
+      content: prompt
+    }
+    const newThreadId = await getNewThreadWithMessages(message, openAIClient)
+    const response = await createRun(newThreadId, openAIClient, assistant.id)
+    return response
+
+
   } catch (error) {
     console.error(chalk.red(error));
     throw error;

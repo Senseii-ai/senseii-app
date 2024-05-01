@@ -5,11 +5,12 @@ import {
   continueThread,
   getNewThreadWithMessages,
 } from "../openai/assistants/threads";
-import { ThreadCreateParams } from "openai/resources/beta/threads/threads";
+import { ThreadCreateParams, Threads } from "openai/resources/beta/threads/threads";
 import { createRun } from "../openai/assistants/run";
 import { getCoreAssistantId } from "../openai/assistants/core/assistant";
 import chalk from "chalk";
 import { MessageCreateParams } from "openai/resources/beta/threads/messages/messages";
+import { getNutritionAssistantId } from "../openai/assistants/nutrition/assistant";
 
 const OpenAIClient = getOpenAIClient();
 
@@ -28,10 +29,10 @@ export const startChat = async (req: IAuthRequest, res: Response) => {
     }
     const coreAssistantId = getCoreAssistantId()
     // since thread does not exist, ceate a new one
-    const thread = await getNewThreadWithMessages(inputMessage, OpenAIClient);
-    console.log(chalk.green(thread.id))
+    const threadId = await getNewThreadWithMessages(inputMessage, OpenAIClient);
+    console.log(chalk.green(threadId))
     // create a run with the messages
-    const response = await createRun(thread.id, OpenAIClient, coreAssistantId)
+    const response = await createRun(threadId, OpenAIClient, coreAssistantId)
     // return the response
     return res.status(200).json(response)
   } catch (error) {
@@ -54,6 +55,29 @@ export const continueChat = async (req: IAuthRequest, res: Response) => {
     }
     const coreAssistantId: string = getCoreAssistantId()
     const response = await continueThread(threadId, OpenAIClient, inputMessage, coreAssistantId)
+    return res.status(200).json(response)
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
+}
+
+// chatting with the nutrition assistant
+export const chatNutrition = async (req: IAuthRequest, res: Response) => {
+  try {
+    let { threadId, message } = req.body
+    const inputMessage: MessageCreateParams = {
+      role: "user",
+      content: message.content
+    }
+
+    if (!threadId) {
+      threadId = await getNewThreadWithMessages(inputMessage, OpenAIClient)
+    }
+
+    const nutritionAssistantId = getNutritionAssistantId()
+    console.log(chalk.green("threadID", threadId))
+    const response = await createRun(threadId, OpenAIClient, nutritionAssistantId)
     return res.status(200).json(response)
   } catch (error) {
     console.error(error)

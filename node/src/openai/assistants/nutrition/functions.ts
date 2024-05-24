@@ -103,7 +103,7 @@ export const CreateNutritionPlan = async (
     if (response && response[0].content[0].type === "text") {
       output = response[0].content[0].text.value;
     }
-    console.log(chalk.green("This is the output", JSON.stringify(response)));
+    console.log(chalk.green("This is the output", JSON.stringify(output)));
     return output;
   } catch (error) {
     console.error(chalk.red(error));
@@ -137,13 +137,11 @@ export const createNutritionPlan = async (
     // create thread, run it and then delete it later.
     const message: MessageCreateParams = {
       role: "user",
-      content: prompt
-    }
-    const newThreadId = await getNewThreadWithMessages(message, openAIClient)
-    const response = await createRun(newThreadId, openAIClient, assistant.id)
-    return response
-
-
+      content: prompt,
+    };
+    const newThreadId = await getNewThreadWithMessages(message, openAIClient);
+    const response = await createRun(newThreadId, openAIClient, assistant.id);
+    return response;
   } catch (error) {
     console.error(chalk.red(error));
     throw error;

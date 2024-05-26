@@ -6,6 +6,7 @@ import VitalRouter from './routes/vitals';
 import ChatRouter from "./routes/chat"
 import threadRouter from "./routes/threads"
 import cors from 'cors';
+import swaggerDocs from './utils/swagger';
 const app: Express = express();
 app.use(cors());
 const port = 9090
@@ -28,7 +29,7 @@ const start = async () => {
     console.log('listening to port 9090');
   });
 
-  // swaggerDocs(app, port)
+  swaggerDocs(app, port)
 };
 
 start();

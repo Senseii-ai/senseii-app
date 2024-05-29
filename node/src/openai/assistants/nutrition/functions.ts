@@ -1,5 +1,4 @@
 // this will contain the functions that can be used in the nutrition assistant
-
 import OpenAI from "openai";
 import { getNutritionAssistant } from "./assistant";
 import { FunctionDefinition } from "openai/resources";

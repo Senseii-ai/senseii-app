@@ -121,6 +121,8 @@ export const UserPerferences = new Schema<IUserPreferences>({
     },
   },
 });
+
+// TODO: Why is Vital Model defined here ?
 export const VitalModel = mongoose.model<IUserPreferences>(
   "UserPreferences",
   UserPerferences,

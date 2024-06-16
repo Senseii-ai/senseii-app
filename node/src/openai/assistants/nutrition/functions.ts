@@ -1,19 +1,13 @@
 // this will contain the functions that can be used in the nutrition assistant
-import OpenAI from "openai";
 import { getNutritionAssistant } from "./assistant";
 import { FunctionDefinition } from "openai/resources";
 import { IFunctionType } from "../functions";
 import chalk from "chalk";
 import { Assistant } from "openai/resources/beta/assistants/assistants";
 import { createRun } from "../run";
-import { createEmptyThread } from "../../../controller/threads";
 import { getOpenAIClient } from "../../client";
-import { getNewEmptyThread, getNewThreadWithMessages } from "../threads";
-import {
-  Message,
-  MessageCreateParams,
-  Text,
-} from "openai/resources/beta/threads/messages/messages";
+import { getNewThreadWithMessages } from "../threads";
+import { MessageCreateParams } from "openai/resources/beta/threads/messages/messages";
 
 // A general type containing arguments for all types of functions supported by nutrition assistant.
 export type NutritionToolArguments = ICreateNutritionPlanArguments;

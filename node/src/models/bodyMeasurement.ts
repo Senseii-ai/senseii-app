@@ -1,5 +1,5 @@
-import { IRecord } from './health';
 import { Schema } from 'mongoose';
+import { IRecord } from '../types/base';
 
 // Captures the user's lean body mass. Each record represents a single instantaneous measurement.
 export interface ILeanBodyMassRecord extends IRecord {

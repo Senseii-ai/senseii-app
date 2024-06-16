@@ -1,16 +1,10 @@
-import { Schema, Types, model } from 'mongoose';
+import { Schema, model } from 'mongoose';
+import { IRFToken } from '../types/auth';
 
-interface RFToken {
-  token: string;
-  user: Types.ObjectId;
-  expiresAt: Date;
-  createdAt: Date;
-}
-
-const RefreshTokenSchema = new Schema<RFToken>({
+const RefreshTokenSchema: Schema<IRFToken> = new Schema({
   token: {
     type: String,
-    required: true,
+    required: true
   },
   user: {
     type: Schema.Types.ObjectId,

@@ -204,15 +204,12 @@ const UserVitalsSchema: Schema<IUserVitalsDocument> = new Schema({
     respiratoryRate: { type: [RespiratoryRateSchema] },
     restingHeartRate: { type: [RestingHeartRateSchema] },
     vo2Max: { type: Vo2MaxSchema },
-    required: true
   },
 }
 )
 
 // TODO: Test out what is the difference between declaring model like this and the one in Nutrition Plan
-export const UserVitalsModel = model<IVitals>(
+export const UserVitalsModel = model<IUserVitalsDocument>(
   "UserVitals",
   UserVitalsSchema,
 )
-
-export default UserVitalsModel

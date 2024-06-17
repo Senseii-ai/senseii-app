@@ -1,101 +1,64 @@
-import { Schema } from 'mongoose';
-import { IRecord } from '../types/base';
+import { Schema, model } from "mongoose";
+import { IBasalBodyTemperatureRecord, IBasalMetabolicRateRecord, IBodyMeasurement, IBoneMassRecord, IHeightRecord, ILeanBodyMassRecord } from "../types/bodymeasurement";
 
-// Captures the user's lean body mass. Each record represents a single instantaneous measurement.
-export interface ILeanBodyMassRecord extends IRecord {
-  time: Date;
-  zoneOffset?: number;
-  // implement LeanBodyMass in typescript
-  mass: number;
-}
+interface IBodyMeasurementDocument extends IBodyMeasurement, Document { }
+interface IBasalBodyTemperatureDocument extends IBasalBodyTemperatureRecord, Document { }
+interface IBasalMetabolicRateDocument extends IBasalMetabolicRateRecord, Document { }
+interface IBoneMassDocument extends IBoneMassRecord, Document { }
+interface IHeightDocument extends IHeightRecord, Document { }
+interface ILeanBodyMassDocument extends ILeanBodyMassRecord, Document { }
 
-export interface IBasalBodyTemperatureRecord extends IRecord {
-  time: Date;
-  zoneOffset?: number;
-  temperature: number;
-  measurementLocation: number;
-}
+const IBasalBodyTemperatureSchema: Schema<IBasalBodyTemperatureDocument> = new Schema({
+  time: { type: Date, required: true },
+  zoneOffset: { type: Number },
+  temperature: { type: Number, required: true },
+  measurementLocation: { type: Number, required: true },
+})
 
-export interface IBasalMetabolicRateRecord extends IRecord {
-  time: Date;
-  zoneOffset?: number;
-  // look for how to implement the android comparable in typecript
-  basalMetabolicRate: number;
-}
+const IBasalMetabolicRateSchema: Schema<IBasalMetabolicRateDocument> = new Schema({
+  time: { type: Date, required: true },
+  zoneOffset: { type: Number },
+  basalMetabolicRate: { type: Number, required: true },
+})
 
-export interface IBoneMassRecord extends IRecord {
-  time: Date;
-  zoneOffset?: number;
-  mass: number;
-}
+const IBoneMassSchema: Schema<IBoneMassDocument> = new Schema({
+  time: { type: Date, required: true },
+  zoneOffset: { type: Number },
+  mass: { type: Number, required: true },
+})
 
-export interface IHeightRecord extends IRecord {
-  time: Date;
-  zoneOffset?: number;
-  height: number;
-}
+const IHeightSchema: Schema<IHeightDocument> = new Schema({
+  time: { type: Date, required: true },
+  zoneOffset: { type: Number },
+  height: { type: Number, required: true },
+})
 
-export interface IBodyMeasurement {
-  user: Schema.Types.ObjectId;
-  bodyMeasurement: {
-    basalBodyTemperature: IBasalBodyTemperatureRecord[];
-    basalMetabolicRate: IBasalMetabolicRateRecord[];
-    boneMass: IBoneMassRecord[];
-    height: IHeightRecord[];
-    leanBodyMass: ILeanBodyMassRecord[];
-  };
-}
+const ILeanBodymassSchema: Schema<ILeanBodyMassDocument> = new Schema({
+  time: { type: Date, required: true },
+  zoneOffset: { type: Number },
+  mass: { type: Number, required: true },
 
-export const UserBodyMeasurementSchema = new Schema<IBodyMeasurement>({
+})
+
+// TODO: Figure out if you want to keep the schema loose?
+const UserBodyMeasurementSchema: Schema<IBodyMeasurementDocument> = new Schema({
   user: {
     type: Schema.Types.ObjectId,
     ref: 'Users',
     required: true,
   },
   bodyMeasurement: {
-    weight: [
-      {
-        time: { type: Date, required: true },
-        zoneOffset: { type: Number },
-        mass: { type: Number, required: true },
-      }
-    ],
-    basalBodyTemperature: [
-      {
-        time: { type: Date, required: true },
-        zoneOffset: { type: Number },
-        temperature: { type: Number, required: true },
-        measurementLocation: { type: Number, required: true },
-      },
-    ],
+    basalBodyTemperature: { type: IBasalBodyTemperatureSchema },
+    boneMass: { type: IBoneMassSchema },
+    height: { type: IHeightSchema },
+    leanBodyMass: { type: ILeanBodymassSchema },
+  }
 
-    basalMetabolicRate: [
-      {
-        time: { type: Date, required: true },
-        zoneOffset: { type: Number },
-        basalMetabolicRate: { type: Number, required: true },
-      },
-    ],
-    boneMass: [
-      {
-        time: { type: Date, required: true },
-        zoneOffset: { type: Number },
-        mass: { type: Number, required: true },
-      },
-    ],
-    height: [
-      {
-        time: { type: Date, required: true },
-        zoneOffset: { type: Number },
-        height: { type: Number, required: true },
-      },
-    ],
-    leanBodyMass: [
-      {
-        time: { type: Date, required: true },
-        zoneOffset: { type: Number },
-        mass: { type: Number, required: true },
-      },
-    ],
-  },
-});
+})
+
+const UserBodyMeasurementModel = model<IBodyMeasurementDocument>(
+  "BodyMeasurement",
+  UserBodyMeasurementSchema
+)
+
+export default UserBodyMeasurementModel

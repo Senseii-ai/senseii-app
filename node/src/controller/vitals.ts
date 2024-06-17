@@ -1,5 +1,4 @@
 import {
-  VitalModel,
   IBloodGlucoseRecord,
   IBloodPressureRecord,
   IBodyFatRecord,
@@ -12,7 +11,10 @@ import {
   IRespiratoryRateRecord,
   IRestingHeartRateRecord,
   IVo2MaxRecord,
-} from '../models/vitals';
+} from '../types/vitals';
+import { UserVitalsModel } from '../models/vitals';
+
+
 import { Response } from 'express';
 import { IAuthRequest } from '../middlewares/auth';
 import Joi from 'joi';
@@ -41,7 +43,7 @@ export const getBloodGlucoseRecords = async (
 ) => {
   try {
     const userID = req.user?.userID;
-    const data = await VitalModel.findOne({ user: userID });
+    const data = await UserVitalsModel.findOne({ user: userID });
 
     if (!data) {
       throw new Error('Vitals Records not found');
@@ -93,7 +95,7 @@ export const newBloodGlucoseRecords = async (
     });
 
     // update the user's blood glucose records in one go.
-    const updatedVitals = await VitalModel.findOneAndUpdate(
+    const updatedVitals = await UserVitalsModel.findOneAndUpdate(
       { user: userID },
       { $push: { 'vitals.bloodGlucose': { $each: newBloodGlucoseRecords } } },
       { new: true, upsert: true }
@@ -161,7 +163,7 @@ export const newBloodPressureRecords = async (
       })
     );
 
-    const updatedVitals = await VitalModel.findOneAndUpdate(
+    const updatedVitals = await UserVitalsModel.findOneAndUpdate(
       { user: userID },
       { $push: { 'vitals.bloodPressure': { $each: newBloodPressureRecords } } },
       { new: true, upsert: true }
@@ -184,7 +186,7 @@ export const getBloodPressureRecords = async (
 ) => {
   try {
     const userID: string = req.user?.userID;
-    const data = await VitalModel.findOne({ user: userID });
+    const data = await UserVitalsModel.findOne({ user: userID });
 
     if (!data) {
       throw new Error('Blood Pressure Records not found');
@@ -226,7 +228,7 @@ export const newBodyFatRecords = async (req: IAuthRequest, res: Response) => {
       recordType: record.recordType,
     }));
 
-    const updatedVitals = await VitalModel.findOneAndUpdate(
+    const updatedVitals = await UserVitalsModel.findOneAndUpdate(
       { user: userID },
       { $push: { 'vitals.bodyFat': { $each: newBodyFatRecords } } },
       { new: true, upsert: true }
@@ -246,7 +248,7 @@ export const newBodyFatRecords = async (req: IAuthRequest, res: Response) => {
 export const getBodyFatRecords = async (req: IAuthRequest, res: Response) => {
   try {
     const userID = req.user?.userID;
-    const data = await VitalModel.findOne({ user: userID });
+    const data = await UserVitalsModel.findOne({ user: userID });
 
     if (!data) {
       throw new Error('Body Fat Records not found');
@@ -302,7 +304,7 @@ export const newBodyTemperatureRecords = async (
       })
     );
 
-    const updatedVitals = await VitalModel.findOneAndUpdate(
+    const updatedVitals = await UserVitalsModel.findOneAndUpdate(
       { user: userID },
       {
         $push: {
@@ -329,7 +331,7 @@ export const getBodyTemperatureRecords = async (
 ) => {
   try {
     const userID = req.user?.userID;
-    const data = await VitalModel.findOne({ user: userID });
+    const data = await UserVitalsModel.findOne({ user: userID });
 
     if (!data) {
       throw new Error('Body Temperature Records not found');
@@ -368,7 +370,7 @@ const validateWaterMassRecord = Joi.object({
 export const getWaterMassRecords = async (req: IAuthRequest, res: Response) => {
   try {
     const userID: string = req.user?.userID;
-    const data = await VitalModel.findOne({ user: userID });
+    const data = await UserVitalsModel.findOne({ user: userID });
 
     if (!data) {
       throw new Error('Water Mass Records not found');
@@ -409,7 +411,7 @@ export const newWaterMassRecords = async (req: IAuthRequest, res: Response) => {
       };
     });
 
-    const updatedVitals = await VitalModel.findOneAndUpdate(
+    const updatedVitals = await UserVitalsModel.findOneAndUpdate(
       { user: userID },
       { $push: { 'vitals.waterMass': { $each: newWaterMassRecords } } },
       { new: true, upsert: true }
@@ -444,7 +446,7 @@ const validateHeartRateRecord = Joi.object({
 export const getHeartRateRecords = async (req: IAuthRequest, res: Response) => {
   try {
     const userID: string = req.user?.userID;
-    const data = await VitalModel.findOne({ user: userID });
+    const data = await UserVitalsModel.findOne({ user: userID });
 
     if (!data) {
       throw new Error('Heart Rate Records not found');
@@ -481,7 +483,7 @@ export const newHeartRateRecords = async (req: IAuthRequest, res: Response) => {
       samples: record.samples,
     }));
 
-    const updatedVitals = await VitalModel.findOneAndUpdate(
+    const updatedVitals = await UserVitalsModel.findOneAndUpdate(
       { user: userID },
       { $push: { 'vitals.heartRate': { $each: newHeartRateRecords } } },
       { new: true, upsert: true }
@@ -513,7 +515,7 @@ export const getHeartRateVariabilityRecords = async (
 ) => {
   try {
     const userID: string = req.user?.userID;
-    const data = await VitalModel.findOne({ user: userID });
+    const data = await UserVitalsModel.findOne({ user: userID });
 
     if (!data) {
       throw new Error('Heart Rate Variability Records not found');
@@ -557,7 +559,7 @@ export const newHeartRateVariabilityRecords = async (
         };
       });
 
-    const updatedVitals = await VitalModel.findOneAndUpdate(
+    const updatedVitals = await UserVitalsModel.findOneAndUpdate(
       { user: userID },
       {
         $push: {
@@ -594,24 +596,26 @@ const validateHydrationRecordSchema = Joi.object({
   }),
 });
 
+// TODO: Hydration Record not in vitals?
+//
 // get Hydration Records
 export const getHydrationRecords = async (req: IAuthRequest, res: Response) => {
   try {
     const userID: string = req.user?.userID;
-    const data = await VitalModel.findOne({ user: userID });
+    const data = await UserVitalsModel.findOne({ user: userID });
 
     if (!data) {
       throw new Error('Hydration Records not found');
     }
 
-    const hydrationRecords: IHydrationRecord[] = data.vitals.hydrationRecord;
+    const hydrationRecords: IHydrationRecord[] = data.vitals.hydration;
     return res.status(200).json(hydrationRecords);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
-
+//
 // create new Hydration Records
 export const newHydrationRecords = async (req: IAuthRequest, res: Response) => {
   try {
@@ -640,7 +644,7 @@ export const newHydrationRecords = async (req: IAuthRequest, res: Response) => {
       };
     });
 
-    const updatedVitals = await VitalModel.findOneAndUpdate(
+    const updatedVitals = await UserVitalsModel.findOneAndUpdate(
       { user: userID },
       { $push: { 'vitals.hydrationRecord': { $each: newHydrationRecords } } },
       { new: true, upsert: true }
@@ -672,7 +676,7 @@ export const getOxygenSaturationRecords = async (
 ) => {
   try {
     const userID = req.user?.userID;
-    const data = await VitalModel.findOne({ user: userID });
+    const data = await UserVitalsModel.findOne({ user: userID });
 
     if (!data) {
       throw new Error('Oxygen Saturation Records not found');
@@ -716,7 +720,7 @@ export const newOxygenSaturationRecords = async (
       }
     );
 
-    const updatedVitals = await VitalModel.findOneAndUpdate(
+    const updatedVitals = await UserVitalsModel.findOneAndUpdate(
       { user: userID },
       {
         $push: {
@@ -752,7 +756,7 @@ export const getRespiratoryRateRecords = async (
 ) => {
   try {
     const userID = req.user?.userID;
-    const data = await VitalModel.findOne({ user: userID });
+    const data = await UserVitalsModel.findOne({ user: userID });
 
     if (!data) {
       throw new Error('Respiratory Rate Records not found');
@@ -797,7 +801,7 @@ export const newRespiratoryRateRecords = async (
       }
     );
 
-    const updatedVitals = await VitalModel.findOneAndUpdate(
+    const updatedVitals = await UserVitalsModel.findOneAndUpdate(
       { user: userID },
       {
         $push: {
@@ -833,7 +837,7 @@ export const getRestingHeartRateRecords = async (
 ) => {
   try {
     const userID = req.user?.userID;
-    const data = await VitalModel.findOne({ user: userID });
+    const data = await UserVitalsModel.findOne({ user: userID });
 
     if (!data) {
       throw new Error('Resting Heart Rate Records not found');
@@ -878,7 +882,7 @@ export const newRestingHeartRateRecords = async (
       }
     );
 
-    const updatedVitals = await VitalModel.findOneAndUpdate(
+    const updatedVitals = await UserVitalsModel.findOneAndUpdate(
       { user: userID },
       {
         $push: {
@@ -912,7 +916,7 @@ const validateVo2MaxRecordsSchema = Joi.object({
 export const getVo2MaxRecords = async (req: IAuthRequest, res: Response) => {
   try {
     const userID = req.user?.userID;
-    const data = await VitalModel.findOne({ user: userID });
+    const data = await UserVitalsModel.findOne({ user: userID });
 
     if (!data) {
       throw new Error('Vo2 Max Records not found');
@@ -952,7 +956,7 @@ export const newVo2MaxRecords = async (req: IAuthRequest, res: Response) => {
       };
     });
 
-    const updatedVitals = await VitalModel.findOneAndUpdate(
+    const updatedVitals = await UserVitalsModel.findOneAndUpdate(
       { user: userID },
       { $push: { 'vitals.vo2Max': { $each: newVo2MaxRecords } } },
       { new: true, upsert: true }

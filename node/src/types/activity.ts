@@ -66,13 +66,13 @@ export interface IExerciseSegment {
   repititions: number;
 }
 
+// TODO: This also has a title property which is conflicting to title in Document, look into it later on.
 export interface IExerciseSessionRecord extends IRecord {
   startTime: Date;
   startZoneOffset?: number;
   endTime: Date;
   endZoneOffset?: number;
   exerciseType: number;
-  title?: string;
   notes?: string;
   segments: IExerciseSegment[];
   laps: IExerciseLap[];

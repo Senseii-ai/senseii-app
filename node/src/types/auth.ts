@@ -7,4 +7,9 @@ export interface IRFToken {
   createdAt: Date;
 }
 
+export interface IUserDecoded {
+  userName: string;
+  userId: Types.ObjectId
+}
+
 

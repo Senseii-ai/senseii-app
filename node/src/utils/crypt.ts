@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import { IUserDecoded } from '../types/auth';
 
 export const getRefreshToken = (email: string) => {
   return jwt.sign(email, getRefreshTokenKey());
@@ -22,7 +23,7 @@ export const getAccessToken = (email: string) => {
 const getAccessTokenKey = (): string => {
   const AccessTokenKey = process.env.ACCESS_TOKEN_KEY;
   if (!AccessTokenKey) {
-    console.log('Unable to find Signing token');
+    console.log('Unable to find Signing token Key');
     throw new Error('Internal Server Error');
   }
   return AccessTokenKey;
@@ -43,9 +44,14 @@ export const hashPassword = async (password: string): Promise<string> => {
   return await bcrypt.hash(password, getSalt());
 };
 
-export const verifyToken = (token: string): string | JwtPayload => {
+export const verifyToken = (token: string): IUserDecoded | null => {
   try {
-    return jwt.verify(token, getAccessTokenKey());
+    const payload = jwt.verify(token, getAccessTokenKey())
+    if (typeof payload === 'string') {
+      return null
+    }
+
+    return payload as IUserDecoded
   } catch (error) {
     console.error('Token Verification failed', error);
     throw new Error('Invalid token');

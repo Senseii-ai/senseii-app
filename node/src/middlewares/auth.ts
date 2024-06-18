@@ -1,10 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
 import { verifyToken } from '../utils/crypt';
+import { IUserDecoded } from '../types/auth';
 
 // TODO: test if JWT payload can be replaced with a userID string.
 export interface IAuthRequest extends Request {
-  user?: JwtPayload;
+  user?: IUserDecoded;
 }
 
 // check out JSDoc
@@ -24,9 +25,12 @@ export const authenticateUser = async (
       return;
     }
 
-    // look into this typescript error later
     try {
       const user = verifyToken(token);
+      if (!user) {
+        throw new Error('Error decoding JWT')
+      }
+
       req.user = user;
     } catch (error) {
       console.error('Token verification failed', error);

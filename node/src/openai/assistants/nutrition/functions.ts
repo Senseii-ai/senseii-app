@@ -8,6 +8,7 @@ import { createRun } from "../run";
 import { getOpenAIClient } from "../../client";
 import { getNewThreadWithMessages } from "../threads";
 import { MessageCreateParams } from "openai/resources/beta/threads/messages/messages";
+import { IBasicInformation, ILifeStyle, IDietPreferences, IHealthGoals, IEatingHabits, IConstraints } from "../../../types/userPreference";
 
 // A general type containing arguments for all types of functions supported by nutrition assistant.
 export type NutritionToolArguments = ICreateNutritionPlanArguments;

@@ -1,9 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { JwtPayload } from 'jsonwebtoken';
 import { verifyToken } from '../utils/crypt';
 import { IUserDecoded } from '../types/auth';
 
-// TODO: test if JWT payload can be replaced with a userID string.
+// TODO: Implement Custom Errors
 export interface IAuthRequest extends Request {
   user?: IUserDecoded;
 }

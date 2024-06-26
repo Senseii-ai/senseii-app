@@ -42,8 +42,8 @@ export const getBloodGlucoseRecords = async (
   res: Response
 ) => {
   try {
-    const userID = req.user?.userID;
-    const data = await UserVitalsModel.findOne({ user: userID });
+    const userId = req.user?.userId;
+    const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
       throw new Error('Vitals Records not found');
@@ -64,7 +64,7 @@ export const newBloodGlucoseRecords = async (
 ) => {
   try {
     const user = req.user;
-    const userID = user?.userID;
+    const userId = user?.userId;
 
     // check if data sent is an array, if not, conver to array.
     const data = Array.isArray(req.body) ? req.body : [req.body];
@@ -96,7 +96,7 @@ export const newBloodGlucoseRecords = async (
 
     // update the user's blood glucose records in one go.
     const updatedVitals = await UserVitalsModel.findOneAndUpdate(
-      { user: userID },
+      { user: userId },
       { $push: { 'vitals.bloodGlucose': { $each: newBloodGlucoseRecords } } },
       { new: true, upsert: true }
     );
@@ -134,7 +134,7 @@ export const newBloodPressureRecords = async (
   res: Response
 ) => {
   try {
-    const userID = req.user?.userID;
+    const userId = req.user?.userId;
     const data = Array.isArray(req.body) ? req.body : [req.body];
 
     // validate the records
@@ -164,7 +164,7 @@ export const newBloodPressureRecords = async (
     );
 
     const updatedVitals = await UserVitalsModel.findOneAndUpdate(
-      { user: userID },
+      { user: userId },
       { $push: { 'vitals.bloodPressure': { $each: newBloodPressureRecords } } },
       { new: true, upsert: true }
     );
@@ -185,8 +185,8 @@ export const getBloodPressureRecords = async (
   res: Response
 ) => {
   try {
-    const userID: string = req.user?.userID;
-    const data = await UserVitalsModel.findOne({ user: userID });
+    const userId = req.user?.userId;
+    const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
       throw new Error('Blood Pressure Records not found');
@@ -209,7 +209,7 @@ const validateBodyFatRecordSchema = Joi.object({
 
 export const newBodyFatRecords = async (req: IAuthRequest, res: Response) => {
   try {
-    const userID = req.user?.userID;
+    const userId = req.user?.userId;
     const data = Array.isArray(req.body) ? req.body : [req.body];
 
     // validate the data
@@ -229,7 +229,7 @@ export const newBodyFatRecords = async (req: IAuthRequest, res: Response) => {
     }));
 
     const updatedVitals = await UserVitalsModel.findOneAndUpdate(
-      { user: userID },
+      { user: userId },
       { $push: { 'vitals.bodyFat': { $each: newBodyFatRecords } } },
       { new: true, upsert: true }
     );
@@ -247,8 +247,8 @@ export const newBodyFatRecords = async (req: IAuthRequest, res: Response) => {
 
 export const getBodyFatRecords = async (req: IAuthRequest, res: Response) => {
   try {
-    const userID = req.user?.userID;
-    const data = await UserVitalsModel.findOne({ user: userID });
+    const userId = req.user?.userId;
+    const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
       throw new Error('Body Fat Records not found');
@@ -279,7 +279,7 @@ export const newBodyTemperatureRecords = async (
   res: Response
 ) => {
   try {
-    const userID = req.user?.userID;
+    const userId = req.user?.userId;
     const data = Array.isArray(req.body) ? req.body : [req.body];
 
     // validate the data
@@ -305,7 +305,7 @@ export const newBodyTemperatureRecords = async (
     );
 
     const updatedVitals = await UserVitalsModel.findOneAndUpdate(
-      { user: userID },
+      { user: userId },
       {
         $push: {
           'vitals.bodyTemperature': { $each: newBodyTemperatureRecords },
@@ -330,8 +330,8 @@ export const getBodyTemperatureRecords = async (
   res: Response
 ) => {
   try {
-    const userID = req.user?.userID;
-    const data = await UserVitalsModel.findOne({ user: userID });
+    const userId = req.user?.userId;
+    const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
       throw new Error('Body Temperature Records not found');
@@ -369,8 +369,8 @@ const validateWaterMassRecord = Joi.object({
 // get Water Mass Records
 export const getWaterMassRecords = async (req: IAuthRequest, res: Response) => {
   try {
-    const userID: string = req.user?.userID;
-    const data = await UserVitalsModel.findOne({ user: userID });
+    const userId = req.user?.userId;
+    const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
       throw new Error('Water Mass Records not found');
@@ -387,7 +387,7 @@ export const getWaterMassRecords = async (req: IAuthRequest, res: Response) => {
 // create new Water Mass Records
 export const newWaterMassRecords = async (req: IAuthRequest, res: Response) => {
   try {
-    const userID: string = req.user?.userID;
+    const userId = req.user?.userId;
     const data = Array.isArray(req.body) ? req.body : [req.body];
 
     // validate the records
@@ -412,7 +412,7 @@ export const newWaterMassRecords = async (req: IAuthRequest, res: Response) => {
     });
 
     const updatedVitals = await UserVitalsModel.findOneAndUpdate(
-      { user: userID },
+      { user: userId },
       { $push: { 'vitals.waterMass': { $each: newWaterMassRecords } } },
       { new: true, upsert: true }
     );
@@ -445,8 +445,8 @@ const validateHeartRateRecord = Joi.object({
 // get Heart Rate Records
 export const getHeartRateRecords = async (req: IAuthRequest, res: Response) => {
   try {
-    const userID: string = req.user?.userID;
-    const data = await UserVitalsModel.findOne({ user: userID });
+    const userId = req.user?.userId;
+    const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
       throw new Error('Heart Rate Records not found');
@@ -463,7 +463,7 @@ export const getHeartRateRecords = async (req: IAuthRequest, res: Response) => {
 // create new Heart Rate Records
 export const newHeartRateRecords = async (req: IAuthRequest, res: Response) => {
   try {
-    const userID: string = req.user?.userID;
+    const userId = req.user?.userId;
     const data = Array.isArray(req.body) ? req.body : [req.body];
 
     // validate the records
@@ -484,7 +484,7 @@ export const newHeartRateRecords = async (req: IAuthRequest, res: Response) => {
     }));
 
     const updatedVitals = await UserVitalsModel.findOneAndUpdate(
-      { user: userID },
+      { user: userId },
       { $push: { 'vitals.heartRate': { $each: newHeartRateRecords } } },
       { new: true, upsert: true }
     );
@@ -514,8 +514,8 @@ export const getHeartRateVariabilityRecords = async (
   res: Response
 ) => {
   try {
-    const userID: string = req.user?.userID;
-    const data = await UserVitalsModel.findOne({ user: userID });
+    const userId = req.user?.userId;
+    const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
       throw new Error('Heart Rate Variability Records not found');
@@ -536,7 +536,7 @@ export const newHeartRateVariabilityRecords = async (
   res: Response
 ) => {
   try {
-    const userID: string = req.user?.userID;
+    const userId = req.user?.userId;
     const data = Array.isArray(req.body) ? req.body : [req.body];
 
     // vlaidate the records
@@ -560,7 +560,7 @@ export const newHeartRateVariabilityRecords = async (
       });
 
     const updatedVitals = await UserVitalsModel.findOneAndUpdate(
-      { user: userID },
+      { user: userId },
       {
         $push: {
           'vitals.heartRateVariability': {
@@ -601,8 +601,8 @@ const validateHydrationRecordSchema = Joi.object({
 // get Hydration Records
 export const getHydrationRecords = async (req: IAuthRequest, res: Response) => {
   try {
-    const userID: string = req.user?.userID;
-    const data = await UserVitalsModel.findOne({ user: userID });
+    const userId = req.user?.userId;
+    const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
       throw new Error('Hydration Records not found');
@@ -619,7 +619,7 @@ export const getHydrationRecords = async (req: IAuthRequest, res: Response) => {
 // create new Hydration Records
 export const newHydrationRecords = async (req: IAuthRequest, res: Response) => {
   try {
-    const userID = req.user?.userID;
+    const userId = req.user?.userId;
     const data = Array.isArray(req.body) ? req.body : [req.body];
 
     // validate the data
@@ -645,7 +645,7 @@ export const newHydrationRecords = async (req: IAuthRequest, res: Response) => {
     });
 
     const updatedVitals = await UserVitalsModel.findOneAndUpdate(
-      { user: userID },
+      { user: userId },
       { $push: { 'vitals.hydrationRecord': { $each: newHydrationRecords } } },
       { new: true, upsert: true }
     );
@@ -675,8 +675,8 @@ export const getOxygenSaturationRecords = async (
   res: Response
 ) => {
   try {
-    const userID = req.user?.userID;
-    const data = await UserVitalsModel.findOne({ user: userID });
+    const userId = req.user?.userId;
+    const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
       throw new Error('Oxygen Saturation Records not found');
@@ -697,7 +697,7 @@ export const newOxygenSaturationRecords = async (
   res: Response
 ) => {
   try {
-    const userID = req.user?.userID;
+    const userId = req.user?.userId;
     const data = Array.isArray(req.body) ? req.body : [req.body];
 
     // validate the data
@@ -721,7 +721,7 @@ export const newOxygenSaturationRecords = async (
     );
 
     const updatedVitals = await UserVitalsModel.findOneAndUpdate(
-      { user: userID },
+      { user: userId },
       {
         $push: {
           'vitals.oxygenSaturation': { $each: newOxygenSaturationRecords },
@@ -755,8 +755,8 @@ export const getRespiratoryRateRecords = async (
   res: Response
 ) => {
   try {
-    const userID = req.user?.userID;
-    const data = await UserVitalsModel.findOne({ user: userID });
+    const userId = req.user?.userId;
+    const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
       throw new Error('Respiratory Rate Records not found');
@@ -778,7 +778,7 @@ export const newRespiratoryRateRecords = async (
   res: Response
 ) => {
   try {
-    const userID = req.user?.userID;
+    const userId = req.user?.userId;
     const data = Array.isArray(req.body) ? req.body : [req.body];
 
     // validate the data
@@ -802,7 +802,7 @@ export const newRespiratoryRateRecords = async (
     );
 
     const updatedVitals = await UserVitalsModel.findOneAndUpdate(
-      { user: userID },
+      { user: userId },
       {
         $push: {
           'vitals.respiratoryRate': { $each: newRespiratoryRateRecords },
@@ -836,8 +836,8 @@ export const getRestingHeartRateRecords = async (
   res: Response
 ) => {
   try {
-    const userID = req.user?.userID;
-    const data = await UserVitalsModel.findOne({ user: userID });
+    const userId = req.user?.userId;
+    const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
       throw new Error('Resting Heart Rate Records not found');
@@ -859,7 +859,7 @@ export const newRestingHeartRateRecords = async (
   res: Response
 ) => {
   try {
-    const userID = req.user?.userID;
+    const userId = req.user?.userId;
     const data = Array.isArray(req.body) ? req.body : [req.body];
 
     // validate the data
@@ -883,7 +883,7 @@ export const newRestingHeartRateRecords = async (
     );
 
     const updatedVitals = await UserVitalsModel.findOneAndUpdate(
-      { user: userID },
+      { user: userId },
       {
         $push: {
           'vitals.restingHeartRate': { $each: newRestingHeartRateRecords },
@@ -915,8 +915,8 @@ const validateVo2MaxRecordsSchema = Joi.object({
 // get Vo2 Max Records
 export const getVo2MaxRecords = async (req: IAuthRequest, res: Response) => {
   try {
-    const userID = req.user?.userID;
-    const data = await UserVitalsModel.findOne({ user: userID });
+    const userId = req.user?.userId;
+    const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
       throw new Error('Vo2 Max Records not found');
@@ -934,7 +934,7 @@ export const getVo2MaxRecords = async (req: IAuthRequest, res: Response) => {
 // new Vo2 Max Records
 export const newVo2MaxRecords = async (req: IAuthRequest, res: Response) => {
   try {
-    const userID = req.user?.userID;
+    const userId = req.user?.userId;
     const data = Array.isArray(req.body) ? req.body : [req.body];
 
     // validate the data
@@ -957,7 +957,7 @@ export const newVo2MaxRecords = async (req: IAuthRequest, res: Response) => {
     });
 
     const updatedVitals = await UserVitalsModel.findOneAndUpdate(
-      { user: userID },
+      { user: userId },
       { $push: { 'vitals.vo2Max': { $each: newVo2MaxRecords } } },
       { new: true, upsert: true }
     );

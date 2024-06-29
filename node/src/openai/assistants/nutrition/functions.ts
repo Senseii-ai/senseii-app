@@ -9,6 +9,7 @@ import { getOpenAIClient } from "../../client";
 import { getNewThreadWithMessages } from "../threads";
 import { MessageCreateParams } from "openai/resources/beta/threads/messages/messages";
 import { ICreateNutritionPlanArguments } from "../../../types/user/nutritionPlan";
+import { StringToJson } from "./utils/utils";
 
 // A general type containing arguments for all types of functions supported by nutrition assistant.
 export type NutritionToolArguments = ICreateNutritionPlanArguments;
@@ -35,15 +36,15 @@ export const CreateNutritionPlan = async (
       output = response[0].content[0].text.value;
     }
     console.log(chalk.green("This is the output", JSON.stringify(output)));
+
+    // save it into the database and return to the user the response
+    const jsonObject = StringToJson(output)
     return output;
   } catch (error) {
     console.error(chalk.red(error));
     throw error;
   }
 };
-
-// this interface is for parsing the user preferences from the text using the core assistant.
-
 
 // this function creates the nutrition plan for the user.
 export const createNutritionPlan = async (

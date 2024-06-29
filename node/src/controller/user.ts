@@ -32,7 +32,7 @@ export const CreateNewUser = async (req: Request, res: Response) => {
   }
 };
 
-// TODO implement validate route for accessToken.
+// TODO: implement validate route for accessToken.
 
 
 // userLoginCredsSchema is a Joi schema to validate the request body
@@ -47,8 +47,8 @@ export const LoginUser = async (req: Request, res: Response) => {
 
   // validate if the request body is valid.
   const isValid = userLoginCredsSchema.validate(req.body.loginCredentials)
-  if (!isValid){
-    return res.status(400).json({message: 'Invalid Request Body'})
+  if (!isValid) {
+    return res.status(400).json({ message: 'Invalid Request Body' })
   }
 
   const { email, password }: { email: string; password: string } = req.body.loginCredentials;
@@ -76,7 +76,7 @@ export const LoginUser = async (req: Request, res: Response) => {
     });
 
     const userId = user._id
-    return res.status(200).json({ accessToken, refreshToken, userId});
+    return res.status(200).json({ accessToken, refreshToken, userId });
   } catch (error) {
     console.error(error);
     return res.status(400).json({ message: 'Internal Server Error' });

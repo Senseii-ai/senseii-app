@@ -7,7 +7,7 @@ import {
   IEatingHabits,
   IDietPreferences,
   IUserPreferences,
-} from "../types/userPreference";
+} from "../types/user/userPreferences";
 
 interface IUserPreferencesDocument extends IUserPreferences, Document { }
 interface IBasicInformationDocument extends IBasicInformation, Document { }

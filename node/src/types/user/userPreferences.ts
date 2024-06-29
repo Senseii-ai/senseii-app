@@ -1,14 +1,5 @@
 import { Schema } from "mongoose";
 
-export interface IHealthPlan {
-  userId: {
-    type: Schema.Types.ObjectId;
-    ref: "Users";
-    required: true;
-  };
-}
-
-// this interface is for saving the user preference in the database
 export interface IUserPreferences {
   user: Schema.Types.ObjectId;
   type: "userPreferences";
@@ -18,6 +9,15 @@ export interface IUserPreferences {
   healthGoals: IHealthGoals;
   eatingHabits: IEatingHabits;
   constraints: IConstraints;
+}
+
+
+export interface IHealthPlan {
+  userId: {
+    type: Schema.Types.ObjectId;
+    ref: "Users";
+    required: true;
+  };
 }
 
 

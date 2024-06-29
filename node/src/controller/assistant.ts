@@ -25,6 +25,7 @@ export const getFunctions = async (req: IAuthRequest, res: Response) => {
 }
 
 // internal function
+// TODO: Finish this
 export const _getAssistantants = async (req: Request, res: Response) => {
   try {
     const assistants = 

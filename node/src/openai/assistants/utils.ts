@@ -8,7 +8,7 @@ import {
 } from "./core/assistant";
 import { getOpenAIClient } from "../client";
 import { IFunctionType } from "./functions";
-import { ICreateNutritionPlanArguments } from "./nutrition/functions";
+import { ICreateNutritionPlanArguments } from "../../types/user/nutritionPlan";
 
 // parameter parser.
 // TODO: locally store the functions supported by each assistant.

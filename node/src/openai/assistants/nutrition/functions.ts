@@ -8,7 +8,7 @@ import { createRun } from "../run";
 import { getOpenAIClient } from "../../client";
 import { getNewThreadWithMessages } from "../threads";
 import { MessageCreateParams } from "openai/resources/beta/threads/messages/messages";
-import { IBasicInformation, ILifeStyle, IDietPreferences, IHealthGoals, IEatingHabits, IConstraints } from "../../../types/userPreference";
+import { ICreateNutritionPlanArguments } from "../../../types/user/nutritionPlan";
 
 // A general type containing arguments for all types of functions supported by nutrition assistant.
 export type NutritionToolArguments = ICreateNutritionPlanArguments;
@@ -43,15 +43,7 @@ export const CreateNutritionPlan = async (
 };
 
 // this interface is for parsing the user preferences from the text using the core assistant.
-export interface ICreateNutritionPlanArguments {
-  type: "createNutritionPlan";
-  basicInformation: IBasicInformation;
-  lifeStyle: ILifeStyle;
-  dietPreferences: IDietPreferences;
-  healthGoals: IHealthGoals;
-  eatingHabits: IEatingHabits;
-  constraints: IConstraints;
-}
+
 
 // this function creates the nutrition plan for the user.
 export const createNutritionPlan = async (

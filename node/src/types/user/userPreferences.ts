@@ -21,7 +21,6 @@ export interface IUserPreferences {
 }
 
 
-
 export interface IBasicInformation {
   age: number;
   weight: {

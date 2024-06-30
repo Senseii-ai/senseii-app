@@ -1,19 +1,19 @@
 import { ThreadCreateParams } from "openai/resources/beta/threads/threads";
 import OpenAI from "openai";
 import { createRun } from "./run";
-import { getOpenAIClient } from "../client";
+import { getOpenAIClient } from "../openai.client";
 import { MessageCreateParams } from "openai/resources/beta/threads/messages/messages";
 
 // addMessageToThread adds a message to a thread, when a threadId is provided.
 const addMessageToThread = async (
   client: OpenAI,
   threadId: string,
-  inputMessage: MessageCreateParams
+  inputMessage: MessageCreateParams,
 ) => {
   try {
     const addedMessage = await client.beta.threads.messages.create(
       threadId,
-      inputMessage
+      inputMessage,
     );
     return addedMessage;
   } catch (error) {
@@ -26,7 +26,7 @@ const addMessageToThread = async (
 export const createMessage = async (
   message: string,
   client: OpenAI,
-  threadId: string
+  threadId: string,
 ) => {
   try {
     // create the message
@@ -39,7 +39,7 @@ export const createMessage = async (
     const addedMessage = await addMessageToThread(
       client,
       threadId,
-      inputMessage
+      inputMessage,
     );
     return addedMessage;
   } catch (error) {
@@ -52,7 +52,7 @@ export const continueThread = async (
   threadId: string,
   client: OpenAI,
   message: MessageCreateParams,
-  assistantId: string
+  assistantId: string,
 ) => {
   try {
     const newMessage = client.beta.threads.messages.create(threadId, message);
@@ -66,12 +66,12 @@ export const continueThread = async (
 
 export const getNewThreadWithMessages = async (
   message: ThreadCreateParams.Message,
-  client: OpenAI
+  client: OpenAI,
 ): Promise<string> => {
-  const messages = [message]
+  const messages = [message];
   const thread = await client.beta.threads.create({
-    messages: messages
-  })
+    messages: messages,
+  });
   return thread.id;
 };
 

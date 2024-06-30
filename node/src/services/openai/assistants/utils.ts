@@ -5,10 +5,10 @@ import { RequiredActionFunctionToolCall } from "openai/resources/beta/threads/ru
 import {
   getCoreAssistantFunctionNames,
   getCoreAssistantTools,
-} from "./core/assistant";
-import { getOpenAIClient } from "../client";
+} from "./core/core.assistant";
+import { getOpenAIClient } from "../openai.client";
 import { IFunctionType } from "./functions";
-import { ICreateNutritionPlanArguments } from "../../types/user/nutritionPlan";
+import { ICreateNutritionPlanArguments } from "../../../types/user/nutritionPlan";
 
 // parameter parser.
 // TODO: locally store the functions supported by each assistant.
@@ -19,7 +19,7 @@ const client = getOpenAIClient();
 // parseFunctionArguments parses the function arguments based on the function definition.
 export const parseFunctionArguments = async (
   functionArguments: string,
-  functionDefinition: IFunctionType
+  functionDefinition: IFunctionType,
 ) => {
   try {
     switch (functionDefinition.name) {

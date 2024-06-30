@@ -1,8 +1,8 @@
-import { getOpenAIClient } from "../openai/client";
+import { getOpenAIClient } from "../services/openai/openai.client";
 import {
   getNewEmptyThread,
   retrieveMessages,
-} from "../openai/assistants/threads";
+} from "../services/openai/assistants/threads";
 import { IAuthRequest } from "../middlewares/auth";
 import { Response } from "express";
 
@@ -19,4 +19,3 @@ export const getThreadMessaegs = async (req: IAuthRequest, res: Response) => {
   const messages = await retrieveMessages(threadId, client);
   return res.status(200).json(messages);
 };
-

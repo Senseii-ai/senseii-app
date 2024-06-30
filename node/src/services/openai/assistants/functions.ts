@@ -1,5 +1,5 @@
 // list of all the supported functions in the application
-import { createNutritionPlanFunction } from "./nutrition/functions";
+import { createNutritionPlanFunction } from "./nutrition/nutrition.functions";
 
 // each function will have these three properties
 export interface IFunctionType {

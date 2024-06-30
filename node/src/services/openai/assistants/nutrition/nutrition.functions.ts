@@ -1,15 +1,15 @@
 // this will contain the functions that can be used in the nutrition assistant
-import { getNutritionAssistant } from "./assistant";
+import { getNutritionAssistant } from "./nutrition.assistant";
 import { FunctionDefinition } from "openai/resources";
 import { IFunctionType } from "../functions";
 import chalk from "chalk";
 import { Assistant } from "openai/resources/beta/assistants/assistants";
 import { createRun } from "../run";
-import { getOpenAIClient } from "../../client";
+import { getOpenAIClient } from "../../openai.client";
 import { getNewThreadWithMessages } from "../threads";
 import { MessageCreateParams } from "openai/resources/beta/threads/messages/messages";
-import { ICreateNutritionPlanArguments } from "../../../types/user/nutritionPlan";
-import { StringToJson } from "./utils/utils";
+import { ICreateNutritionPlanArguments } from "../../../../types/user/nutritionPlan";
+import { StringToJson } from "./utils/nutrition.utils";
 
 // A general type containing arguments for all types of functions supported by nutrition assistant.
 export type NutritionToolArguments = ICreateNutritionPlanArguments;
@@ -38,7 +38,7 @@ export const CreateNutritionPlan = async (
     console.log(chalk.green("This is the output", JSON.stringify(output)));
 
     // save it into the database and return to the user the response
-    const jsonObject = StringToJson(output)
+    const jsonObject = StringToJson(output);
     return output;
   } catch (error) {
     console.error(chalk.red(error));

@@ -8,8 +8,7 @@ const client = getOpenAIClient();
 
 export const chatCore = async (req: IAuthRequest, res: Response) => {
   try {
-    const thread = "thread_L78Nc9I2bRWFFdDpbTmaUntn";
-    console.log(" I am here", thread);
+    const thread = "thread_EIQFLWEQLJvYLrmVriXgM1nz";
     const assistant = getCoreAssistantId();
     const userMessage = req.body.message;
     const response = await continueThread(

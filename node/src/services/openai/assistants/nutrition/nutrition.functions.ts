@@ -3,11 +3,11 @@ import { getNutritionAssistant } from "./nutrition.assistant";
 import { FunctionDefinition } from "openai/resources";
 import { IFunctionType } from "../functions";
 import chalk from "chalk";
-import { Assistant } from "openai/resources/beta/assistants/assistants";
+import { Assistant } from "openai/resources/beta/assistants";
 import { createRun } from "../run";
 import { getOpenAIClient } from "../../openai.client";
 import { getNewThreadWithMessages } from "../threads";
-import { MessageCreateParams } from "openai/resources/beta/threads/messages/messages";
+import { MessageCreateParams } from "openai/resources/beta/threads/messages";
 import { ICreateNutritionPlanArguments } from "../../../../types/user/nutritionPlan";
 import { StringToJson } from "./utils/nutrition.utils";
 

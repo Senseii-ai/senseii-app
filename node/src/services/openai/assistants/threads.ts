@@ -1,12 +1,14 @@
 import { ThreadCreateParams } from "openai/resources/beta/threads/threads";
-import OpenAI from "openai";
+import { AzureOpenAI } from "openai";
 import { createRun } from "./run";
 import { getOpenAIClient } from "../openai.client";
-import { MessageCreateParams } from "openai/resources/beta/threads/messages/messages";
+import { MessageCreateParams } from "openai/resources/beta/threads/messages";
+
+const client = getOpenAIClient();
 
 // addMessageToThread adds a message to a thread, when a threadId is provided.
 const addMessageToThread = async (
-  client: OpenAI,
+  client: AzureOpenAI,
   threadId: string,
   inputMessage: MessageCreateParams,
 ) => {
@@ -25,7 +27,7 @@ const addMessageToThread = async (
 // createMessage creates a message in a thread, when a message and threadId are provided.
 export const createMessage = async (
   message: string,
-  client: OpenAI,
+  client: AzureOpenAI,
   threadId: string,
 ) => {
   try {
@@ -50,12 +52,12 @@ export const createMessage = async (
 
 export const continueThread = async (
   threadId: string,
-  client: OpenAI,
+  client: AzureOpenAI,
   message: MessageCreateParams,
   assistantId: string,
 ) => {
   try {
-    const newMessage = client.beta.threads.messages.create(threadId, message);
+    client.beta.threads.messages.create(threadId, message);
     const response = await createRun(threadId, client, assistantId);
     return response;
   } catch (error) {
@@ -66,7 +68,7 @@ export const continueThread = async (
 
 export const getNewThreadWithMessages = async (
   message: ThreadCreateParams.Message,
-  client: OpenAI,
+  client: AzureOpenAI,
 ): Promise<string> => {
   const messages = [message];
   const thread = await client.beta.threads.create({
@@ -75,17 +77,20 @@ export const getNewThreadWithMessages = async (
   return thread.id;
 };
 
-export const getNewEmptyThread = async (client: OpenAI) => {
+export const getNewEmptyThread = async (client: AzureOpenAI) => {
   const thread = await client.beta.threads.create();
   return thread;
 };
 
-export const getThreadById = async (threadId: string, client: OpenAI) => {
+export const getThreadById = async (threadId: string, client: AzureOpenAI) => {
   const thread = await client.beta.threads.retrieve(threadId);
   return thread;
 };
 
-export const retrieveMessages = async (threadId: string, client: OpenAI) => {
+export const retrieveMessages = async (
+  threadId: string,
+  client: AzureOpenAI,
+) => {
   const messages = await client.beta.threads.messages.list(threadId);
   return messages;
 };

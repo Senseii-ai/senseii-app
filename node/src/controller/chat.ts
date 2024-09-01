@@ -8,7 +8,7 @@ import {
 import { createRun } from "../services/openai/assistants/run";
 import { getCoreAssistantId } from "../services/openai/assistants/core/core.assistant";
 import chalk from "chalk";
-import { MessageCreateParams } from "openai/resources/beta/threads/messages/messages";
+import { MessageCreateParams } from "openai/resources/beta/threads/messages";
 import { getNutritionAssistantId } from "../services/openai/assistants/nutrition/nutrition.assistant";
 
 const OpenAIClient = getOpenAIClient();

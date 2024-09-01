@@ -1,12 +1,12 @@
 // this file will handle the run related tasks and actions
-import OpenAI from "openai";
+import OpenAI, { AzureOpenAI } from "openai";
 import { createMessage } from "./threads";
 import {
   RequiredActionFunctionToolCall,
   Run,
   RunSubmitToolOutputsParams,
 } from "openai/resources/beta/threads/runs/runs";
-import { Message } from "openai/resources/beta/threads/messages/messages";
+import { Message } from "openai/resources/beta/threads/messages";
 import chalk from "chalk";
 import { parseFunctionArguments } from "./utils";
 import { getSupportedFunctions } from "./functions";
@@ -23,7 +23,7 @@ const runStatus = {
 export const addMessageAndCreateRun = async (
   threadId: string,
   message: string,
-  client: OpenAI,
+  client: AzureOpenAI,
   assistantId: string,
 ) => {
   try {

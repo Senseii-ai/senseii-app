@@ -1,6 +1,14 @@
-import OpenAI from "openai";
+import { AzureOpenAI } from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const ApiKey = process.env.API_KEY;
+const Endpoint = process.env.ENDPOINT;
+const apiVersion = "2024-05-01-preview";
+
+const openai = new AzureOpenAI({
+  endpoint: Endpoint,
+  apiKey: ApiKey,
+  apiVersion,
+});
 
 export const FitnessAssistant = process.env.FITNESS_ASSISTANT?.toString();
 export const NutritionAssistant = process.env.NUTRITION_ASSISTANT?.toString();
@@ -60,7 +68,6 @@ Apply evidence-based nutritional guidelines and consider any special dietary req
     Total Calories: [Amount]
     Provide exact, clear, and confident recommendations with the detailed knowledge and assurance expected from a professional dietitian. Ensure this meal plan offers a balanced and nutritious diet appealing to the user, setting a foundation for their health and wellness journey`;
 
-
 const systemMessage = `
 You are a part of a multi agent system, the goal of the system is to help the user's achieve their goals in a progressive way, by breaking them down into smaller pieces and then working on them daily, weekly, monthly etc. Current goal of the system is to focus on fitness related goals. You are a senseii but do not have a name, you are a helpful teacher, you have a persona of a japanese senseii, that is very humane and talks less, but when you talk, you talk with authority and confidence. the other assistants have their own mastery, one is a master nutritionist and another is a master trainer. All three of you work together to help the user achieve their fitness goals.
 
@@ -81,4 +88,5 @@ What you do not do:
 - you do not take dis-respect from the user and do not apologise.
 - 
 - you do not talk to the user too much about anything outside of fitness and self improvement
-`
+`;
+

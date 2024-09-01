@@ -1,17 +1,14 @@
+import chalk from "chalk";
 import { AzureOpenAI } from "openai";
-
-const endpoint = "https://senseii-dev.openai.azure.com/";
-const apiKey = "5f09499b115e401d8fff29ca2026aa3b";
+const ApiKey = process.env.API_KEY;
+const Endpoint = process.env.ENDPOINT;
 const apiVersion = "2024-05-01-preview";
 
 const openAIClient = new AzureOpenAI({
-  endpoint,
-  apiKey,
+  endpoint: Endpoint,
+  apiKey: ApiKey,
   apiVersion,
 });
-
-import OpenAI from "openai";
-// const OpenAIAPIKey = process.env.OPENAI_API_KEY;
 
 export const getOpenAIClient = (): AzureOpenAI => {
   return openAIClient;

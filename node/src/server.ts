@@ -8,6 +8,7 @@ import HealthRouter from "./routes/health";
 import threadRouter from "./routes/threads";
 import cors from "cors";
 import swaggerDocs from "./utils/swagger";
+import chalk from "chalk";
 
 const app: Express = express();
 app.use(cors());
@@ -29,7 +30,9 @@ app.get("/ping", (req: Request, res: Response) => {
 const start = async () => {
   await connectDB();
   app.listen(port, () => {
-    console.log("listening to port 9090");
+    console.log(
+      chalk.white(chalk.bgGreen("[INFO]:"), "Server listening to port 9090"),
+    );
   });
 
   swaggerDocs(app, port);

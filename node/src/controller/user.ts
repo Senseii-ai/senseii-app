@@ -11,7 +11,6 @@ import RefreshTokenModel from "../models/refreshToken";
 import Joi from "joi";
 
 export const CreateNewUser = async (req: Request, res: Response) => {
-  console.log("I was called");
   const { email, password }: { email: string; password: string } = req.body;
 
   try {

@@ -36,7 +36,7 @@ export const CreateNutritionPlan = async (
       output = response[0].content[0].text.value;
     }
     console.log(chalk.green("This is the output", JSON.stringify(output)));
-
+    // Save user preferences into the database.
     // save it into the database and return to the user the response
     const jsonObject = StringToJson(output);
     return output;

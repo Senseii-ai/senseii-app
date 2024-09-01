@@ -1,4 +1,4 @@
-import Joi, { string } from "joi";
+import Joi from "joi";
 import { IUserPreferences } from "../../../../../types/user/userPreferences";
 import chalk from "chalk";
 
@@ -10,7 +10,7 @@ const userPreferenceRecordSchema: Joi.ObjectSchema<IUserPreferences> =
       age: Joi.number().required(),
       weight: Joi.object({
         value: Joi.number().required(),
-        unit: Joi.string().valid(["Kilograms", "Pounds", "Grams"]).required(),
+        unit: Joi.string().valid("Kilograms", "Pounds", "Grams").required(),
       }),
       height: Joi.object({
         value: Joi.number().required(),
@@ -20,20 +20,18 @@ const userPreferenceRecordSchema: Joi.ObjectSchema<IUserPreferences> =
     }).required(),
     lifeStyle: Joi.object({
       dailyRoutine: Joi.string()
-        .valid(["sedenatry", "light", "moderate", "heavy", "very heavy"])
+        .valid("sedenatry", "light", "moderate", "heavy", "very heavy")
         .required(),
       exerciseRoutine: Joi.object({
         exerciseType: Joi.string()
-          .valid(["cardio", "strength", "flexibility", "balance", "none"])
+          .valid("cardio", "strength", "flexibility", "balance", "none")
           .required(),
-        frtequency: Joi.string()
-          .valid(["daily", "weekly", "monthly"])
-          .required(),
+        frtequency: Joi.string().valid("daily", "weekly", "monthly").required(),
       }).required(),
     }).required(),
     dietPreferences: Joi.object({
       preference: Joi.string()
-        .valid([
+        .valid(
           "vegetarian",
           "non-vegetarian",
           "vegan",
@@ -41,7 +39,7 @@ const userPreferenceRecordSchema: Joi.ObjectSchema<IUserPreferences> =
           "omnivore",
           "ketogenic",
           "paleo",
-        ])
+        )
         .required(),
       allergies: Joi.array().required(),
       intolerances: Joi.array().required(),
@@ -49,29 +47,23 @@ const userPreferenceRecordSchema: Joi.ObjectSchema<IUserPreferences> =
       favouriteFood: Joi.array(),
     }).required(),
     healthGoals: Joi.object({
-      weightGoal: Joi.string().valid(["gain", "loss", "maintain"]),
+      weightGoal: Joi.string().valid("gain", "loss", "maintain"),
       specificNutritionGoal: Joi.string().required(),
       medicalConditions: Joi.array(),
     }).required(),
     eatingHabits: Joi.object({
       mealsPerDay: Joi.number().required(),
       mealComplexity: Joi.string()
-        .valid(["simple", "moderate", "complex"])
+        .valid("simple", "moderate", "complex")
         .required(),
       cookingTime: Joi.string()
-        .valid([
-          "less than 30 minutes",
-          "30-60 minutes",
-          "more than 60 minutes",
-        ])
+        .valid("less than 30 minutes", "30-60 minutes", "more than 60 minutes")
         .required(),
     }).required(),
     constraints: Joi.object({
       financial: Joi.object({
         budget: Joi.number().required(),
-        budgetType: Joi.string()
-          .valid(["daily", "weekly", "monthly"])
-          .required(),
+        budgetType: Joi.string().valid("daily", "weekly", "monthly").required(),
       }),
       geographical: Joi.object({
         location: Joi.string().required(),
@@ -87,7 +79,10 @@ function validateUserPreference(jsonObject: any): Boolean {
     }
     return true;
   } catch (error) {
-    console.log(chalk.red("Error validating user preference Json object"));
+    console.log(
+      chalk.red("Error validating user preference Json object"),
+      error,
+    );
     throw error;
   }
 }

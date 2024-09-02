@@ -10,9 +10,16 @@ import cors from "cors";
 import swaggerDocs from "./utils/swagger";
 import chalk from "chalk";
 import { authenticateUser } from "./middlewares/auth";
+import bodyParser from "body-parser";
 
 const app: Express = express();
 app.use(cors());
+app.use(
+  bodyParser.urlencoded({
+    extended: true,
+  }),
+);
+app.use(bodyParser.json());
 const port = 9090;
 
 app.use(express.json());

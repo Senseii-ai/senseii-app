@@ -23,7 +23,7 @@ export interface IMessage {
 export const startChat = async (req: IAuthRequest, res: Response) => {
   try {
     const user = req.userId as string;
-    const { message } = req.body;
+    const message = req.body.message;
     const inputMessage: MessageCreateParams = {
       role: message.role,
       content: message.content,
@@ -31,8 +31,6 @@ export const startChat = async (req: IAuthRequest, res: Response) => {
     const coreAssistantId = getCoreAssistantId();
     // since thread does not exist, ceate a new one
     const threadId = await getNewThreadWithMessages(inputMessage, OpenAIClient);
-
-    console.log("Starting a new Chat");
 
     // TODO: Add thread to the user profile
     const updatedProfile = addChatToUser(user, threadId);
@@ -45,7 +43,7 @@ export const startChat = async (req: IAuthRequest, res: Response) => {
     // create a run with the messages
     const response = await createRun(threadId, OpenAIClient, coreAssistantId);
     // return the response
-    return res.status(200).json(response);
+    return res.status(200).json(threadId);
   } catch (error) {
     console.error(error);
     throw error;

@@ -13,7 +13,7 @@ const client = getOpenAIClient();
 // createEmptyThread creates a new thread and returns the thread object.
 export const createEmptyThread = async (req: IAuthRequest, res: Response) => {
   const response = await getNewEmptyThread(client);
-  return res.status(200).json(response);
+  return res.status(200).json(response.id);
 };
 
 // getThreadMessages retruns a list of all the messages

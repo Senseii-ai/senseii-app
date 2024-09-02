@@ -2,8 +2,8 @@ import bcrypt from "bcryptjs";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { IUserDecoded } from "../types/auth";
 
-export const getRefreshToken = (email: string) => {
-  return jwt.sign(email, getRefreshTokenKey());
+export const getRefreshToken = (userId: string) => {
+  return jwt.sign(userId, getRefreshTokenKey());
 };
 
 const getRefreshTokenKey = (): string => {
@@ -16,8 +16,8 @@ const getRefreshTokenKey = (): string => {
   return RefreshTokenKey;
 };
 
-export const getAccessToken = (email: string) => {
-  return jwt.sign(email, getAccessTokenKey());
+export const getAccessToken = (userId: string) => {
+  return jwt.sign(userId, getAccessTokenKey());
 };
 
 const getAccessTokenKey = (): string => {
@@ -44,14 +44,10 @@ export const hashPassword = async (password: string): Promise<string> => {
   return await bcrypt.hash(password, getSalt());
 };
 
-export const verifyToken = (token: string): IUserDecoded | null => {
+export const verifyToken = (token: string): string => {
   try {
     const payload = jwt.verify(token, getAccessTokenKey());
-    if (typeof payload === "string") {
-      return null;
-    }
-
-    return payload as IUserDecoded;
+    return payload as string;
   } catch (error) {
     console.error("Token Verification failed", error);
     throw new Error("Invalid token");

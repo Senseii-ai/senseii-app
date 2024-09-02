@@ -9,6 +9,7 @@ import threadRouter from "./routes/threads";
 import cors from "cors";
 import swaggerDocs from "./utils/swagger";
 import chalk from "chalk";
+import { authenticateUser } from "./middlewares/auth";
 
 const app: Express = express();
 app.use(cors());
@@ -16,6 +17,7 @@ const port = 9090;
 
 app.use(express.json());
 app.use("/api", userRouter);
+app.use(authenticateUser);
 app.use("/api/vitals", VitalRouter);
 app.use("/api/chat", ChatRouter);
 app.use("/api/health", HealthRouter);

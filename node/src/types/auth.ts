@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import { Types } from "mongoose";
 
 export interface IRFToken {
   token: string;
@@ -9,7 +9,5 @@ export interface IRFToken {
 
 export interface IUserDecoded {
   userName: string;
-  userId: Types.ObjectId
+  userId: string;
 }
-
-

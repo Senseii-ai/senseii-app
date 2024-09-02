@@ -1,14 +1,14 @@
-import { Schema, model } from 'mongoose';
-import { IRFToken } from '../types/auth';
+import { Schema, model } from "mongoose";
+import { IRFToken } from "../types/auth";
 
 const RefreshTokenSchema: Schema<IRFToken> = new Schema({
   token: {
     type: String,
-    required: true
+    required: true,
   },
   user: {
     type: Schema.Types.ObjectId,
-    ref: 'Users',
+    ref: "Users",
     required: true,
   },
   expiresAt: {
@@ -18,9 +18,9 @@ const RefreshTokenSchema: Schema<IRFToken> = new Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-    index: { expires: '7d' },
+    index: { expires: "7d" },
   },
 });
 
-const RefreshTokenModel = model('RefreshToken', RefreshTokenSchema);
+const RefreshTokenModel = model("RefreshToken", RefreshTokenSchema);
 export default RefreshTokenModel;

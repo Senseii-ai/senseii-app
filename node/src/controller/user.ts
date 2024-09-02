@@ -58,19 +58,14 @@ export const LoginUser = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "User not Found" });
     }
 
-    console.log("SENT PASSWORD", password);
-    console.log("SAVED PASSWORD", user.password);
-    console.log("USER NAME", user.email);
-
     const responseCheck = comparePassword(password, user.password);
-    console.log("responseCheck", responseCheck);
 
     if (!(await comparePassword(password, user.password))) {
       return res.status(401).json({ message: "email or password incorrect" });
     }
 
-    const accessToken = getAccessToken(email);
-    const refreshToken = getRefreshToken(email);
+    const accessToken = getAccessToken(user.id);
+    const refreshToken = getRefreshToken(user.id);
 
     const currentDate = new Date();
     const expiresAt = currentDate.setDate(currentDate.getDate() + 7);

@@ -42,7 +42,7 @@ export const getBloodGlucoseRecords = async (
   res: Response
 ) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
@@ -63,8 +63,7 @@ export const newBloodGlucoseRecords = async (
   res: Response
 ) => {
   try {
-    const user = req.user;
-    const userId = user?.userId;
+    const userId = req.userId;
 
     // check if data sent is an array, if not, conver to array.
     const data = Array.isArray(req.body) ? req.body : [req.body];
@@ -134,7 +133,7 @@ export const newBloodPressureRecords = async (
   res: Response
 ) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = Array.isArray(req.body) ? req.body : [req.body];
 
     // validate the records
@@ -185,7 +184,7 @@ export const getBloodPressureRecords = async (
   res: Response
 ) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
@@ -209,7 +208,7 @@ const validateBodyFatRecordSchema = Joi.object({
 
 export const newBodyFatRecords = async (req: IAuthRequest, res: Response) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = Array.isArray(req.body) ? req.body : [req.body];
 
     // validate the data
@@ -247,7 +246,7 @@ export const newBodyFatRecords = async (req: IAuthRequest, res: Response) => {
 
 export const getBodyFatRecords = async (req: IAuthRequest, res: Response) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
@@ -279,7 +278,7 @@ export const newBodyTemperatureRecords = async (
   res: Response
 ) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = Array.isArray(req.body) ? req.body : [req.body];
 
     // validate the data
@@ -330,7 +329,7 @@ export const getBodyTemperatureRecords = async (
   res: Response
 ) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
@@ -369,7 +368,7 @@ const validateWaterMassRecord = Joi.object({
 // get Water Mass Records
 export const getWaterMassRecords = async (req: IAuthRequest, res: Response) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
@@ -387,7 +386,7 @@ export const getWaterMassRecords = async (req: IAuthRequest, res: Response) => {
 // create new Water Mass Records
 export const newWaterMassRecords = async (req: IAuthRequest, res: Response) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = Array.isArray(req.body) ? req.body : [req.body];
 
     // validate the records
@@ -445,7 +444,7 @@ const validateHeartRateRecord = Joi.object({
 // get Heart Rate Records
 export const getHeartRateRecords = async (req: IAuthRequest, res: Response) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
@@ -463,7 +462,7 @@ export const getHeartRateRecords = async (req: IAuthRequest, res: Response) => {
 // create new Heart Rate Records
 export const newHeartRateRecords = async (req: IAuthRequest, res: Response) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = Array.isArray(req.body) ? req.body : [req.body];
 
     // validate the records
@@ -514,7 +513,7 @@ export const getHeartRateVariabilityRecords = async (
   res: Response
 ) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
@@ -536,7 +535,7 @@ export const newHeartRateVariabilityRecords = async (
   res: Response
 ) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = Array.isArray(req.body) ? req.body : [req.body];
 
     // vlaidate the records
@@ -601,7 +600,7 @@ const validateHydrationRecordSchema = Joi.object({
 // get Hydration Records
 export const getHydrationRecords = async (req: IAuthRequest, res: Response) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
@@ -619,7 +618,7 @@ export const getHydrationRecords = async (req: IAuthRequest, res: Response) => {
 // create new Hydration Records
 export const newHydrationRecords = async (req: IAuthRequest, res: Response) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = Array.isArray(req.body) ? req.body : [req.body];
 
     // validate the data
@@ -675,7 +674,7 @@ export const getOxygenSaturationRecords = async (
   res: Response
 ) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
@@ -697,7 +696,7 @@ export const newOxygenSaturationRecords = async (
   res: Response
 ) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = Array.isArray(req.body) ? req.body : [req.body];
 
     // validate the data
@@ -755,7 +754,7 @@ export const getRespiratoryRateRecords = async (
   res: Response
 ) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
@@ -778,7 +777,7 @@ export const newRespiratoryRateRecords = async (
   res: Response
 ) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = Array.isArray(req.body) ? req.body : [req.body];
 
     // validate the data
@@ -836,7 +835,7 @@ export const getRestingHeartRateRecords = async (
   res: Response
 ) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
@@ -859,7 +858,7 @@ export const newRestingHeartRateRecords = async (
   res: Response
 ) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = Array.isArray(req.body) ? req.body : [req.body];
 
     // validate the data
@@ -915,7 +914,7 @@ const validateVo2MaxRecordsSchema = Joi.object({
 // get Vo2 Max Records
 export const getVo2MaxRecords = async (req: IAuthRequest, res: Response) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = await UserVitalsModel.findOne({ user: userId });
 
     if (!data) {
@@ -934,7 +933,7 @@ export const getVo2MaxRecords = async (req: IAuthRequest, res: Response) => {
 // new Vo2 Max Records
 export const newVo2MaxRecords = async (req: IAuthRequest, res: Response) => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.userId;
     const data = Array.isArray(req.body) ? req.body : [req.body];
 
     // validate the data

@@ -10,6 +10,7 @@ import { getCoreAssistantId } from "../services/openai/assistants/core/core.assi
 import chalk from "chalk";
 import { MessageCreateParams } from "openai/resources/beta/threads/messages";
 import { getNutritionAssistantId } from "../services/openai/assistants/nutrition/nutrition.assistant";
+import { addChatToUser } from "../models/userInfo";
 
 const OpenAIClient = getOpenAIClient();
 
@@ -21,6 +22,7 @@ export interface IMessage {
 // the user initiates a new chat
 export const startChat = async (req: IAuthRequest, res: Response) => {
   try {
+    const user = req.userId as string;
     const { message } = req.body;
     const inputMessage: MessageCreateParams = {
       role: message.role,
@@ -29,7 +31,17 @@ export const startChat = async (req: IAuthRequest, res: Response) => {
     const coreAssistantId = getCoreAssistantId();
     // since thread does not exist, ceate a new one
     const threadId = await getNewThreadWithMessages(inputMessage, OpenAIClient);
+
+    console.log("Starting a new Chat");
+
+    // TODO: Add thread to the user profile
+    const updatedProfile = addChatToUser(user, threadId);
+    console.log("reached here");
+    if (!updatedProfile) {
+      throw new Error("Error adding thread Id for user");
+    }
     console.log(chalk.green(threadId));
+
     // create a run with the messages
     const response = await createRun(threadId, OpenAIClient, coreAssistantId);
     // return the response

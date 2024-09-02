@@ -7,6 +7,7 @@ import {
 
 const router: Router = Router();
 
-router.route("/").post(createEmptyThread).get(getThreads);
+router.route("/").post(createEmptyThread);
+router.route("/").get(getThreads);
 router.route("/:id/messages").get(getThreadMessaegs);
 export default router;

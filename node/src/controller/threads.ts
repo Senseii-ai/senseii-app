@@ -32,6 +32,9 @@ export const getThreads = async (req: IAuthRequest, res: Response) => {
   try {
     const user = req.userId as string;
     const threads = await getUserThreads(user);
+    if (threads === undefined) {
+      return res.status(200).json([]);
+    }
     return res.status(200).json(threads);
   } catch (error) {
     console.log("error", error);

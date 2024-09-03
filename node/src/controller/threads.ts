@@ -29,6 +29,7 @@ export const getThreadMessaegs = async (req: IAuthRequest, res: Response) => {
 };
 
 export const getThreads = async (req: IAuthRequest, res: Response) => {
+  console.log("I was triggered again");
   try {
     const user = req.userId as string;
     const threads = await getUserThreads(user);

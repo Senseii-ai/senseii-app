@@ -9,6 +9,7 @@ import {
 
 import RefreshTokenModel from "../models/refreshToken";
 import Joi from "joi";
+import UserProfileModel from "../models/userInfo";
 
 export const CreateNewUser = async (req: Request, res: Response) => {
   const { email, password }: { email: string; password: string } = req.body;
@@ -24,6 +25,12 @@ export const CreateNewUser = async (req: Request, res: Response) => {
       password: hashedPassword,
     });
 
+    const newUserProfile = await UserProfileModel.create({
+      user: newUser.id,
+      chats: [],
+    });
+
+    if (!newUserProfile) throw new Error("Unable to create User profil");
     if (!newUser) throw new Error("Unable to SignUp");
     res.status(201).json({ message: "User Created Successfully" });
   } catch (error) {

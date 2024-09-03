@@ -20,7 +20,9 @@ const UserProfileSchema: Schema<IUserProfileDocument> = new Schema({
 });
 
 export const getUserThreads = async (userId: string) => {
-  const response = await UserProfileModel.findById(new Types.ObjectId(userId));
+  const response = await UserProfileModel.findOne({
+    user: new Types.ObjectId(userId),
+  });
   return response?.chats;
 };
 

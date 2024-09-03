@@ -29,7 +29,6 @@ export const getThreadMessaegs = async (req: IAuthRequest, res: Response) => {
 };
 
 export const getThreads = async (req: IAuthRequest, res: Response) => {
-  console.log("I was triggered again");
   try {
     const user = req.userId as string;
     const threads = await getUserThreads(user);
@@ -38,7 +37,7 @@ export const getThreads = async (req: IAuthRequest, res: Response) => {
     }
     return res.status(200).json(threads);
   } catch (error) {
-    console.log("error", error);
+    console.error("error", error);
     res.status(500).json({ message: "Error getting user threads" });
   }
 };

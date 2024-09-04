@@ -10,6 +10,7 @@ import { getCoreAssistantId } from "../services/openai/assistants/core/core.assi
 import { MessageCreateParams } from "openai/resources/beta/threads/messages";
 import { getNutritionAssistantId } from "../services/openai/assistants/nutrition/nutrition.assistant";
 import { addChatToUser } from "../models/userInfo";
+import { summariseChat } from "../services/openai/assistants/summary/utils";
 
 const OpenAIClient = getOpenAIClient();
 
@@ -28,16 +29,16 @@ export const startChat = async (req: IAuthRequest, res: Response) => {
       content: message.content,
     };
     const coreAssistantId = getCoreAssistantId();
-    // since thread does not exist, ceate a new one
     const threadId = await getNewThreadWithMessages(inputMessage, OpenAIClient);
-
-    const updatedProfile = addChatToUser(user, threadId);
+    await createRun(threadId, OpenAIClient, coreAssistantId);
+    const summary = await summariseChat(threadId);
+    if (!summary) {
+      return new Error("Error generating Summary");
+    }
+    const updatedProfile = addChatToUser(user, threadId, summary);
     if (!updatedProfile) {
       throw new Error("Error adding thread Id for user");
     }
-
-    // create a run with the messages
-    const response = await createRun(threadId, OpenAIClient, coreAssistantId);
     // return the response
     return res.status(200).json(threadId);
   } catch (error) {

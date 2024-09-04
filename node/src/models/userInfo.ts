@@ -3,10 +3,27 @@ import { Schema, model, Types } from "mongoose";
 
 export interface IUserProfile {
   user: Types.ObjectId; // unique ID of the user in the backend
-  chats: string[]; // List of thread IDs related to the user
+  chats: IChat[]; // List of thread IDs related to the user
+}
+
+export interface IChat {
+  id: string;
+  summary: string;
 }
 
 interface IUserProfileDocument extends IUserProfile, Document {}
+interface IChatsDocument extends IChat, Document {}
+
+const IChatSchema: Schema<IChatsDocument> = new Schema({
+  id: {
+    type: String,
+    required: true,
+  },
+  summary: {
+    type: String,
+    required: true,
+  },
+});
 
 const UserProfileSchema: Schema<IUserProfileDocument> = new Schema({
   user: {
@@ -15,7 +32,7 @@ const UserProfileSchema: Schema<IUserProfileDocument> = new Schema({
     required: true,
   },
   chats: {
-    type: [String],
+    type: [IChatSchema],
   },
 });
 
@@ -26,15 +43,24 @@ export const getUserThreads = async (userId: string) => {
   return response?.chats;
 };
 
-export const addChatToUser = async (userId: string, chatId: string) => {
+export const addChatToUser = async (
+  userId: string,
+  threadId: string,
+  summary: string,
+) => {
   try {
     if (!Types.ObjectId.isValid(userId)) {
       throw new Error("Invalid user ID");
     }
 
+    const newChat: IChat = {
+      id: threadId,
+      summary: summary,
+    };
+
     const updatedUserProfile = await UserProfileModel.findOneAndUpdate(
       { user: new Types.ObjectId(userId) },
-      { $push: { chats: chatId } },
+      { $push: { chats: newChat } },
       { new: true, useFindAndModify: false },
     ).exec();
 

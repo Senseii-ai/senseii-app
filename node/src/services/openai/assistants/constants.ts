@@ -13,6 +13,7 @@ const openai = new AzureOpenAI({
 export const FitnessAssistant = process.env.FITNESS_ASSISTANT?.toString();
 export const NutritionAssistant = process.env.NUTRITION_ASSISTANT?.toString();
 export const CoreAssistantId = process.env.CORE_ASSISTANT?.toString();
+export const SummaryAssistantId = process.env.SUMMARY_ASSISTANT?.toString();
 
 const WORKOUT_ASSISTANT_NAME = "workout_planner";
 const WORKOUT_ASSISTANT_DESCRIPTION =
@@ -89,4 +90,3 @@ What you do not do:
 - 
 - you do not talk to the user too much about anything outside of fitness and self improvement
 `;
-

@@ -77,13 +77,13 @@ export const createNutritionPlanSchema = () => {
   const createNutritionPlanSchema: FunctionDefinition = {
     name: "create_nutrition_plan",
     description: `Creates a nutrition plan for the user when core assistant has all the necessary information needed to create the diet plan.
-      List of information:
-      - basicInformation: The basic information of the user which includes age [required], weight[required], height [required], gender [required].
-      - lifestyle: The lifestyle of the user which includes daily routine and exercise routine [required], daily routine [optional].
-      - dietPreferences: The diet preferences of the user which includes preferences [required], allergies [required], intolerances, disliked food, favourite food.
-      - healthGoals: The health goals of the user which includes weight goal [required], specific nutrition goal [required], medical conditions [required].
-      - eatingHabits: The eating habits of the user which includes meals per day [required], meal complexity [optional], cooking time [optional].
-      - constraints: The constraints of the user which includes financial [required], geographical [optional].
+[req] means required List of information:
+      - basicInformation: basic user information includes age [req], weight[req], height [req], gender [req].
+      - lifestyle: user lifestyle information which includes daily routine and exercise routine [req], daily routine [optional].
+      - dietPreferences: user diet preference which includes preferences [req], allergies [req], intolerances, disliked food, favourite food.
+      - healthGoals: user health goals which includes weight goal [req], specific nutrition goal [req], medical conditions [req].
+      - eatingHabits: user eating habits which includes meals per day [req], meal complexity [optional], cooking time [optional].
+      - constraints: user constraints which includes financial [req], geographical [optional].
 
       The diet plan is created based on the information provided by the user.
       `,

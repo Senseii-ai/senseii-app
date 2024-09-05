@@ -33,6 +33,10 @@ export const addMessageAndCreateRun = async (
     });
     // TODO: implement responsePoller
     const messages = await responsePoller(run, client, threadId);
+    if (!messages) {
+      console.error("Error creating run", run);
+      return;
+    }
     if (messages.length > 0) {
       console.log(chalk.green("run succesful"));
       return messages;
@@ -55,6 +59,10 @@ export const createRun = async (
     });
     // TODO: implement responsePoller
     const response = await responsePoller(run, client, threadId);
+    if (!response) {
+      console.error("Error creating run", run);
+      return;
+    }
     if (response.length > 0) {
       return response;
     }
@@ -101,7 +109,7 @@ const responsePoller = async (
   run: Run,
   client: OpenAI,
   threadId: string,
-): Promise<Message[]> => {
+): Promise<Message[] | null> => {
   try {
     const incompleteState = ["queued", "cancelling", "in_progress"];
     let messages: Message[] = [];
@@ -133,10 +141,10 @@ const responsePoller = async (
 
     // check if run is complete
     if (run.status === runStatus.COMPLETED) {
-      console.log(chalk.green("RUN COMPLETED"));
       messages = (await client.beta.threads.messages.list(threadId)).data;
+      return messages;
     }
-    return messages;
+    return null;
   } catch (error) {
     console.log(chalk.red("error polling response"));
     throw error;

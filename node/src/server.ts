@@ -24,7 +24,7 @@ const port = 9090;
 
 app.use(express.json());
 app.use("/api", userRouter);
-app.use(authenticateUser);
+// app.use(authenticateUser);
 app.use("/api/vitals", VitalRouter);
 app.use("/api/chat", ChatRouter);
 app.use("/api/health", HealthRouter);

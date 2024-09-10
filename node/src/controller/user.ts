@@ -1,4 +1,4 @@
-import { UserModel } from "../models/users";
+import { UserModel, getUserByEmail } from "../models/users";
 import { Request, Response } from "express";
 import {
   comparePassword,
@@ -10,19 +10,53 @@ import {
 import RefreshTokenModel from "../models/refreshToken";
 import Joi from "joi";
 import UserProfileModel from "../models/userInfo";
+import { infoLogger } from "../utils/logger/logger";
 
+export const getUser = async (req: Request, res: Response) => {
+  try {
+    const { email }: { email: string } = req.body;
+    infoLogger({
+      message: `Get user ${email}`,
+    });
+
+    const user = await getUserByEmail(email);
+    infoLogger({
+      message: "User Found",
+      status: "success",
+    });
+
+    res.status(201).json({
+      status: "success",
+      message: "User Found Successfully",
+      data: user,
+    });
+  } catch (error) {
+    console.error("Error finding user", error);
+  }
+};
+
+// FIX: add zod validator here
 export const CreateNewUser = async (req: Request, res: Response) => {
-  const { email, password }: { email: string; password: string } = req.body;
+  const {
+    email,
+    password,
+    salt,
+  }: { email: string; password: string; salt: string } = req.body;
+
+  infoLogger({ message: `Creating User %{email}` });
 
   try {
     const user = await UserModel.findOne({ email: email });
     if (user) {
-      return res.status(409).json({ message: "email already used" });
+      return res
+        .status(409)
+        .json({ status: "failed", message: "email already used" });
     }
-    const hashedPassword: string = await hashPassword(password);
+    const hashedPassword: string = await hashPassword(password, salt);
     const newUser = await UserModel.create({
       email: email,
       password: hashedPassword,
+      salt: salt,
     });
 
     const newUserProfile = await UserProfileModel.create({
@@ -30,12 +64,16 @@ export const CreateNewUser = async (req: Request, res: Response) => {
       chats: [],
     });
 
-    if (!newUserProfile) throw new Error("Unable to create User profil");
+    if (!newUserProfile) throw new Error("Unable to create User profile");
     if (!newUser) throw new Error("Unable to SignUp");
-    res.status(201).json({ message: "User Created Successfully" });
+    infoLogger({ message: `New user created Successfully`, status: "success" });
+
+    res
+      .status(201)
+      .json({ type: "success", message: "User Created Successfully" });
   } catch (error) {
     console.error("Error in Sign Up", error);
-    return res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ type: "failed", message: error });
   }
 };
 

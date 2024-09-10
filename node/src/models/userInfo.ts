@@ -1,5 +1,6 @@
 import chalk from "chalk";
 import { Schema, model, Types } from "mongoose";
+import { Chat } from "../types/ai/ai";
 
 export interface IUserProfile {
   user: Types.ObjectId; // unique ID of the user in the backend
@@ -40,6 +41,11 @@ export const getUserThreads = async (userId: string) => {
   const response = await UserProfileModel.findOne({
     user: new Types.ObjectId(userId),
   });
+
+  if (!response) {
+    throw new Error("Error finding User Profile");
+  }
+
   return response?.chats;
 };
 

@@ -40,8 +40,11 @@ export const comparePassword = async (
   return await bcrypt.compare(userPassword, savedPassword);
 };
 
-export const hashPassword = async (password: string): Promise<string> => {
-  return await bcrypt.hash(password, getSalt());
+export const hashPassword = async (
+  password: string,
+  salt: string,
+): Promise<string> => {
+  return await bcrypt.hash(password, salt);
 };
 
 export const verifyToken = (token: string): string => {

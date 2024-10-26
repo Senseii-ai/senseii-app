@@ -1,11 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-
-interface User {
-  email: string;
-  password: string;
-  accessToken?: string;
-  salt: string;
-}
+import { User } from "../types/dtos/user";
 
 const UserSchema: Schema = new Schema<User>({
   email: {
@@ -33,7 +27,15 @@ export const getUserByEmail = async (email: string) => {
     console.error("Error finding user");
     throw new Error("Error finding user");
   }
-  return user;
+  const userDTO: User = {
+    id: user.id,
+    email: user.email,
+    password: user.password,
+    salt: user.salt,
+    accessToken: user.accessToken,
+  };
+
+  return userDTO;
 };
 
 export const UserModel = mongoose.model<User>("Users", UserSchema);

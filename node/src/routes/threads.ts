@@ -8,6 +8,6 @@ import {
 const router: Router = Router();
 
 router.route("/").post(createEmptyThread);
-router.route("/").get(getThreads);
-router.route("/:id/messages").get(getThreadMessaegs);
+router.route("/threads/:id/messages").get(getThreadMessaegs);
+router.route("/user/:id/threads").get(getThreads);
 export default router;

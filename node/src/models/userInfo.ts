@@ -47,6 +47,17 @@ const UserProfileModel = model<IUserProfileDocument>(
   UserProfileSchema,
 );
 
+export const getUserByUserId = async (userId: string) => {
+  infoLogger({ message: "get user by userid" });
+  const response = await UserProfileModel.findOne({
+    user: userId,
+  });
+  if (!response) {
+    return null;
+  }
+  return response as IUserProfile;
+};
+
 export const getThreadAndUserByChatId = async (chatId: string) => {
   const response = await UserProfileModel.findOne({
     "chats.id": chatId,

@@ -2,8 +2,12 @@ import { ThreadCreateParams } from "openai/resources/beta/threads/threads";
 import { AzureOpenAI } from "openai";
 import { createRun } from "./run";
 import { getOpenAIClient } from "../openai.client";
-import { MessageCreateParams } from "openai/resources/beta/threads/messages";
+import {
+  Message,
+  MessageCreateParams,
+} from "openai/resources/beta/threads/messages";
 import { infoLogger } from "../../../utils/logger/logger";
+import { chat } from "../../../controller/chat";
 const client = getOpenAIClient();
 
 export interface StreamCallbacks {
@@ -11,6 +15,43 @@ export interface StreamCallbacks {
   onError?: (error: any) => Promise<void> | void;
   onComplete?: () => Promise<void> | void;
 }
+
+export interface Chat extends Record<string, any> {
+  id: string;
+  title: string;
+  createdAt: Date;
+  userId: string;
+  path: string;
+  messages: Message[];
+  sharePath?: string;
+}
+
+export const getChatsFromThreadIds = async (threadIds: chat[]) => {
+  infoLogger({ message: "getting all chats from threads" });
+  try {
+    let finalResponse: Chat[] = [];
+    for (const thread of threadIds) {
+      const response = await client.beta.threads.messages.list(
+        threadIds[0].threadId,
+      );
+
+      finalResponse.push({
+        id: thread.id,
+        title: thread.title,
+        createdAt: new Date(response.data[response.data.length - 1].created_at),
+        userId: thread.userId,
+        path: `chat/${thread.id}`,
+        messages: response.data,
+        sharePath: "sharing not supported",
+      });
+    }
+
+    return finalResponse;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
 
 export async function createStreamableRun(
   client: AzureOpenAI,

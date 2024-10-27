@@ -86,7 +86,7 @@ export const chat = async (req: IAuthRequest, res: Response) => {
       // chat already exists, logic to continue chats.
       infoLogger({ message: "Chat already exists, continuing" });
       const response = await continueThread(
-        existingThreadId.id,
+        existingThreadId.threadId,
         OpenAIClient,
         inputMessage,
         coreAssistantId,
@@ -96,10 +96,16 @@ export const chat = async (req: IAuthRequest, res: Response) => {
         return null;
       }
 
+      // NOTE: Considering we are only dealing with text responses.
+      let message = "";
+      if (response[0].content[0].type === "text") {
+        message = response[0].content[0].text.value;
+      }
+
       return res.status(200).json({
         status: "success",
         message: "This will be the response",
-        data: response[0].content[0],
+        data: message,
       });
     } else {
       // Chat does not exists, logic to create a new chat

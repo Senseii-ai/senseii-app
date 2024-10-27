@@ -3,11 +3,52 @@ import { AzureOpenAI } from "openai";
 import { createRun } from "./run";
 import { getOpenAIClient } from "../openai.client";
 import { MessageCreateParams } from "openai/resources/beta/threads/messages";
-
+import { infoLogger } from "../../../utils/logger/logger";
 const client = getOpenAIClient();
 
+export interface StreamCallbacks {
+  onMessage?: (message: string) => Promise<void> | void;
+  onError?: (error: any) => Promise<void> | void;
+  onComplete?: () => Promise<void> | void;
+}
+
+export async function createStreamableRun(
+  client: AzureOpenAI,
+  threadId: string,
+  assistantId: string,
+  callbacks: StreamCallbacks,
+) {
+  infoLogger({ message: "creating a streamable run" });
+  try {
+    const stream = await client.beta.threads.runs.create(threadId, {
+      assistant_id: assistantId,
+      stream: true,
+    });
+
+    infoLogger({ message: "streaming response" });
+    for await (const event of stream) {
+      if (event.event === "thread.run.completed") {
+        break;
+      }
+      if (event.event === "thread.message.delta" && event.data.delta.content) {
+        if (event.data.delta.content[0].type === "text") {
+          callbacks.onMessage?.(
+            event.data.delta.content[0].text?.value as string,
+          );
+        }
+      }
+    }
+
+    infoLogger({ message: "RUN SUCCESSFULL" });
+    callbacks.onComplete?.();
+  } catch (error) {
+    callbacks.onError?.(error);
+    throw error;
+  }
+}
+
 // addMessageToThread adds a message to a thread, when a threadId is provided.
-const addMessageToThread = async (
+export const addMessageToThread = async (
   client: AzureOpenAI,
   threadId: string,
   inputMessage: MessageCreateParams,

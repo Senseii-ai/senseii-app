@@ -100,8 +100,6 @@ async function processStream(
   callbacks: StreamCallbacks,
 ) {
   for await (const event of stream) {
-    infoLogger({ message: `event is ${event.event}` });
-
     if (event.event === "thread.run.completed") {
       break;
     }

@@ -8,6 +8,20 @@ import {
 } from "openai/resources/beta/threads/messages";
 import { infoLogger } from "../../../utils/logger/logger";
 import { chat } from "../../../controller/chat";
+import { supportedFunctions } from "./functions";
+import {
+  RunSubmitToolOutputsParams,
+  RunSubmitToolOutputsParamsStreaming,
+} from "openai/resources/beta/threads/runs/runs";
+import {
+  AssistantStream,
+  AssistantStreamEvents,
+  RunSubmitToolOutputsParamsStream,
+} from "openai/lib/AssistantStream";
+import { AssistantStreamEvent } from "openai/resources/beta/assistants";
+import { Stream } from "openai/streaming";
+import { EventEmitter } from "stream";
+import { ParseJSONToMarkdown } from "../../../utils/parser";
 const client = getOpenAIClient();
 
 export interface StreamCallbacks {
@@ -60,31 +74,99 @@ export async function createStreamableRun(
   callbacks: StreamCallbacks,
 ) {
   infoLogger({ message: "creating a streamable run" });
+
   try {
-    const stream = await client.beta.threads.runs.create(threadId, {
+    let stream = await client.beta.threads.runs.create(threadId, {
       assistant_id: assistantId,
       stream: true,
     });
 
-    infoLogger({ message: "streaming response" });
-    for await (const event of stream) {
-      if (event.event === "thread.run.completed") {
-        break;
-      }
-      if (event.event === "thread.message.delta" && event.data.delta.content) {
-        if (event.data.delta.content[0].type === "text") {
-          callbacks.onMessage?.(
-            event.data.delta.content[0].text?.value as string,
-          );
-        }
-      }
-    }
+    // Process stream events until completion
+    await processStream(stream, client, threadId, callbacks);
 
-    infoLogger({ message: "RUN SUCCESSFULL" });
+    infoLogger({ message: "RUN SUCCESSFUL" });
     callbacks.onComplete?.();
   } catch (error) {
     callbacks.onError?.(error);
     throw error;
+  }
+}
+
+// recursively processing stream
+async function processStream(
+  stream: Stream<AssistantStreamEvent>,
+  client: AzureOpenAI,
+  threadId: string,
+  callbacks: StreamCallbacks,
+) {
+  for await (const event of stream) {
+    infoLogger({ message: `event is ${event.event}` });
+
+    if (event.event === "thread.run.completed") {
+      break;
+    }
+
+    if (event.event === "thread.run.requires_action") {
+      stream = await handleToolAction(event, client, threadId, callbacks);
+      // Process the new stream after tool submission
+      await processStream(stream, client, threadId, callbacks);
+      break; // Exit current stream processing as we're now handling the new stream
+    }
+
+    if (event.event === "thread.message.delta") {
+      handleMessageDelta(event, callbacks);
+    }
+  }
+}
+
+async function handleToolAction(
+  event: AssistantStreamEvent.ThreadRunRequiresAction,
+  client: AzureOpenAI,
+  threadId: string,
+  callbacks: StreamCallbacks,
+): Promise<Stream<AssistantStreamEvent>> {
+  const toolCalls = event.data.required_action?.submit_tool_outputs.tool_calls;
+
+  if (!toolCalls?.length) {
+    infoLogger({
+      message: "function call requested but tool not specified",
+      status: "failed",
+    });
+    callbacks.onError?.("internal server error");
+    throw new Error("No tool calls specified");
+  }
+
+  const toolCall = toolCalls[0];
+  const toolToCall = supportedFunctions[toolCall.function.name];
+  const response = await toolToCall.function(toolCall.function.arguments);
+  infoLogger({
+    message: `GOT response from ${toolToCall.functionalityType} Assistant`,
+  });
+
+  // TODO: Implement logic to parse JSON to create Modal for getting user's final Approval.
+  // const markdown = ParseJSONToMarkdown(response);
+
+  const newStream = await client.beta.threads.runs.submitToolOutputs(
+    threadId,
+    event.data.id,
+    {
+      stream: true,
+      tool_outputs: [
+        {
+          tool_call_id: toolCall.id,
+          output: response,
+        },
+      ],
+    },
+  );
+
+  infoLogger({ message: "Response submitted" });
+  return newStream;
+}
+
+function handleMessageDelta(event: any, callbacks: StreamCallbacks) {
+  if (event.data.delta.content?.[0]?.type === "text") {
+    callbacks.onMessage?.(event.data.delta.content[0].text?.value as string);
   }
 }
 

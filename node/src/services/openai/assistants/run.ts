@@ -9,7 +9,7 @@ import {
 import { Message } from "openai/resources/beta/threads/messages";
 import chalk from "chalk";
 import { parseFunctionArguments } from "./utils";
-import { getSupportedFunctions } from "./functions";
+import { supportedFunctions } from "./functions";
 
 const runStatus = {
   QUEUED: "queued",
@@ -74,7 +74,6 @@ export const createRun = async (
 // this function runs and aggregates the output of all the tools that are requried to be run.
 export const runTools = async (tools: RequiredActionFunctionToolCall[]) => {
   try {
-    const supportedFunctions = getSupportedFunctions();
     // an array of final output of each tool run
     const functionOutput: RunSubmitToolOutputsParams.ToolOutput[] = [];
     for (const tool of tools) {

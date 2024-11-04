@@ -27,6 +27,7 @@ export const CreateNutritionPlan = async (
   try {
     const client = getOpenAIClient();
     const nutritionAssistant = await getNutritionAssistant(client);
+    console.log("FOUND NUTRITION ASSISTANT", nutritionAssistant);
     let output: string = "";
     const response = await createNutritionPlan(
       nutritionAssistant,
@@ -35,10 +36,10 @@ export const CreateNutritionPlan = async (
     if (response && response[0].content[0].type === "text") {
       output = response[0].content[0].text.value;
     }
-    console.log(chalk.green("This is the output", JSON.stringify(output)));
+    // console.log(chalk.green("This is the output", JSON.stringify(output)));
     // Save user preferences into the database.
     // save it into the database and return to the user the response
-    const jsonObject = StringToJson(output);
+    // const jsonObject = StringToJson(output);
     return output;
   } catch (error) {
     console.error(chalk.red(error));

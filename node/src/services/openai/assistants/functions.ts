@@ -10,11 +10,6 @@ export interface IFunctionType {
   functionalityType: "Nutrition" | "Core" | "Fitness";
 }
 
-// Record of all the supported functions in the system.
-const supportedFunctions: Record<string, IFunctionType> = {
+export const supportedFunctions: Record<string, IFunctionType> = {
   create_nutrition_plan: createNutritionPlanFunction,
-};
-
-export const getSupportedFunctions = () => {
-  return supportedFunctions;
 };

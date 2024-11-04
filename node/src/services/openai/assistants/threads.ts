@@ -9,19 +9,9 @@ import {
 import { infoLogger } from "../../../utils/logger/logger";
 import { chat } from "../../../controller/chat";
 import { supportedFunctions } from "./functions";
-import {
-  RunSubmitToolOutputsParams,
-  RunSubmitToolOutputsParamsStreaming,
-} from "openai/resources/beta/threads/runs/runs";
-import {
-  AssistantStream,
-  AssistantStreamEvents,
-  RunSubmitToolOutputsParamsStream,
-} from "openai/lib/AssistantStream";
+
 import { AssistantStreamEvent } from "openai/resources/beta/assistants";
 import { Stream } from "openai/streaming";
-import { EventEmitter } from "stream";
-import { ParseJSONToMarkdown } from "../../../utils/parser";
 const client = getOpenAIClient();
 
 export interface StreamCallbacks {

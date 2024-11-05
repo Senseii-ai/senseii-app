@@ -35,17 +35,17 @@ export const getChatsFromThreadIds = async (threadIds: chat[]) => {
   try {
     let finalResponse: Chat[] = [];
     for (const thread of threadIds) {
-      const response = await client.beta.threads.messages.list(
-        threadIds[0].threadId,
-      );
+      // const response = await client.beta.threads.messages.list(
+      //   threadIds[0].threadId,
+      // );
 
       finalResponse.push({
         id: thread.id,
         title: thread.title,
-        createdAt: new Date(response.data[response.data.length - 1].created_at),
+        createdAt: new Date(),
         userId: thread.userId,
         path: `/chat/${thread.id}`,
-        messages: response.data,
+        messages: [],
         sharePath: "sharing not supported",
       });
     }

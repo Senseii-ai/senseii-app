@@ -18,6 +18,7 @@ import { getNutritionAssistantId } from "../services/openai/assistants/nutrition
 import {
   addChatToUser,
   getThreadAndUserByChatId,
+  getThreadByChatId,
   getThreadById,
   getUserByUserId,
 } from "../models/userInfo";
@@ -100,17 +101,26 @@ export const getChats = async (req: IAuthRequest, res: Response) => {
 };
 
 export const getChatMessages = async (req: IAuthRequest, res: Response) => {
-  infoLogger({ message: "GET CHAT", status: "success" });
+  infoLogger({ message: "I WAS TRIGGERED", status: "success" });
   try {
     const { userId, chatId } = req.params;
-    const threadId = await getThreadById(userId, chatId);
+    // NOTE: Maybe this implementation needs to be changed
+    const chat = await getThreadByChatId(chatId);
+    if (!chat) {
+      throw new Error("Chat not found");
+    }
     const response = await OpenAIClient.beta.threads.messages.list(
-      threadId?.id as string
+      chat?.threadId as string,
     );
-    const chat = res.status(200).json({
+    res.status(200).json({
       status: "success",
       message: "Chat found successfully",
-      data: response.data,
+      data: {
+        title: chat.summary,
+        messages: response.data,
+        userId: userId,
+        id: chat.id,
+      },
     });
   } catch (error) {
     res.status(400).json({
@@ -169,7 +179,7 @@ export const chat = async (req: IAuthRequest, res: Response) => {
       const updatedThread = await addMessageToThread(
         OpenAIClient,
         existingThreadId.threadId,
-        inputMessage
+        inputMessage,
       );
 
       infoLogger({ message: "chat already exists, continuing" });
@@ -177,20 +187,20 @@ export const chat = async (req: IAuthRequest, res: Response) => {
         OpenAIClient,
         updatedThread.thread_id,
         coreAssistantId,
-        callbacks
+        callbacks,
       );
     } else {
       // Chat does not exists, logic to create a new chat
       infoLogger({ message: "Chat does not exists, creating new" });
       const threadId = await getNewThreadWithMessages(
         inputMessage,
-        OpenAIClient
+        OpenAIClient,
       );
       await createStreamableRun(
         OpenAIClient,
         threadId,
         coreAssistantId,
-        callbacks
+        callbacks,
       );
 
       // post streaming tasks
@@ -203,7 +213,7 @@ export const chat = async (req: IAuthRequest, res: Response) => {
         chatId,
         userId,
         threadId,
-        summary
+        summary,
       );
       if (!updatedProfile) {
         throw new Error("Error adding thread Id for user");
@@ -238,7 +248,7 @@ export const chatNutrition = async (req: IAuthRequest, res: Response) => {
     const response = await createRun(
       threadId,
       OpenAIClient,
-      nutritionAssistantId
+      nutritionAssistantId,
     );
     return res.status(200).json(response);
   } catch (error) {

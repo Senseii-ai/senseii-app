@@ -50,6 +50,7 @@ const router: Router = express.Router();
 
 // app.use("/api/chat", ChatRouter);
 router.route("/").post(chat);
+router.route("/user/:userId/chat/:chatId").get(getChatMessages);
 router.route("/user/:userId/chats").get(getChats);
 
 /**
@@ -84,6 +85,5 @@ router.route("/user/:userId/chats").get(getChats);
 
 router.route("/nutritionChat").post(chatNutrition);
 router.route("/testChat").post(chatCore);
-router.route("/user/:userId/chat/:chatId").get(getChatMessages);
 
 export default router;

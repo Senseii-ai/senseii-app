@@ -44,7 +44,7 @@ export const getChatsFromThreadIds = async (threadIds: chat[]) => {
         title: thread.title,
         createdAt: new Date(response.data[response.data.length - 1].created_at),
         userId: thread.userId,
-        path: `chat/${thread.id}`,
+        path: `/chat/${thread.id}`,
         messages: response.data,
         sharePath: "sharing not supported",
       });

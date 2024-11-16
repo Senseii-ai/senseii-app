@@ -1,8 +1,7 @@
-import chalk from "chalk";
 import { AzureOpenAI } from "openai";
-const ApiKey = process.env.API_KEY;
-const Endpoint = process.env.ENDPOINT;
-const apiVersion = "2024-05-01-preview";
+const ApiKey = process.env.AZURE_OPENAI_API_KEY;
+const Endpoint = process.env.AZURE_OPENAI_ENDPOINT;
+const apiVersion = process.env.API_VERSION;
 
 const openAIClient = new AzureOpenAI({
   endpoint: Endpoint,

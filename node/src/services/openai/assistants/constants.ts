@@ -1,5 +1,7 @@
 import { AzureOpenAI } from "openai";
 import { CORE_ASSISTANT } from "./core/constants";
+import { NUTRITION_ASSISTANT } from "./nutrition/constants";
+import { SUMMARY_ASSISTANT } from "./summary/constants";
 
 const ApiKey = process.env.API_KEY;
 const Endpoint = process.env.ENDPOINT;
@@ -17,7 +19,9 @@ export const CoreAssistantId = process.env.CORE_ASSISTANT?.toString();
 export const SummaryAssistantId = process.env.SUMMARY_ASSISTANT?.toString();
 
 export const Assistants = [
-  CORE_ASSISTANT
+  CORE_ASSISTANT,
+  NUTRITION_ASSISTANT,
+  SUMMARY_ASSISTANT,
 ]
 
 const WORKOUT_ASSISTANT_NAME = "workout_planner";

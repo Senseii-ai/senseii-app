@@ -1,12 +1,20 @@
-import { Assistant, FunctionTool } from "openai/resources/beta/assistants"
+import { Assistant, AssistantCreateParams, FunctionTool } from "openai/resources/beta/assistants"
 
 export const CREATE_NUTRITION_FUNC: FunctionTool = {
   type: "function",
   function: {
-    name: "create_nutrition_plan",
-    description: "Creates a nutrition plan for the user when core assistant has all the necessary information needed to create the diet plan.\nList of information:\n- basicInformation: The basic information of the user which includes age [required], weight[required], height [required], gender [required].\n- lifestyle: The lifestyle of the user which includes daily routine and exercise routine [required], daily routine [optional].\n- dietPreferences: The diet preferences of the user which includes preferences [required], allergies [required], intolerances, disliked food, favourite food.\n- healthGoals: The health goals of the user which includes weight goal [required], specific nutrition goal [required], medical conditions [required].\n- eatingHabits: The eating habits of the user which includes meals per day [required], meal complexity [optional], cooking time [optional].\n- constraints: The constraints of the user which includes financial [required], geographical [optional].\n\nThe diet plan is created based on the information provided by the user.",
-    "strict": false,
-    parameters: {
+    "name": "create_nutrition_plan",
+    "description": `Creates a nutrition plan for the user when the assistant has
+      Necessary information: 
+        - basicInformation: Age, weight, height, gender [all required].
+        - lifestyle: Daily routine, exercise routine [all required], daily routine [optional].
+        - dietPreferences: Preferences, allergies [required], intolerances, disliked, and favorite foods.
+        - healthGoals: Weight goal, nutrition goal, medical conditions [all required].
+        - eatingHabits: Meals per day [required], meal complexity, cooking time [optional].
+        - constraints: Financial [required], geographical [optional].
+
+        The diet plan is tailored based on the provided information.`,
+    "parameters": {
       "type": "object",
       "properties": {
         "basicInformation": {
@@ -14,100 +22,126 @@ export const CREATE_NUTRITION_FUNC: FunctionTool = {
           "properties": {
             "age": {
               "type": "number",
-              "description": "age"
+              "description": "user age"
             },
             "weight": {
               "type": "number",
-              "description": "weight of the user"
+              "description": "user weight"
             },
             "height": {
               "type": "number",
-              "description": "height of the user"
+              "description": "user height"
             },
             "gender": {
               "type": "string",
-              "description": "gender of the user"
+              "description": "user gender"
             }
-          }
+          },
+          "required": [
+            "age",
+            "weight",
+            "height",
+            "gender"
+          ]
         },
         "lifeStyle": {
           "type": "object",
           "properties": {
             "dailyRoutine": {
               "type": "string",
-              "description": "The daily routine of the user which includes:\n- sedentary\n- light\n- moderate\n- heavy\n- very heavy"
+              "description": "user daily routine, allowed types 'sedentary', 'light', 'moderate', 'heavy', 'very heavy'"
             },
             "exerciseRoutine": {
               "type": "object",
               "properties": {
                 "exerciseType": {
                   "type": "string",
-                  "description": "The type of exercise that the user does, which can be of type 'cardio', 'strength', 'flexibility', 'balance', 'none'"
+                  "description": "user exercise type, allowed types 'cardio', 'strength', 'flexibility', 'balance', 'none'"
                 },
                 "frequency": {
                   "type": "string",
-                  "description": "The frequency of the exercise that the user does, which can be of type 'daily', 'weekly', 'monthly'"
+                  "description": "user exercise frequency, allowed types 'daily', 'weekly', 'monthly'"
                 }
-              }
+              },
+              "required": [
+                "exerciseType",
+                "frequency"
+              ]
             }
-          }
+          },
+          "required": [
+            "dailyRoutine",
+            "exerciseRoutine"
+          ]
         },
         "dietPreferences": {
           "type": "object",
           "properties": {
             "preference": {
               "type": "string",
-              "description": "The user's diet preference, which can be of type 'vegetarian', 'non-vegetarian', 'vegan', 'pescatarian', 'omnivore', 'ketogenic', 'paleo'"
+              "description": "user diet preference, allowed types 'vegetarian', 'non-vegetarian', 'vegan', 'pescatarian', 'omnivore', 'ketogenic', 'paleo'"
             },
             "allergies": {
               "type": "array",
               "items": {
                 "type": "string"
               },
-              "description": "an array of all the allergies that the user has"
+              "description": "user allergies"
             },
             "intolerances": {
               "type": "array",
               "items": {
                 "type": "string"
               },
-              "description": "an array of all the intolerances that the user has"
+              "description": "user intolerances for food"
             },
             "dislikedFood": {
               "type": "array",
               "items": {
                 "type": "string"
               },
-              "description": "an arryay of all the food that the user dislikes"
+              "description": "user dislikes"
             },
             "favouriteFood": {
               "type": "array",
               "items": {
                 "type": "string"
               },
-              "description": "an array of all the food that the user likes"
+              "description": "user likings"
             }
-          }
+          },
+          "required": [
+            "preference",
+            "allergies",
+            "intolerances",
+            "dislikedFood",
+            "favouriteFood"
+          ]
         },
         "healthGoals": {
           "type": "object",
           "properties": {
             "weightGoal": {
               "type": "string",
-              "description": "The user's weight goal, which can be of type 'gain', 'loss', 'maintain'"
+              "description": "user weight goal, allowed types 'gain', 'loss', 'maintain'"
             },
             "specificNutritionGoal": {
               "type": "string",
-              "description": "The user's specific nutrition goal"
+              "description": "user nutrition goal"
             },
             "medicalConditions": {
               "type": "array",
               "items": {
                 "type": "string"
               },
-              "description": "an array of all the medical conditions that the user has"
+              "description": "user medical conditions"
             }
-          }
+          },
+          "required": [
+            "weightGoal",
+            "specificNutritionGoal",
+            "medicalConditions"
+          ]
         },
         "eatingHabits": {
           "type": "object",
@@ -118,13 +152,18 @@ export const CREATE_NUTRITION_FUNC: FunctionTool = {
             },
             "mealComplexity": {
               "type": "string",
-              "description": "The complexity of the meals that the user has, which can be of type 'simple', 'moderate', 'complex'"
+              "description": "meal complexity, allowed types 'simple', 'moderate', 'complex'"
             },
             "cookingTime": {
               "type": "string",
-              "description": "The cooking time of the user, which can be of type 'less than 30 minutes', '30-60 minutes', 'more than 60 minutes'"
+              "description": "meal cooking type, allowed types 'less than 30 minutes', '30-60 minutes', 'more than 60 minutes'"
             }
-          }
+          },
+          "required": [
+            "mealsPerDay",
+            "mealComplexity",
+            "cookingTime"
+          ]
         },
         "constraints": {
           "type": "object",
@@ -138,28 +177,46 @@ export const CREATE_NUTRITION_FUNC: FunctionTool = {
                 },
                 "budgetType": {
                   "type": "string",
-                  "description": "The type of the user's budget, which can be of type 'daily', 'weekly', 'monthly'"
+                  "description": "user budget frequency, allowed types 'daily', 'weekly', 'monthly'"
                 }
-              }
+              },
+              "required": [
+                "budget",
+                "budgetType"
+              ]
             },
             "geographical": {
               "type": "object",
               "properties": {
                 "location": {
                   "type": "string",
-                  "description": "The user's location so that food specific to that location can be added in the plan"
+                  "description": "user's country"
                 }
-              }
+              },
+              "required": [
+                "location"
+              ]
             }
-          }
+          },
+          "required": [
+            "financial",
+            "geographical"
+          ]
         }
       },
-      "required": []
+      "required": [
+        "basicInformation",
+        "lifeStyle",
+        "dietPreferences",
+        "healthGoals",
+        "eatingHabits",
+        "constraints"
+      ]
     }
   }
 }
 
-export const CORE_ASSISTANT = {
+export const CORE_ASSISTANT: AssistantCreateParams = {
   name: "core-assistant",
   instructions:
     `You are a part of a multi agent system, the goal of the system is to help
@@ -180,7 +237,7 @@ export const CORE_ASSISTANT = {
     trainer agent is responsible for making workout plans for the user. You are a
     master with wisdom and knowledge.
 
-
+    
     You are responsbile for the following:
     - Having normal conversation with the user as a teacher.
     - helping them define their goals
@@ -188,14 +245,32 @@ export const CORE_ASSISTANT = {
     - Getting the necessary information from the user
     - Teaching the user while helping them achieve their goals
     - You sound human and totally into the character of a japanese senseii
+    - Once others generate the plans, you just summarise them in form of markdown tables.
 
     What you do not do:
     - You speak less, and explain when the user doesn't understand something.
     - You do not make diet plans for the user
     - You do not make workout plans for the user
     - you do not take dis-respect from the user and do not apologise.
-    - 
-    - you do not talk to the user too much about anything outside of fitness and self improvement`,
+    - you do not talk to the user too much about anything outside of fitness and self improvement
+
+  Every time a Meal plan is generated you create a summary you create after Nutrition assistant
+  generated the original plan should be in markdown table, only for three days
+  tags, in the format:
+
+  - Columns: 
+      - Day: The day of the week.
+      - Meal: The meal type (Breakfast, Lunch, Dinner).
+      - Food: Description of the meal.
+      - Calories: Total calories for the meal.
+      - Macros: Combined macro-nutrient values (Protein, Fat, Carbohydrates, Water) in one column.
+      - Micros: Combined micro-nutrient values (Vitamins, Minerals) in one column.
+      - Items: A list of individual food items, with their proportions and units.]
+  - Formatting: Days are bolded for emphasis.
+  - Structure: Clear separation of meals under each day for easier meal tracking.
+
+    If user suggests any changes to any type of plan, the related function calls should be made
+    with updated user preferences.`,
   tools: [CREATE_NUTRITION_FUNC],
   model: "gpt-4o",
 }

@@ -11,6 +11,7 @@ import swaggerDocs from "./utils/swagger";
 import chalk from "chalk";
 import { authenticateUser } from "./middlewares/auth";
 import bodyParser from "body-parser";
+import { createAllAssistants } from "./services/openai/assistants/utils";
 
 const app: Express = express();
 app.use(cors());
@@ -28,6 +29,7 @@ app.use("/api", userRouter);
 app.use("/api/vitals", VitalRouter);
 app.use("/api/chat", ChatRouter);
 app.use("/api/health", HealthRouter);
+createAllAssistants()
 
 // list of test routers
 app.use("/api/threads", threadRouter);

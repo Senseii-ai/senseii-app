@@ -1,9 +1,8 @@
 import chalk from "chalk";
-import { time } from "console";
 
 interface InfoParams {
   message: string;
-  status?: "success" | "failed";
+  status?: "success" | "failed" | "INFO";
 }
 
 function getCurrentTime(): string {
@@ -19,8 +18,8 @@ function getCurrentTime(): string {
 export const infoLogger = ({ message, status }: InfoParams) => {
   console.log(
     chalk.white(
-      chalk.bgGreen("INFO"),
-      `TIME: ${getCurrentTime()}`,
+      status === "success" ? chalk.bgGreen("SUCCESS") : status === "failed" ? chalk.bgRed("[ERROR]") : chalk.bgYellowBright("[INFO]"),
+      chalk.bgGray(`TIME ${getCurrentTime()}`),
       `STATUS: ${status ? status : ""}`,
       `MESSAGE: ${message}`,
     ),

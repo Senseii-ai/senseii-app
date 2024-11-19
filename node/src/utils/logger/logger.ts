@@ -18,7 +18,7 @@ function getCurrentTime(): string {
 export const infoLogger = ({ message, status }: InfoParams) => {
   console.log(
     chalk.white(
-      status === "success" ? chalk.bgGreen("SUCCESS") : status === "failed" ? chalk.bgRed("[ERROR]") : chalk.bgYellowBright("[INFO]"),
+      status === "success" ? chalk.bgGreen("SUCCESS") : status === "failed" ? chalk.bgRed("[ERROR]") : chalk.bgYellow(chalk.black("[INFO]")),
       chalk.bgGray(`TIME ${getCurrentTime()}`),
       `STATUS: ${status ? status : ""}`,
       `MESSAGE: ${message}`,

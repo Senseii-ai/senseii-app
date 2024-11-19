@@ -13,8 +13,8 @@ export interface IChat {
   summary: string;
 }
 
-interface IUserProfileDocument extends IUserProfile, Document {}
-interface IChatsDocument extends IChat, Document {}
+interface IUserProfileDocument extends IUserProfile, Document { }
+interface IChatsDocument extends IChat, Document { }
 
 const IChatSchema: Schema<IChatsDocument> = new Schema({
   id: {

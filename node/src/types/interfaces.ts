@@ -1,3 +1,49 @@
+import { z } from "zod"
+
+const macroNutrients = z.object({
+  protein: z.number(),
+  dietryFat: z.number(),
+  carbohydrates: z.number(),
+  water: z.number()
+})
+
+const microNutrients = z.object({
+  vitamins: z.number(),
+  dietryMinerals: z.number()
+})
+
+const items = z.object({
+  item: z.string(),
+  proportion: z.number(),
+  unit: z.enum(["grams", "kilograms", "count"])
+})
+
+const meals = z.object({
+  type: z.enum(["Breakfast", "Lunch", "Dinner", "Snacks"]),
+  food: z.string(),
+  macros: macroNutrients,
+  micros: microNutrients,
+  calories: z.number(),
+  items: z.array(items)
+})
+
+const dailyNutritionPlan = z.object({
+  day: z.enum(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]),
+  meals: z.array(meals)
+})
+
+const nutritionPlan = z.object({
+  plan: z.array(dailyNutritionPlan)
+})
+
+export const nutritionPlanValidatorSchema = z.object({
+  type: z.literal("nutritionPlan"),
+  nutritionPlan
+})
+
+export type NutritionPlan = z.infer<typeof nutritionPlanValidatorSchema>
+
+// TODO: Replace with Zod entirely
 export interface INutritionPlan {
   plan: IDailyNutritionPlan[];
 }

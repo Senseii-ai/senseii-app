@@ -1,5 +1,68 @@
 import { Schema } from "mongoose";
+import { z } from "zod"
 
+const basicInformation = z.object({
+  age: z.number(),
+  weight: z.object({
+    value: z.number(),
+    unit: z.enum(["Kilograms", "Grams", "Pounds"])
+  }),
+  height: z.object({
+    value: z.number(),
+    unit: z.enum(["Centimeters"])
+  }),
+  gender: z.string()
+})
+
+const lifeStyle = z.object({
+  dailyRoutine: z.enum(["sedenatry", "light", "moderate", "heavy", "very heavy"]),
+  exerciseRoutine: z.array(z.object({
+    exerciseType: z.enum(["cardio", "strength", "flexibility", "balance", "none"]),
+    frequency: z.enum(["daily", "weekly", "monthly"])
+  }))
+})
+
+const dietPreferences = z.object({
+  preference: z.enum(["vegetarian", "non-vegetarian", "vegan", "pescatarian", "omnivore", "ketogenic", "paleo"]),
+  allergies: z.array(z.string()),
+  intolerances: z.array(z.string()),
+  dislikedFood: z.array(z.string()).optional(),
+  favouriteFood: z.array(z.string()).optional()
+})
+
+const healthGoals = z.object({
+  weightGoal: z.enum(["gain", "loss", "maintain"]).optional(),
+  specificNutritionGoal: z.string(),
+  medicalConditions: z.array(z.string())
+})
+
+const eatingHabits = z.object({
+  mealsPerDay: z.number(),
+  mealComplexity: z.enum(["simple", "moderate", "complex"]),
+  cookingTime: z.enum(["less than 30 minutes", "30-60 minutes", "more than 60 minutes"])
+})
+
+const constraints = z.object({
+  financial: z.object({
+    budget: z.number(),
+    budgetType: z.enum(["daily", "weekly", "monthly"])
+  }),
+  geographical: z.object({
+    location: z.string()
+  })
+})
+
+export const userPreferencesValidatorObject = z.object({
+  type: z.literal("userPreferences"),
+  basicInformation,
+  lifeStyle,
+  dietPreferences,
+  healthGoals,
+  eatingHabits,
+  constraints
+})
+
+// TODO: Migrate away from Interfaces to Types slowly.
 export interface IUserPreferences {
   user: Schema.Types.ObjectId;
   type: "userPreferences";

@@ -1,6 +1,5 @@
-// this will contain the functions that can be used in the nutrition assistant
-import { getNutritionAssistant } from "./nutrition.assistant";
 import { FunctionDefinition } from "openai/resources";
+import { getNutritionAssistant } from "./nutrition.assistant";
 import { IFunctionType } from "../functions";
 import chalk from "chalk";
 import { Assistant } from "openai/resources/beta/assistants";
@@ -9,55 +8,88 @@ import { getOpenAIClient } from "../../openai.client";
 import { getNewThreadWithMessages } from "../threads";
 import { MessageCreateParams } from "openai/resources/beta/threads/messages";
 import { ICreateNutritionPlanArguments } from "../../../../types/user/nutritionPlan";
-import { StringToJson } from "./utils/nutrition.utils";
+import { INutritionPlan, NutritionPlan, nutritionPlanValidatorSchema } from "../../../../types/interfaces";
 
 // A general type containing arguments for all types of functions supported by nutrition assistant.
 export type NutritionToolArguments = ICreateNutritionPlanArguments;
-const openAIClient = getOpenAIClient();
+const client = getOpenAIClient();
 
-/**
- * TODO: You get the following information here
- * height: IBodyMeasurement
- *
- */
-// wrapper function.
-export const CreateNutritionPlan = async (
+export const CompleteNutritionPlan = async () => {
+  try {
+    const prompt = `No more changes needed, complete the remaining plan and generate the remaining plan`
+    const nutritionAssistant = await getNutritionAssistant(client);
+    const threadId = "hello"
+    // const getNutritionThreadIdForGoal = 
+    // console.log("MODEL RESPONSE", finalPlan)
+    const finalPlan = chatComplete(prompt, threadId, nutritionAssistant)
+    const parsedData = nutritionPlanValidatorSchema.parse(finalPlan)
+    console.log("PARSED DATA", parsedData)
+  } catch (error) {
+
+  }
+}
+
+// UpdateNutritionPlan updates the nutrition plan as per user's needs.
+export const UpdateNutritionPlan = async () => {
+  try {
+    const prompt = ``
+  } catch (error) {
+
+  }
+}
+
+export const CreateInitialPlan = async (
   functionArguments: ICreateNutritionPlanArguments,
 ): Promise<string> => {
   try {
     const client = getOpenAIClient();
     const nutritionAssistant = await getNutritionAssistant(client);
-    console.log("FOUND NUTRITION ASSISTANT", nutritionAssistant);
-    let output: string = "";
-    const response = await createNutritionPlan(
+    const plan = await createNutritionPlan(
       nutritionAssistant,
       functionArguments,
     );
-    if (response && response[0].content[0].type === "text") {
-      output = response[0].content[0].text.value;
-    }
-    // console.log(chalk.green("This is the output", JSON.stringify(output)));
-    // Save user preferences into the database.
-    // save it into the database and return to the user the response
-    // const jsonObject = StringToJson(output);
-    return output;
+    // TODO: Save user's Nutrition Plan in the database.
+    // console.log("BEFORE PARSED:", output)
+    // const parsedPlan = nutritionPlanValidatorSchema.parse(output)
+    // console.log("PARSED", parsedPlan)
+    return JSON.stringify(plan);
   } catch (error) {
     console.error(chalk.red(error));
     throw error;
   }
 };
 
+const chatComplete = async (prompt: string, threadId: string | null, assistant: Assistant) => {
+  try {
+    // create thread, run it and then delete it later.
+    const message: MessageCreateParams = {
+      role: "user",
+      content: prompt,
+    };
+    if (threadId === null) {
+      threadId = await getNewThreadWithMessages(message, client);
+    }
+    const response = await createRun(threadId, client, assistant.id);
+    let output = ""
+    if (response && response[0].content[0].type === "text") {
+      output = response[0].content[0].text.value;
+    }
+    return parsedData;
+  } catch (error) {
+    console.error(chalk.red(error));
+    throw error;
+  }
+}
+
 // this function creates the nutrition plan for the user.
 export const createNutritionPlan = async (
   assistant: Assistant,
   funcArguments: ICreateNutritionPlanArguments,
 ) => {
-  // TODO: look into validating the data before moving ahead.
-  // TODO: Also look into storing the information in database related to the user.
-
   try {
     const userInformation = JSON.stringify(funcArguments);
-    const prompt = `Create Nutrition Plan for this user with following preferences. ${userInformation}`;
+    // TODO: Validate the userInformation object
+    const prompt = `Create First three weekdays plan for this user with following preferences. ${userInformation}`;
 
     // create thread, run it and then delete it later.
     const message: MessageCreateParams = {
@@ -66,13 +98,21 @@ export const createNutritionPlan = async (
     };
     const newThreadId = await getNewThreadWithMessages(message, openAIClient);
     const response = await createRun(newThreadId, openAIClient, assistant.id);
-    return response;
+    let output = ""
+    if (response && response[0].content[0].type === "text") {
+      output = response[0].content[0].text.value;
+    }
+    console.log("MODEL RESPONSE", output)
+    const parsedData = nutritionPlanValidatorSchema.parse(output)
+    console.log("PARSED DATA", parsedData)
+    return parsedData;
   } catch (error) {
     console.error(chalk.red(error));
     throw error;
   }
 };
 
+// TODO: Move to constants
 // createNutritionPlanSchema returns the schema for the create nutrition plan function.
 export const createNutritionPlanSchema = () => {
   const createNutritionPlanSchema: FunctionDefinition = {

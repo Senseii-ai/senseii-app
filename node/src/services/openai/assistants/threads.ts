@@ -1,7 +1,6 @@
 import { ThreadCreateParams } from "openai/resources/beta/threads/threads";
 import { AzureOpenAI } from "openai";
 import { createRun } from "./run";
-import { getOpenAIClient } from "../openai.client";
 import {
   Message,
   MessageCreateParams,
@@ -9,10 +8,8 @@ import {
 import { infoLogger } from "../../../utils/logger/logger";
 import { chat } from "../../../controller/chat";
 import { supportedFunctions } from "./functions";
-
 import { AssistantStreamEvent } from "openai/resources/beta/assistants";
 import { Stream } from "openai/streaming";
-const client = getOpenAIClient();
 
 export interface StreamCallbacks {
   onMessage?: (message: string) => Promise<void> | void;
@@ -35,6 +32,7 @@ export const getChatsFromThreadIds = async (threadIds: chat[]) => {
   try {
     let finalResponse: Chat[] = [];
     for (const thread of threadIds) {
+      // NOTE: Commenting it out to make initial load frontend load faster.
       // const response = await client.beta.threads.messages.list(
       //   threadIds[0].threadId,
       // );
@@ -124,11 +122,12 @@ async function handleToolAction(
     throw new Error("No tool calls specified");
   }
 
+  // NOTE: Tool call is serial for now, parallel later if needed.
   const toolCall = toolCalls[0];
   const toolToCall = supportedFunctions[toolCall.function.name];
   const response = await toolToCall.function(toolCall.function.arguments);
   infoLogger({
-    message: `GOT response from ${toolToCall.functionalityType} Assistant`,
+    message: `Tool Call:${toolToCall.functionalityType}, Status: Success`,
   });
 
   // TODO: Implement logic to parse JSON to create Modal for getting user's final Approval.

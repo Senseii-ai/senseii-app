@@ -7,7 +7,9 @@ import {
   IEatingHabits,
   IDietPreferences,
   IUserPreferences,
+  userPreferencesValidatorObject,
 } from "../types/user/userPreferences";
+import { infoLogger } from "../utils/logger/logger";
 
 interface IUserPreferencesDocument extends IUserPreferences, Document { }
 interface IBasicInformationDocument extends IBasicInformation, Document { }
@@ -130,3 +132,13 @@ export const UserPreferencesModel = model<IUserPreferencesDocument>(
   UserPreferencesSchema
 )
 
+// saveUserGoalPreferences saves user goal preferences into a database. 
+const saveUserGoalPreferences = (body: any) => {
+  try {
+    console.log("GOT: ", body)
+    const parsedData = userPreferencesValidatorObject.parse(body)
+  } catch (error) {
+    infoLogger({ status: "failed", message: "Error Saving User Goals" })
+  }
+
+}

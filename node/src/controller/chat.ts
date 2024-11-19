@@ -19,11 +19,11 @@ import {
   addChatToUser,
   getThreadAndUserByChatId,
   getThreadByChatId,
-  getThreadById,
   getUserByUserId,
 } from "../models/userInfo";
 import { summariseChat } from "../services/openai/assistants/summary/utils";
 import { infoLogger } from "../utils/logger/logger";
+import { CreateNutritionPlan, NutritionToolArguments } from "../services/openai/assistants/nutrition/nutrition.functions";
 
 const OpenAIClient = getOpenAIClient();
 
@@ -256,3 +256,68 @@ export const chatNutrition = async (req: IAuthRequest, res: Response) => {
     throw error;
   }
 };
+
+// TODO: Remove when Nutrition plan creation logic is done
+const createNutritionPlan = async (req: IAuthRequest, res: Response) => {
+  try {
+    const SampleArgument: NutritionToolArguments = {
+      type: "createNutritionPlan",
+      basicInformation: {
+        age: 22,
+        weight: {
+          value: 106,
+          unit: "Kilograms"
+        },
+        height: {
+          value: 180,
+          unit: "Centimeters"
+        },
+        gender: "male"
+      },
+      lifeStyle: {
+        dailyRoutine: "moderate",
+        exerciseRoutine: [
+          {
+            exerciseType: "strength",
+            frequency: "weekly"
+          }
+        ]
+      },
+      dietPreferences: {
+        preference: "non-vegetarian",
+        allergies: [],
+        intolerances: [],
+        dislikedFood: [],
+        favouriteFood: []
+      },
+      healthGoals: {
+        weightGoal: "loss",
+        specificNutritionGoal: "weight loss",
+        medicalConditions: []
+      },
+      eatingHabits: {
+        mealsPerDay: 3,
+        mealComplexity: "simple",
+        cookingTime: "less than 30 minutes"
+      },
+      constraints: {
+        financial: {
+          budget: 5000,
+          budgetType: "monthly"
+        },
+        geographical: {
+          location: "India"
+        }
+      }
+    }
+    const plan = await CreateNutritionPlan(SampleArgument)
+
+  } catch (error) {
+    console.error(error)
+    res.status(400).json({
+      status: "failed",
+      message: "Nutrition Plan Not Created",
+      data: error,
+    });
+  }
+}

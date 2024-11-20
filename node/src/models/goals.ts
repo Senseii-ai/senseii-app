@@ -47,8 +47,6 @@ const UserGoalSchema = new Schema<IUserGoalDocument>({
   },
 })
 
-// TODO: Add middlewares.
-
 export const UserGoal = model<IUserGoalDocument>('UserGoal', UserGoalSchema)
 
 // createUserGoal

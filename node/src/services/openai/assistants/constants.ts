@@ -1,5 +1,5 @@
 import { AzureOpenAI } from "openai";
-import { CORE_ASSISTANT } from "./core/constants";
+import { CORE_ASSISTANT, CREATE_GOAL_FUNC } from "./core/constants";
 import { NUTRITION_ASSISTANT } from "./nutrition/constants";
 import { SUMMARY_ASSISTANT } from "./summary/constants";
 

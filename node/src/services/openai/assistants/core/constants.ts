@@ -473,7 +473,7 @@ export const CORE_ASSISTANT: AssistantCreateParams = {
 
     If user suggests any changes to any type of plan, the related function calls should be made
 with updated user preferences.`,
-  tools: [CREATE_NUTRITION_FUNC],
+  tools: [CREATE_NUTRITION_FUNC, CREATE_GOAL_FUNC],
   model: "gpt-4o",
 }
 

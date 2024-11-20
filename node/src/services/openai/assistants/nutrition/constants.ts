@@ -1,7 +1,10 @@
 import { AssistantCreateParams } from "openai/resources/beta/assistants";
 import { zodResponseFormat } from "openai/helpers/zod"
+import { nutritionPlanObject } from "../../../../types/interfaces";
 
 export const NUTRITION_ASSISTANT: AssistantCreateParams = {
+  response_format: zodResponseFormat(nutritionPlanObject, "diet_plan_generation"),
+  name: "nutrition-assistant",
   instructions:
     `As an AI nutrition expert, confidently and expertly craft individual meal
     plans tailored to a user's dietary preferences, health goals, lifestyle
@@ -24,55 +27,9 @@ export const NUTRITION_ASSISTANT: AssistantCreateParams = {
     - Finally create the plan, that definitely includes but not limited to:
         - Macro and micro per meal, and total per day.
         - proportions, in gram, ml etc. depending on what type of food item it is.
-
-    the sample output should be a json object that satisfies the nutritionPlan interface
-
-    export interface INutritionPlan {
-      plan: IDailyNutritionPlan[];
-    }
-
-    export interface IDailyNutritionPlan {
-      day: Weekday;
-      meals: IMeals[];
-    }
-
-    export interface IItems {
-      item: string;
-      proportion: number;
-      unit: "grams" | "kilograms" | "count";
-    }
-
-    export interface IMacroNutrients {
-      protein: number;
-      dietryFat: number;
-      carbohydrates: number;
-      water: number;
-    }
-
-    export interface IMicroNutrients {
-      vitamins: number;
-      dietryMinerals: number;
-    }
-
-    export interface IMeals {
-      type: "Breakfast" | "Lunch" | "Dinner" | "Snacks";
-      food: String;
-      macros: IMacroNutrients;
-      micros: IMicroNutrients;
-      calories: number;
-      items: IItems[];
-    }
-
-    export type Weekday =
-      | "Monday"
-      | "Tuesday"
-      | "Wednesday"
-      | "Thursday"
-      | "Friday"
-      | "Saturday"
-      | "Sunday"; `,
+    output should be a JSON object.`,
   tools: [],
-  model: "gpt-4o-mini-2024-07-18"
+  model: "gpt-4o-mini"
 }
 
 

@@ -119,7 +119,6 @@ async function handleToolAction(
 
   // NOTE: Tool call is serial for now, parallel later if needed.
   const toolCall = toolCalls[0];
-  console.log("SUPPORTED FUNCTIONS", supportedFunctions)
   const toolToCall = supportedFunctions[toolCall.function.name];
   const response = await toolToCall.function(toolCall.function.arguments);
   infoLogger({

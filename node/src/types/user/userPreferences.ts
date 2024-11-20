@@ -53,7 +53,7 @@ const constraints = z.object({
 })
 
 export const userPreferencesValidatorObject = z.object({
-  type: z.literal("userPreferences"),
+  type: z.literal("userPreferences").optional(),
   basicInformation,
   lifeStyle,
   dietPreferences,

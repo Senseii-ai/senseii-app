@@ -3,7 +3,7 @@ import { IFunctionType } from "../functions";
 import chalk from "chalk";
 import { Assistant } from "openai/resources/beta/assistants";
 import { createRun } from "../run";
-import { getOpenAIClient, geto4MiniClient } from "../../openai.client";
+import { getOpenAIClient } from "../../openai.client";
 import { getNewThreadWithMessages } from "../threads";
 import { MessageCreateParams } from "openai/resources/beta/threads/messages";
 import { ICreateNutritionPlanArguments } from "../../../../types/user/nutritionPlan";

@@ -11,5 +11,5 @@ export interface IFunctionType {
 
 export const supportedFunctions: Record<string, IFunctionType> = {
   create_nutrition_plan: createNutritionPlanFunction,
-  create_goal: createGoal
+  // create_goal: createGoal
 };

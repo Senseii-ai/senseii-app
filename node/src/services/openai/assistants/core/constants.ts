@@ -194,29 +194,38 @@ export const CREATE_NUTRITION_FUNC: FunctionTool = {
       - eatingHabits: Meals per day [required], meal complexity, cooking time [optional].
       - constraints: Financial [required], geographical [optional].
 
-    The diet plan is tailored based on the provided information.`,
+    The diet plan is tailored based on the provided information. In case any field is empty, it should be 
+the JSON equivalent null value. But the arguments should strictly follow the function schema`,
     parameters: {
       type: "object",
       properties: {
         basicInformation: {
           type: "object",
           properties: {
-            age: {
-              type: "number",
-              description: "user age"
-            },
+            age: { type: "number", description: "Age of the user" },
             weight: {
-              type: "number",
-              description: "user weight"
+              type: "object",
+              properties: {
+                value: { type: "number", description: "User's weight" },
+                unit: {
+                  type: "string",
+                  enum: ["Kilograms", "Grams", "Pounds"],
+                  description: "Weight unit (Kilograms, Grams, or Pounds)",
+                },
+              },
             },
             height: {
-              type: "number",
-              description: "user height"
+              type: "object",
+              properties: {
+                value: { type: "number", description: "User's height" },
+                unit: {
+                  type: "string",
+                  enum: ["Centimeters"],
+                  description: "Height unit (Centimeters)",
+                },
+              },
             },
-            gender: {
-              type: "string",
-              description: "user gender"
-            }
+            gender: { type: "string", description: "Gender of the user" },
           },
           required: [
             "age",
@@ -230,25 +239,34 @@ export const CREATE_NUTRITION_FUNC: FunctionTool = {
           properties: {
             dailyRoutine: {
               type: "string",
-              description: "user daily routine, allowed types 'sedentary', 'light', 'moderate', 'heavy', 'very heavy'"
+              enum: ["sedentary", "light", "moderate", "heavy", "very heavy"],
+              description: "User's daily routine activity level",
             },
             exerciseRoutine: {
-              type: "object",
-              properties: {
-                exerciseType: {
-                  type: "string",
-                  "description": "user exercise type, allowed types 'cardio', 'strength', 'flexibility', 'balance', 'none'"
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  exerciseType: {
+                    type: "string",
+                    enum: ["cardio", "strength", "flexibility", "balance", "none"],
+                    description: "Type of exercise the user performs",
+                  },
+                  frequency: {
+                    type: "string",
+                    enum: ["daily", "weekly", "monthly"],
+                    description: "Frequency of the exercise",
+                  },
+
                 },
-                frequency: {
-                  type: "string",
-                  description: "user exercise frequency, allowed types 'daily', 'weekly', 'monthly'"
-                }
+
               },
               required: [
                 "exerciseType",
                 "frequency"
-              ]
-            }
+              ],
+            },
+
           },
           required: [
             "dailyRoutine",
@@ -260,36 +278,37 @@ export const CREATE_NUTRITION_FUNC: FunctionTool = {
           properties: {
             preference: {
               type: "string",
-              description: "user diet preference, allowed types 'vegetarian', 'non-vegetarian', 'vegan', 'pescatarian', 'omnivore', 'ketogenic', 'paleo'"
+              enum: [
+                "vegetarian",
+                "non-vegetarian",
+                "vegan",
+                "pescatarian",
+                "omnivore",
+                "ketogenic",
+                "paleo",
+              ],
+              description: "User's dietary preference",
             },
             allergies: {
               type: "array",
-              items: {
-                type: "string"
-              },
-              description: "user allergies"
+              items: { type: "string" },
+              description: "List of user's allergies",
             },
             intolerances: {
               type: "array",
-              items: {
-                type: "string"
-              },
-              description: "user intolerances for food"
+              items: { type: "string" },
+              description: "List of user's intolerances",
             },
             dislikedFood: {
               type: "array",
-              items: {
-                type: "string"
-              },
-              description: "user dislikes"
+              items: { type: "string" },
+              description: "List of food the user dislikes",
             },
             favouriteFood: {
               type: "array",
-              items: {
-                type: "string"
-              },
-              description: "user likings"
-            }
+              items: { type: "string" },
+              description: "List of food the user likes",
+            },
           },
           required: [
             "preference",
@@ -304,19 +323,18 @@ export const CREATE_NUTRITION_FUNC: FunctionTool = {
           properties: {
             weightGoal: {
               type: "string",
-              description: "user weight goal, allowed types 'gain', 'loss', 'maintain'"
+              enum: ["gain", "loss", "maintain"],
+              description: "User's weight goal",
             },
             specificNutritionGoal: {
               type: "string",
-              description: "user nutrition goal"
+              description: "User's specific nutrition goal",
             },
             medicalConditions: {
               type: "array",
-              items: {
-                type: "string"
-              },
-              description: "user medical conditions"
-            }
+              items: { type: "string" },
+              description: "List of medical conditions the user has",
+            },
           },
           required: [
             "weightGoal",
@@ -329,16 +347,22 @@ export const CREATE_NUTRITION_FUNC: FunctionTool = {
           properties: {
             mealsPerDay: {
               type: "number",
-              description: "The number of meals that the user has per day"
+              description: "Number of meals the user has per day",
             },
             mealComplexity: {
               type: "string",
-              description: "meal complexity, allowed types 'simple', 'moderate', 'complex'"
+              enum: ["simple", "moderate", "complex"],
+              description: "Complexity of the meals the user prefers",
             },
             cookingTime: {
               type: "string",
-              description: "meal cooking type, allowed types 'less than 30 minutes', '30-60 minutes', 'more than 60 minutes'"
-            }
+              enum: [
+                "less than 30 minutes",
+                "30-60 minutes",
+                "more than 60 minutes",
+              ],
+              description: "Cooking time the user prefers",
+            },
           },
           required: [
             "mealsPerDay",
@@ -352,14 +376,12 @@ export const CREATE_NUTRITION_FUNC: FunctionTool = {
             financial: {
               type: "object",
               properties: {
-                budget: {
-                  type: "number",
-                  description: "The user's budget"
-                },
+                budget: { type: "number", description: "User's budget" },
                 budgetType: {
                   type: "string",
-                  description: "user budget frequency, allowed types 'daily', 'weekly', 'monthly'"
-                }
+                  enum: ["daily", "weekly", "monthly"],
+                  description: "Budget frequency",
+                },
               },
               required: [
                 "budget",
@@ -371,19 +393,16 @@ export const CREATE_NUTRITION_FUNC: FunctionTool = {
               properties: {
                 location: {
                   type: "string",
-                  description: "user's country"
-                }
+                  description: "User's country for local food preferences",
+                },
               },
               required: [
-                "location"
+                "financial",
+                "geographical"
               ]
-            }
+            },
           },
-          required: [
-            "financial",
-            "geographical"
-          ]
-        }
+        },
       },
       required: [
         "basicInformation",
@@ -396,6 +415,8 @@ export const CREATE_NUTRITION_FUNC: FunctionTool = {
     }
   }
 }
+
+
 
 export const CORE_ASSISTANT: AssistantCreateParams = {
   name: "core-assistant",
@@ -452,7 +473,7 @@ export const CORE_ASSISTANT: AssistantCreateParams = {
 
     If user suggests any changes to any type of plan, the related function calls should be made
 with updated user preferences.`,
-  tools: [CREATE_NUTRITION_FUNC, CREATE_GOAL_FUNC],
+  tools: [CREATE_NUTRITION_FUNC],
   model: "gpt-4o",
 }
 

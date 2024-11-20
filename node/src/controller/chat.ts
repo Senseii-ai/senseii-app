@@ -23,7 +23,7 @@ import {
 } from "../models/userInfo";
 import { summariseChat } from "../services/openai/assistants/summary/utils";
 import { infoLogger } from "../utils/logger/logger";
-import { CreateNutritionPlan, NutritionToolArguments } from "../services/openai/assistants/nutrition/nutrition.functions";
+import { CreateInitialPlan, NutritionToolArguments } from "../services/openai/assistants/nutrition/nutrition.functions";
 
 const OpenAIClient = getOpenAIClient();
 
@@ -310,7 +310,7 @@ const createNutritionPlan = async (req: IAuthRequest, res: Response) => {
         }
       }
     }
-    const plan = await CreateNutritionPlan(SampleArgument)
+    const plan = await CreateInitialPlan(SampleArgument)
 
   } catch (error) {
     console.error(error)

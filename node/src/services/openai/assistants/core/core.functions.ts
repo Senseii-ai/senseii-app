@@ -1,45 +1,29 @@
-import { createNutritionPlanSchema } from "../nutrition/nutrition.functions";
-import { getOpenAIClient } from "../../openai.client";
+import { FunctionDefinition } from "openai/resources";
+import { CREATE_GOAL_FUNC } from "./constants";
+import { IFunctionType } from "../functions";
 
-const client = getOpenAIClient();
-
-// list of all the functions supported by the core assistant.
-export interface ITestCoreToolArguments {
-  type: "testCoreToolArguments";
-  // the type of the core tool arguments
-  coreToolArguments: any;
-  // the core tool arguments
+const getCreateGoalSchema = () => {
+  const createGoalSchema: FunctionDefinition = CREATE_GOAL_FUNC.function
+  return createGoalSchema
+}
+const createGoalFunction = async (args: any) => {
+  console.log("Create Goal Implementation")
+  return "create goal test function"
 }
 
-export const testCoreToolFunction = async () => {
-  console.log("testing core tool function");
-};
-export type CoreToolArguments = ITestCoreToolArguments;
+export const createGoal: IFunctionType = {
+  name: "createGoal",
+  function: createGoalFunction,
+  funcitonDefinition: getCreateGoalSchema,
+  functionalityType: "Core"
+}
 
-const testFunction = {
-  name: "testCoreToolArguments",
-  function: testCoreToolFunction,
-};
+const coreAssistantFunctions = {
+  createGoal,
+}
 
-export const coreAssistantFunctions = {
-  testFunction,
-};
-
-// TODO: improve the naming convention of the functions.
 export const getCoreAssistantFunctions = () => {
   return coreAssistantFunctions;
 };
 
-export const loadNutritionPlanCreationFunction = async (
-  assistantId: string,
-) => {
-  const response = await client.beta.assistants.update(assistantId, {
-    tools: [
-      {
-        type: "function",
-        function: createNutritionPlanSchema(),
-      },
-    ],
-  });
-};
 

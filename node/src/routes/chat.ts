@@ -6,7 +6,7 @@ import {
   chat,
 } from "../controller/chat";
 import { chatCore } from "../controller/testChat";
-import { CreateNutritionPlan } from "../services/openai/assistants/nutrition/nutrition.functions";
+import { CreateInitialPlan } from "../services/openai/assistants/nutrition/nutrition.functions";
 
 const router: Router = express.Router();
 
@@ -53,7 +53,7 @@ const router: Router = express.Router();
 router.route("/").post(chat);
 router.route("/user/:userId/chat/:chatId").get(getChatMessages);
 router.route("/user/:userId/chats").get(getChats);
-router.route("/nutritionChat").post(CreateNutritionPlan);
+router.route("/nutritionChat").post(CreateInitialPlan);
 
 /**
  * @openapi

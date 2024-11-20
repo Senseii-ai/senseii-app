@@ -32,11 +32,6 @@ export const getChatsFromThreadIds = async (threadIds: chat[]) => {
   try {
     let finalResponse: Chat[] = [];
     for (const thread of threadIds) {
-      // NOTE: Commenting it out to make initial load frontend load faster.
-      // const response = await client.beta.threads.messages.list(
-      //   threadIds[0].threadId,
-      // );
-
       finalResponse.push({
         id: thread.id,
         title: thread.title,
@@ -124,6 +119,7 @@ async function handleToolAction(
 
   // NOTE: Tool call is serial for now, parallel later if needed.
   const toolCall = toolCalls[0];
+  console.log("SUPPORTED FUNCTIONS", supportedFunctions)
   const toolToCall = supportedFunctions[toolCall.function.name];
   const response = await toolToCall.function(toolCall.function.arguments);
   infoLogger({

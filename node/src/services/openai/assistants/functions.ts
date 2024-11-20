@@ -1,4 +1,4 @@
-// list of all the supported functions in the application
+import { createGoal } from "./core/core.functions";
 import { createNutritionPlanFunction } from "./nutrition/nutrition.functions";
 
 // each function will have these three properties
@@ -11,4 +11,5 @@ export interface IFunctionType {
 
 export const supportedFunctions: Record<string, IFunctionType> = {
   create_nutrition_plan: createNutritionPlanFunction,
+  create_goal: createGoal
 };

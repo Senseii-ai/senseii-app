@@ -8,12 +8,12 @@ import {
   IMeals,
 } from "../types/interfaces";
 
-interface IItemsDocument extends IItems, Document {}
-interface IMacroNutrientsDocument extends IMacroNutrients, Document {}
-interface IMicroNutrientsDocument extends IMicroNutrients, Document {}
-interface IMealsDocument extends IMeals, Document {}
-interface IDailyNutritionPlanDocument extends IDailyNutritionPlan, Document {}
-interface INutritionPlanDocument extends INutritionPlan, Document {}
+interface IItemsDocument extends IItems, Document { }
+interface IMacroNutrientsDocument extends IMacroNutrients, Document { }
+interface IMicroNutrientsDocument extends IMicroNutrients, Document { }
+interface IMealsDocument extends IMeals, Document { }
+interface IDailyNutritionPlanDocument extends IDailyNutritionPlan, Document { }
+interface INutritionPlanDocument extends INutritionPlan, Document { }
 
 const ItemsSchema: Schema<IItemsDocument> = new Schema({
   item: { type: String, required: true },
@@ -63,7 +63,7 @@ const DailyNutritionPlanSchema: Schema<IDailyNutritionPlanDocument> =
     meals: { type: [MealsSchema], required: true },
   });
 
-const NutritionPlanSchema: Schema<INutritionPlanDocument> = new Schema({
+export const NutritionPlanSchema: Schema<INutritionPlanDocument> = new Schema({
   plan: { type: [DailyNutritionPlanSchema], required: true },
 });
 

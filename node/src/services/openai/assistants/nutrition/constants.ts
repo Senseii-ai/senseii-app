@@ -1,5 +1,7 @@
-export const NUTRITION_ASSISTANT = {
-  name: "nutrition-assistant",
+import { AssistantCreateParams } from "openai/resources/beta/assistants";
+import { zodResponseFormat } from "openai/helpers/zod"
+
+export const NUTRITION_ASSISTANT: AssistantCreateParams = {
   instructions:
     `As an AI nutrition expert, confidently and expertly craft individual meal
     plans tailored to a user's dietary preferences, health goals, lifestyle
@@ -70,7 +72,7 @@ export const NUTRITION_ASSISTANT = {
       | "Saturday"
       | "Sunday"; `,
   tools: [],
-  model: "gpt-4o",
+  model: "gpt-4o-mini-2024-07-18"
 }
 
 

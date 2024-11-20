@@ -8,35 +8,35 @@ import { getOpenAIClient } from "../../openai.client";
 import { getNewThreadWithMessages } from "../threads";
 import { MessageCreateParams } from "openai/resources/beta/threads/messages";
 import { ICreateNutritionPlanArguments } from "../../../../types/user/nutritionPlan";
-import { INutritionPlan, NutritionPlan, nutritionPlanValidatorSchema } from "../../../../types/interfaces";
+import { nutritionPlanObject as nutritionPlanValidatorSchema } from "../../../../types/interfaces";
 
 // A general type containing arguments for all types of functions supported by nutrition assistant.
 export type NutritionToolArguments = ICreateNutritionPlanArguments;
 const client = getOpenAIClient();
 
-export const CompleteNutritionPlan = async () => {
-  try {
-    const prompt = `No more changes needed, complete the remaining plan and generate the remaining plan`
-    const nutritionAssistant = await getNutritionAssistant(client);
-    const threadId = "hello"
-    // const getNutritionThreadIdForGoal = 
-    // console.log("MODEL RESPONSE", finalPlan)
-    const finalPlan = chatComplete(prompt, threadId, nutritionAssistant)
-    const parsedData = nutritionPlanValidatorSchema.parse(finalPlan)
-    console.log("PARSED DATA", parsedData)
-  } catch (error) {
-
-  }
-}
-
-// UpdateNutritionPlan updates the nutrition plan as per user's needs.
-export const UpdateNutritionPlan = async () => {
-  try {
-    const prompt = ``
-  } catch (error) {
-
-  }
-}
+// export const CompleteNutritionPlan = async () => {
+//   try {
+//     const prompt = `No more changes needed, complete the remaining plan and generate the remaining plan`
+//     const nutritionAssistant = await getNutritionAssistant(client);
+//     const threadId = "hello"
+//     // const getNutritionThreadIdForGoal = 
+//     // console.log("MODEL RESPONSE", finalPlan)
+//     const finalPlan = chatComplete(prompt, threadId, nutritionAssistant)
+//     const parsedData = nutritionPlanValidatorSchema.parse(finalPlan)
+//     console.log("PARSED DATA", parsedData)
+//   } catch (error) {
+//
+//   }
+// }
+//
+// // UpdateNutritionPlan updates the nutrition plan as per user's needs.
+// export const UpdateNutritionPlan = async () => {
+//   try {
+//     const prompt = ``
+//   } catch (error) {
+//
+//   }
+// }
 
 export const CreateInitialPlan = async (
   functionArguments: ICreateNutritionPlanArguments,
@@ -74,12 +74,14 @@ const chatComplete = async (prompt: string, threadId: string | null, assistant: 
     if (response && response[0].content[0].type === "text") {
       output = response[0].content[0].text.value;
     }
-    return parsedData;
+    return output;
   } catch (error) {
     console.error(chalk.red(error));
     throw error;
   }
 }
+
+
 
 // this function creates the nutrition plan for the user.
 export const createNutritionPlan = async (
@@ -96,8 +98,8 @@ export const createNutritionPlan = async (
       role: "user",
       content: prompt,
     };
-    const newThreadId = await getNewThreadWithMessages(message, openAIClient);
-    const response = await createRun(newThreadId, openAIClient, assistant.id);
+    const newThreadId = await getNewThreadWithMessages(message, client);
+    const response = await createRun(newThreadId, client, assistant.id);
     let output = ""
     if (response && response[0].content[0].type === "text") {
       output = response[0].content[0].text.value;
@@ -274,7 +276,7 @@ export const createNutritionPlanSchema = () => {
 // TODO: create a function variable for every function supported by the Nutrition Assistant
 export const createNutritionPlanFunction: IFunctionType = {
   name: "createNutritionPlan",
-  function: CreateNutritionPlan,
+  function: CreateInitialPlan,
   funcitonDefinition: createNutritionPlanSchema,
   functionalityType: "Nutrition",
 };

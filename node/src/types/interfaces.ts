@@ -36,12 +36,12 @@ const nutritionPlan = z.object({
   plan: z.array(dailyNutritionPlan)
 })
 
-export const nutritionPlanValidatorSchema = z.object({
+export const nutritionPlanObject = z.object({
   type: z.literal("nutritionPlan"),
   nutritionPlan
 })
 
-export type NutritionPlan = z.infer<typeof nutritionPlanValidatorSchema>
+export type NutritionPlan = z.infer<typeof nutritionPlanObject>
 
 // TODO: Replace with Zod entirely
 export interface INutritionPlan {

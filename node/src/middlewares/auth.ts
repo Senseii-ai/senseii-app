@@ -1,20 +1,54 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../utils/crypt";
-import { IUserDecoded } from "../types/auth";
+import {
+  AsyncLocalStorage,
+  AsyncLocalStorage as asnycLocalStorage,
+} from "async_hooks";
+
+type UserContext = Map<string, string>;
+const userStorage = new AsyncLocalStorage<UserContext>();
 
 // TODO: Implement Custom Errors
 export interface IAuthRequest extends Request {
   userId?: string;
 }
 
-// check out JSDoc
+export const getUserId = () => {
+  const store = userStorage.getStore();
+  const userId = store?.get("userId");
+  if (!userId) {
+    throw new Error("User ID is not available in the current context");
+  }
+  return userId;
+};
 
+// NOTE: This is temporary implementation.
 export const authenticateUser = async (
   req: IAuthRequest,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
+    console.log("I WAS RUN");
+    const store = new Map<string, any>();
+    const { userId } = req.body;
+    userStorage.run(store, () => {
+      store.set("userId", userId);
+      next();
+    });
+  } catch (error) {}
+};
+
+// senseii.in
+// app.senseii.in
+
+export const authenticateUserMain = async (
+  req: IAuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    console.log("I WAS RUN");
     const authHeader = req.headers["authorization"] as string;
     const token = authHeader && authHeader.split(" ")[1];
 
@@ -25,7 +59,9 @@ export const authenticateUser = async (
     }
 
     try {
+      console.log("VERIFYING TOKEN");
       const userId = verifyToken(token);
+      console.log("USER ID", userId);
       if (!userId) {
         throw new Error("Error decoding JWT");
       }

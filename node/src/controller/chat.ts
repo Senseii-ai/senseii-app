@@ -23,7 +23,6 @@ import {
 } from "../models/userInfo";
 import { summariseChat } from "../services/openai/assistants/summary/utils";
 import { infoLogger } from "../utils/logger/logger";
-import { CreateInitialPlan, NutritionToolArguments } from "../services/openai/assistants/nutrition/nutrition.functions";
 
 const OpenAIClient = getOpenAIClient();
 

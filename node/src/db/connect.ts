@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { infoLogger } from "../utils/logger/logger";
 
 require("dotenv").config();
 
@@ -11,9 +12,11 @@ const connectDB = async () => {
         "MONGODB_URL is not defined in the environment variables",
       );
     await mongoose.connect(url);
-    console.log("Connected to Database successful");
+    infoLogger({ status: "success", message: "connected to database successful" })
   } catch (error) {
-    console.error("Error connecting to Database", error);
+
+    infoLogger({ status: "failed", message: "error connecting to database" })
+    console.error("", error);
   }
 };
 

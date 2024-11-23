@@ -19,7 +19,6 @@ import {
   addChatToUser,
   getThreadAndUserByChatId,
   getThreadByChatId,
-  getThreadById,
   getUserByUserId,
 } from "../models/userInfo";
 import { summariseChat } from "../services/openai/assistants/summary/utils";

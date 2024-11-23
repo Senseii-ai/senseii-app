@@ -1,45 +1,101 @@
-import { createNutritionPlanSchema } from "../nutrition/nutrition.functions";
-import { getOpenAIClient } from "../../openai.client";
+import { IFunctionType } from "../functions";
+import { saveInitialGoal, saveNutritionPlan, saveUpdatedUserConstraints, saveUpdatedDietPreferences, saveUpdatedBasicInformaion, saveUpdatedEatingHabits } from "../../../../models/goals";
+import { InitialGoal, UserGoalDTO } from "../../../../types/user/goals";
+import { validateResponse } from "../utils";
+import { basicInformation, constraints, dietPreferences, eatingHabits } from "../../../../types/user/userPreferences";
+import { z } from "zod"
+import { createNutritionPlan } from "../nutrition/nutrition.functions";
 
-const client = getOpenAIClient();
-
-// list of all the functions supported by the core assistant.
-export interface ITestCoreToolArguments {
-  type: "testCoreToolArguments";
-  // the type of the core tool arguments
-  coreToolArguments: any;
-  // the core tool arguments
+const createDietPlanFunc = async (args: string) => {
+  const response = await createNutritionPlan(args)
+  if (await saveNutritionPlan(response.nutritionPlan)) {
+    return "User Diet Plan Created Successfully"
+  }
+  return "User Diet Plan Creation Failed"
 }
 
-export const testCoreToolFunction = async () => {
-  console.log("testing core tool function");
-};
-export type CoreToolArguments = ITestCoreToolArguments;
+// createInitialGoalFunction gets the string format funciton calling input
+// validates them and saves them in the database.
+const createInitialGoalFunc = async (args: string) => {
+  const validArgs = await getValidArguments({ data: args, validatorSchemaName: "create-initial-goal", validatorSchema: InitialGoal })
+  if (await saveInitialGoal(validArgs)) {
+    return "User Initial Goal Created Successfully"
+  }
+  return "User Initial Goal Creation Failed"
+}
 
-const testFunction = {
-  name: "testCoreToolArguments",
-  function: testCoreToolFunction,
-};
+const updateUserBasicInfoFunc = async (args: string) => {
+  const validArgs = await getValidArguments({ data: args, validatorSchemaName: "update-basic-information", validatorSchema: basicInformation })
+  if (await saveUpdatedBasicInformaion(validArgs)) {
+    return "User Basic Information Updated Successfully"
+  }
+  return "User Basic Information Update Failed"
+}
 
-export const coreAssistantFunctions = {
-  testFunction,
-};
+const updateEatingHabitsFunc = async (args: string) => {
+  const validArgs = await getValidArguments({ data: args, validatorSchema: eatingHabits, validatorSchemaName: "update-eating-habits" })
+  if (await saveUpdatedEatingHabits(validArgs)) {
+    return "User Eating Habits Updated Successfully"
+  }
+  return "User Eating Habits Update Failed"
+}
 
-// TODO: improve the naming convention of the functions.
-export const getCoreAssistantFunctions = () => {
-  return coreAssistantFunctions;
-};
+const updateUserConstraints = async (args: string) => {
+  const validArgs = await getValidArguments({ data: args, validatorSchema: constraints, validatorSchemaName: "update-user-constraints" })
+  if (await saveUpdatedUserConstraints(validArgs)) {
+    return "User Constraints Updated Successfully"
+  }
+  return "User Constraints Update Failed"
+}
 
-export const loadNutritionPlanCreationFunction = async (
-  assistantId: string,
-) => {
-  const response = await client.beta.assistants.update(assistantId, {
-    tools: [
-      {
-        type: "function",
-        function: createNutritionPlanSchema(),
-      },
-    ],
-  });
-};
+const updateDietPreferencesFunc = async (args: string) => {
+  const validArgs = await getValidArguments({ data: args, validatorSchema: dietPreferences, validatorSchemaName: "update-diet-preferences" })
+  if (await saveUpdatedDietPreferences(validArgs)) {
+    return `User Diet Preferences Updated Successfully`
+  }
+  return "User Diet Preferences Update Failed"
+}
 
+export const UpdateUserConstraintsFunc: IFunctionType = {
+  name: "updateUserConstraints",
+  function: updateUserConstraints,
+  functionalityType: "CORE"
+}
+
+export const CreateDietPlanFunc: IFunctionType = {
+  name: "createDietPlan",
+  function: createDietPlanFunc,
+  functionalityType: "CORE"
+}
+
+export const UpdateDietPreferencesFunc: IFunctionType = {
+  name: "updateDietPreferences",
+  function: updateDietPreferencesFunc,
+  functionalityType: "CORE"
+}
+
+export const UpdateEatingHabitsFunc: IFunctionType = {
+  name: "updateEatingHabits",
+  function: updateEatingHabitsFunc,
+  functionalityType: "CORE"
+}
+
+export const CreateInitialGoalFunc: IFunctionType = {
+  name: "createInitialGoalFunc",
+  function: createInitialGoalFunc,
+  functionalityType: "CORE"
+}
+
+export const UpdateUserBasicInfoFunc: IFunctionType = {
+  name: "updateUserBasicInfoFunc",
+  function: updateUserBasicInfoFunc,
+  functionalityType: "CORE"
+}
+
+export const getValidArguments = async<T extends z.ZodTypeAny>({ data, validatorSchema, validatorSchemaName }: { data: string, validatorSchema: T, validatorSchemaName: string }): Promise<z.infer<T>> => {
+  const validate = validatorSchema.safeParse(data)
+  if (!validate.success) {
+    return await validateResponse({ prompt: data, validatorSchema: validatorSchema, validatorSchemaName: validatorSchemaName })
+  }
+  return validate.data
+}

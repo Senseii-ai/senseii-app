@@ -1,7 +1,6 @@
 import { ThreadCreateParams } from "openai/resources/beta/threads/threads";
 import { AzureOpenAI } from "openai";
 import { createRun } from "./run";
-import { getOpenAIClient } from "../openai.client";
 import {
   Message,
   MessageCreateParams,
@@ -9,10 +8,9 @@ import {
 import { infoLogger } from "../../../utils/logger/logger";
 import { chat } from "../../../controller/chat";
 import { supportedFunctions } from "./functions";
-
 import { AssistantStreamEvent } from "openai/resources/beta/assistants";
 import { Stream } from "openai/streaming";
-const client = getOpenAIClient();
+import { RequiredActionFunctionToolCall, RunSubmitToolOutputsParams } from "openai/resources/beta/threads/runs/runs";
 
 export interface StreamCallbacks {
   onMessage?: (message: string) => Promise<void> | void;
@@ -35,10 +33,6 @@ export const getChatsFromThreadIds = async (threadIds: chat[]) => {
   try {
     let finalResponse: Chat[] = [];
     for (const thread of threadIds) {
-      // const response = await client.beta.threads.messages.list(
-      //   threadIds[0].threadId,
-      // );
-
       finalResponse.push({
         id: thread.id,
         title: thread.title,
@@ -107,6 +101,22 @@ async function processStream(
   }
 }
 
+const executeFunc = async (tool: RequiredActionFunctionToolCall) => {
+  infoLogger({ status: "alert", message: `running tool ${tool.function.name}` })
+  const toolToCall = supportedFunctions[tool.function.name];
+  console.log("TOOL TO CALL", toolToCall.name)
+  console.log("ARGUMENTS", tool.function.arguments)
+  const response = await toolToCall.function(tool.function.arguments);
+  infoLogger({
+    message: `Tool Call:${toolToCall.functionalityType}`, status: "alert",
+  });
+  const toolOutput: RunSubmitToolOutputsParams.ToolOutput = {
+    tool_call_id: tool.id,
+    output: response
+  }
+  return toolOutput
+}
+
 async function handleToolAction(
   event: AssistantStreamEvent.ThreadRunRequiresAction,
   client: AzureOpenAI,
@@ -114,6 +124,7 @@ async function handleToolAction(
   callbacks: StreamCallbacks,
 ): Promise<Stream<AssistantStreamEvent>> {
   const toolCalls = event.data.required_action?.submit_tool_outputs.tool_calls;
+  console.log("FOLLOWING TOOL CALL WAS MADE", toolCalls)
 
   if (!toolCalls?.length) {
     infoLogger({
@@ -124,30 +135,30 @@ async function handleToolAction(
     throw new Error("No tool calls specified");
   }
 
-  const toolCall = toolCalls[0];
-  const toolToCall = supportedFunctions[toolCall.function.name];
-  const response = await toolToCall.function(toolCall.function.arguments);
-  infoLogger({
-    message: `GOT response from ${toolToCall.functionalityType} Assistant`,
-  });
+  const resolvedResponses: RunSubmitToolOutputsParams.ToolOutput[] = []
+  for (const tool of toolCalls) {
+    const response = await executeFunc(tool)
+    resolvedResponses.push(response)
+  }
 
   // TODO: Implement logic to parse JSON to create Modal for getting user's final Approval.
   // const markdown = ParseJSONToMarkdown(response);
 
-  const newStream = await client.beta.threads.runs.submitToolOutputs(
-    threadId,
-    event.data.id,
-    {
-      stream: true,
-      tool_outputs: [
-        {
-          tool_call_id: toolCall.id,
-          output: response,
-        },
-      ],
-    },
-  );
-
+  let newStream
+  if (resolvedResponses.length > 0) {
+    newStream = await client.beta.threads.runs.submitToolOutputs(
+      threadId,
+      event.data.id,
+      {
+        stream: true,
+        tool_outputs: resolvedResponses
+      },
+    );
+  }
+  if (!newStream) {
+    callbacks.onError?.("internal server error");
+    throw new Error("Tool Call Failed");
+  }
   infoLogger({ message: "Response submitted" });
   return newStream;
 }

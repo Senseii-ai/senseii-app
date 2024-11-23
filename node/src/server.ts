@@ -12,6 +12,7 @@ import chalk from "chalk";
 import { authenticateUser } from "./middlewares/auth";
 import bodyParser from "body-parser";
 import { createAllAssistants } from "./services/openai/assistants/utils";
+import { infoLogger } from "./utils/logger/logger";
 
 const app: Express = express();
 app.use(cors());
@@ -25,7 +26,7 @@ const port = 9090;
 
 app.use(express.json());
 app.use("/api", userRouter);
-// app.use(authenticateUser);
+app.use(authenticateUser);
 app.use("/api/vitals", VitalRouter);
 app.use("/api/chat", ChatRouter);
 app.use("/api/health", HealthRouter);
@@ -41,12 +42,12 @@ app.get("/ping", (req: Request, res: Response) => {
 const start = async () => {
   await connectDB();
   app.listen(port, () => {
-    console.log(
-      chalk.white(chalk.bgGreen("[INFO]:"), "Server listening to port 9090"),
-    );
+    infoLogger({ status: "success", message: `server listening on port ${port}` })
   });
 
   swaggerDocs(app, port);
 };
 
 start();
+
+// TODO: Add the feature for Core assistant to give some examples in the beginning of convo.

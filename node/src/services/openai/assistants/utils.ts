@@ -6,6 +6,8 @@ import { Message } from "openai/resources/beta/threads/messages";
 import { Assistants } from "./constants";
 import { Assistant, AssistantCreateParams } from "openai/resources/beta/assistants";
 import { infoLogger } from "../../../utils/logger/logger";
+import { z } from "zod"
+import { zodResponseFormat } from "openai/helpers/zod";
 
 let client = getOpenAIClient()
 
@@ -886,6 +888,48 @@ const testing = {
       ]
     }
   ]
+}
+
+export const validateResponse = async<T extends z.ZodTypeAny>({ prompt, validatorSchema, validatorSchemaName }: { prompt: string, validatorSchema: T, validatorSchemaName: string }): Promise<z.infer<T>> => {
+  const systemPrompt = "out of the user's input prompt, generate a structured output that follows the given schema in json properly"
+  const validatedResponse = await chatComplete({ prompt, validatorSchema, validatorSchemaName, systemPrompt })
+  infoLogger({ status: "success", message: `valid data for ${validatorSchemaName} generated` })
+  return validatedResponse
+}
+
+export const chatComplete = async<T extends z.ZodTypeAny>({ prompt, systemPrompt, validatorSchema, model = "gpt-4o-2", validatorSchemaName }: {
+  prompt: string,
+  systemPrompt: string,
+  validatorSchema: T,
+  model?: string
+  validatorSchemaName: string,
+}): Promise<z.infer<T>> => {
+  try {
+    const client = getOpenAIClient()
+    const completion = await client.beta.chat.completions.parse({
+      model: model,
+      response_format: zodResponseFormat(validatorSchema, validatorSchemaName),
+      messages: [
+        {
+          role: "system",
+          content: systemPrompt
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ]
+    })
+    const output = completion.choices[0].message.parsed
+    return validatorSchema.parse(output)
+
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      console.error("Validation Error", error.errors)
+      throw new Error("Failed to validate AI response")
+    }
+    throw error
+  }
 }
 
 export const createAllAssistants = async () => {

@@ -10,8 +10,7 @@ import { chat } from "../../../controller/chat";
 import { supportedFunctions } from "./functions";
 import { AssistantStreamEvent } from "openai/resources/beta/assistants";
 import { Stream } from "openai/streaming";
-import { RequiredActionFunctionToolCall, RunSubmitToolOutputsParams, RunSubmitToolOutputsParamsStreaming } from "openai/resources/beta/threads/runs/runs";
-import { AssistantStream } from "openai/lib/AssistantStream";
+import { RequiredActionFunctionToolCall, RunSubmitToolOutputsParams } from "openai/resources/beta/threads/runs/runs";
 
 export interface StreamCallbacks {
   onMessage?: (message: string) => Promise<void> | void;
@@ -103,10 +102,13 @@ async function processStream(
 }
 
 const executeFunc = async (tool: RequiredActionFunctionToolCall) => {
+  infoLogger({ status: "alert", message: `running tool ${tool.function.name}` })
   const toolToCall = supportedFunctions[tool.function.name];
+  console.log("TOOL TO CALL", toolToCall.name)
+  console.log("ARGUMENTS", tool.function.arguments)
   const response = await toolToCall.function(tool.function.arguments);
   infoLogger({
-    message: `Tool Call:${toolToCall.functionalityType}, Status: Success`,
+    message: `Tool Call:${toolToCall.functionalityType}`, status: "alert",
   });
   const toolOutput: RunSubmitToolOutputsParams.ToolOutput = {
     tool_call_id: tool.id,
@@ -122,6 +124,7 @@ async function handleToolAction(
   callbacks: StreamCallbacks,
 ): Promise<Stream<AssistantStreamEvent>> {
   const toolCalls = event.data.required_action?.submit_tool_outputs.tool_calls;
+  console.log("FOLLOWING TOOL CALL WAS MADE", toolCalls)
 
   if (!toolCalls?.length) {
     infoLogger({

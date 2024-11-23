@@ -7,9 +7,7 @@ import {
   IEatingHabits,
   IDietPreferences,
   IUserPreferences,
-  userPreferencesValidatorObject,
 } from "../types/user/userPreferences";
-import { infoLogger } from "../utils/logger/logger";
 
 interface IUserPreferencesDocument extends IUserPreferences, Document { }
 interface IBasicInformationDocument extends IBasicInformation, Document { }
@@ -19,7 +17,7 @@ interface IHealthGoalsDocument extends IHealthGoals, Document { }
 interface IEatingHabitsDocument extends IEatingHabits, Document { }
 interface IConstraintsDocument extends IConstraints, Document { }
 
-const IBasicInformationSchema: Schema<IBasicInformationDocument> = new Schema({
+export const IBasicInformationSchema: Schema<IBasicInformationDocument> = new Schema({
   age: Number,
   weight: {
     value: Number,
@@ -87,11 +85,11 @@ const IHealthGoalsSchema: Schema<IHealthGoalsDocument> = new Schema({
   medicalConditions: String,
 })
 
-const IEatingHabitsSchema: Schema<IEatingHabitsDocument> = new Schema({
+const IEatingHabitsSchema = new Schema<IEatingHabitsDocument>({
   mealsPerDay: Number,
   mealComplexity: {
     type: String,
-    enum: ["daily", "weekly", "monthly"],
+    enum: ["simple", "moderate", "complex"]
   },
   cookingTime: {
     type: String,
@@ -114,11 +112,6 @@ const IConstraintsSchema: Schema<IConstraintsDocument> = new Schema({
 })
 
 export const UserPreferencesSchema: Schema<IUserPreferencesDocument> = new Schema({
-  user: {
-    type: Schema.Types.ObjectId,
-    ref: "Users",
-    required: true,
-  },
   basicInformation: { type: IBasicInformationSchema, requried: true },
   lifeStyle: { type: ILifeStyleSchema, requried: true },
   dietPreferences: { type: IDietPreferencesSchema, requried: true },
@@ -131,14 +124,3 @@ export const UserPreferencesModel = model<IUserPreferencesDocument>(
   "UserPreferences",
   UserPreferencesSchema
 )
-
-// saveUserGoalPreferences saves user goal preferences into a database. 
-const saveUserGoalPreferences = (body: any) => {
-  try {
-    console.log("GOT: ", body)
-    const parsedData = userPreferencesValidatorObject.parse(body)
-  } catch (error) {
-    infoLogger({ status: "failed", message: "Error Saving User Goals" })
-  }
-
-}

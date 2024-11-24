@@ -1,4 +1,4 @@
-import { INutritionPlan } from "../types/interfaces";
+import { INutritionPlan } from "@senseii/types";
 import { infoLogger } from "./logger/logger";
 
 export const ParseJSONToMarkdown = (json: string) => {

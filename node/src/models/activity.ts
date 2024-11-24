@@ -1,4 +1,4 @@
-import { IActiveCaloriesBurnedRecord, IActivity, ICyclingPedalingCadenceRecord, IDistanceRecord, IELevationGainedRecord, IExerciseSessionRecord, IFloorsClimbedRecord, IPowerRecord, ISpeedRecord, IStepsCadenceRecord, IStepsRecord, ITotalCaloriesBurnedRecord } from "../types/activity";
+import { IActiveCaloriesBurnedRecord, IActivity, ICyclingPedalingCadenceRecord, IDistanceRecord, IELevationGainedRecord, IExerciseSessionRecord, IFloorsClimbedRecord, IPowerRecord, ISpeedRecord, IStepsCadenceRecord, IStepsRecord, ITotalCaloriesBurnedRecord } from "@senseii/types";
 import { Schema, model } from "mongoose";
 
 interface IUserActivityDocument extends IActivity, Document { }

@@ -1,4 +1,4 @@
-import { getOpenAIClient } from "../services/openai/openai.client";
+import getOpenAIClient from "@services/openai/client";
 import {
   getNewEmptyThread,
   retrieveMessages,

@@ -6,7 +6,7 @@ import {
   IMacroNutrients,
   IMicroNutrients,
   IMeals,
-} from "../types/interfaces";
+} from "@senseii/types";
 
 interface IItemsDocument extends IItems, Document { }
 interface IMacroNutrientsDocument extends IMacroNutrients, Document { }

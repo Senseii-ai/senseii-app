@@ -8,7 +8,7 @@ import {
 } from "openai/resources/beta/threads/runs/runs";
 import { Message } from "openai/resources/beta/threads/messages";
 import chalk from "chalk";
-import { parseFunctionArguments } from "./utils";
+import { parseFunctionArguments } from "@services/openai/utils"
 import { supportedFunctions } from "./functions";
 
 const runStatus = {

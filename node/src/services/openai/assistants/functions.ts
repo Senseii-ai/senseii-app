@@ -1,4 +1,4 @@
-import { CreateDietPlanFunc, CreateInitialGoalFunc, UpdateDietPreferencesFunc, UpdateEatingHabitsFunc, UpdateUserBasicInfoFunc, UpdateUserConstraintsFunc } from "./core/core.functions";
+import { CreateDietPlanFunc, CreateInitialGoalFunc, UpdateDietPreferencesFunc, UpdateEatingHabitsFunc, UpdateUserBasicInfoFunc, UpdateUserConstraintsFunc } from "@services/openai/assistants/core";
 
 // each function will have these three properties
 export interface IFunctionType {

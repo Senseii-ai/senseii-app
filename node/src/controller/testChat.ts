@@ -1,8 +1,10 @@
-import { IAuthRequest } from "../middlewares/auth";
-import { getCoreAssistantId } from "../services/openai/assistants/core/core.assistant";
-import { continueThread } from "../services/openai/assistants/threads";
-import { getOpenAIClient } from "../services/openai/openai.client";
+import { IAuthRequest } from "@middlewares/auth";
+import { getCoreAssistantId } from "@services/openai/assistants/core";
+import { continueThread } from "@services/openai";
+// import { continueThread } from "@services/openai/assistants";
+import getOpenAIClient from "@services/openai/client";
 import { Response } from "express";
+import { infoLogger } from "@utils/logger";
 
 const client = getOpenAIClient();
 
@@ -19,7 +21,7 @@ export const chatCore = async (req: IAuthRequest, res: Response) => {
     );
     return res.status(200).json(response);
   } catch (error) {
-    console.error(error);
+    infoLogger({ "status": "failed", message: error as string })
     throw error;
   }
 };

@@ -1,17 +1,14 @@
+import "tsconfig-paths"
 import express, { Express, Request, Response } from "express";
 require("dotenv").config();
-import connectDB from "./db/connect";
-import userRouter from "./routes/user";
-import VitalRouter from "./routes/vitals";
-import ChatRouter from "./routes/chat";
-import HealthRouter from "./routes/health";
-import threadRouter from "./routes/threads";
+import connectDB from "@db/connect";
+import { userRouter, vitalsRouter, chatRouter, healthRouter, threadsRouter } from "@routes";
 import cors from "cors";
-import swaggerDocs from "./utils/swagger";
-import { authenticateUser } from "./middlewares/auth";
+import swaggerDocs from "@utils/swagger";
+import { authenticateUser } from "middlewares/auth";
 import bodyParser from "body-parser";
-import { createAllAssistants } from "./services/openai/assistants/utils";
-import { infoLogger } from "./utils/logger/logger";
+import { createAllAssistants } from "@services/openai/utils";
+import { infoLogger } from "@utils/logger";
 
 const app: Express = express();
 app.use(cors());
@@ -26,13 +23,13 @@ const port = 9090;
 app.use(express.json());
 app.use("/auth", userRouter);
 app.use(authenticateUser);
-app.use("/api/vitals", VitalRouter);
-app.use("/api/chat", ChatRouter);
-app.use("/api/health", HealthRouter);
+app.use("/api/vitals", vitalsRouter);
+app.use("/api/chat", chatRouter);
+app.use("/api/health", healthRouter);
 createAllAssistants()
 
 // list of test routers
-app.use("/api/threads", threadRouter);
+app.use("/api/threads", threadsRouter);
 
 app.get("/ping", (req: Request, res: Response) => {
   res.send("pong");

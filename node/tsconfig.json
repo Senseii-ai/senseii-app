@@ -1,5 +1,32 @@
 {
   "compilerOptions": {
+    "baseUrl": "./src",
+    "paths": {
+      "@routes": [
+        "routes/index"
+      ],
+      "@routes/*": [
+        "routes/*"
+      ],
+      "@utils/*": [
+        "utils/*"
+      ],
+      "@db/*": [
+        "db/*"
+      ],
+      "@middlewares/*": [
+        "middlewares/*"
+      ],
+      "@services/*": [
+        "services/*"
+      ],
+      "@models/": [
+        "models/index*"
+      ],
+      "@models/*": [
+        "models/*"
+      ]
+    },
     /* Visit https://aka.ms/tsconfig to read more about this file */
     /* Projects */
     // "incremental": true,                              /* Save .tsbuildinfo files to allow for incremental compilation of projects. */

@@ -1,4 +1,4 @@
-import { IBloodGlucoseRecord, IBloodPressureRecord, IBodyFatRecord, IBodyTemperatureRecord, IHeartRateRecord, IHeartRateVariabilityRmssdRecord, IHydrationRecord, IOxygenSaturationRecord, IRespiratoryRateRecord, IRestingHeartRateRecord, IVitals, IVo2MaxRecord, IWaterMassRecord } from "../types/vitals";
+import { IBloodGlucoseRecord, IBloodPressureRecord, IBodyFatRecord, IBodyTemperatureRecord, IHeartRateRecord, IHeartRateVariabilityRmssdRecord, IHydrationRecord, IOxygenSaturationRecord, IRespiratoryRateRecord, IRestingHeartRateRecord, IVitals, IVo2MaxRecord, IWaterMassRecord } from "@senseii/types";
 import { Schema, model } from "mongoose";
 
 interface IBloodGlucoseDocument extends IBloodGlucoseRecord, Document { }

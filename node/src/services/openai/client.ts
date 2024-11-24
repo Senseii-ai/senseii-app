@@ -9,6 +9,6 @@ const openAIClient = new AzureOpenAI({
   apiVersion,
 });
 
-export const getOpenAIClient = (): AzureOpenAI => {
+export default function getOpenAIClient() {
   return openAIClient;
 };

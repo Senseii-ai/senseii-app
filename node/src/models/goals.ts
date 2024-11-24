@@ -1,13 +1,11 @@
-import { Schema, model, Document, Types } from "mongoose"
-import { IInitialGoal, IThreads, IUserGoal, UserGoalDTO } from "../types/user/goals";
-import { UserPreferencesSchema } from "./userPreference";
-import { NutritionPlanSchema } from "./nutritionPlan";
 import { z } from "zod"
-import { validateResponse } from "../services/openai/assistants/utils";
-import { IBasicInformation, IConstraints, IDietPreferences, IEatingHabits, IHealthGoals, ILifeStyle } from "../types/user/userPreferences";
-import { getUserId } from "../middlewares/auth";
-import { infoLogger } from "../utils/logger/logger";
-import { INutritionPlan } from "../types/interfaces";
+import { Schema, model, Document } from "mongoose"
+import { INutritionPlan, IBasicInformation, IConstraints, IDietPreferences, IEatingHabits, IHealthGoals, ILifeStyle, IInitialGoal, IThreads, IUserGoal, UserGoalDTO } from "@senseii/types";
+import { UserPreferencesSchema } from "@models/userPreference";
+import { NutritionPlanSchema } from "@models/nutritionPlan";
+import { validateResponse } from "@services/openai/utils";
+import { getUserId } from "middlewares/auth";
+import { infoLogger } from "@utils/logger";
 
 interface IUserGoalDocument extends IUserGoal, Document { }
 

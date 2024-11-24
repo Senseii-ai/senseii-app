@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { IBasalBodyTemperatureRecord, IBasalMetabolicRateRecord, IBodyMeasurement, IBoneMassRecord, IHeightRecord, ILeanBodyMassRecord } from "../types/bodymeasurement";
+import { IBasalBodyTemperatureRecord, IBasalMetabolicRateRecord, IBodyMeasurement, IBoneMassRecord, IHeightRecord, ILeanBodyMassRecord } from "@senseii/types";
 
 interface IBodyMeasurementDocument extends IBodyMeasurement, Document { }
 interface IBasalBodyTemperatureDocument extends IBasalBodyTemperatureRecord, Document { }

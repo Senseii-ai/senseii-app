@@ -1,7 +1,7 @@
 import { IAuthRequest } from "../middlewares/auth";
 import { getCoreAssistantId } from "../services/openai/assistants/core/core.assistant";
 import { continueThread } from "../services/openai/assistants/threads";
-import { getOpenAIClient } from "../services/openai/openai.client";
+import getOpenAIClient from "@services/openai/client";
 import { Response } from "express";
 
 const client = getOpenAIClient();

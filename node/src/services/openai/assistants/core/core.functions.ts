@@ -1,7 +1,7 @@
 import { IFunctionType } from "../functions";
 import { saveInitialGoal, saveNutritionPlan, saveUpdatedUserConstraints, saveUpdatedDietPreferences, saveUpdatedBasicInformaion, saveUpdatedEatingHabits } from "../../../../models/goals";
-import { InitialGoal, UserGoalDTO } from "../../../../types/user/goals";
-import { validateResponse } from "../utils";
+import { InitialGoal } from "@senseii/types/user/goals"
+import { validateResponse } from "@services/openai/utils";
 import { basicInformation, constraints, dietPreferences, eatingHabits } from "../../../../types/user/userPreferences";
 import { z } from "zod"
 import { createNutritionPlan } from "../nutrition/nutrition.functions";

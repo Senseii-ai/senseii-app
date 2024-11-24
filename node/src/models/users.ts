@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
-import { User } from "../types/dtos/user";
+import { User } from "@senseii/types/dtos/user"
+// import { User } from "../types/dtos/user";
 
 const UserSchema: Schema = new Schema<User>({
   email: {

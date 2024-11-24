@@ -5,7 +5,7 @@ const client = getOpenAIClient();
 import { Request, Response } from "express";
 import { IAuthRequest } from "../middlewares/auth";
 import { getCoreAssistantTools } from "../services/openai/assistants/core/core.assistant";
-import { getOpenAIClient } from "../services/openai/openai.client";
+import getOpenAIClient from "@services/openai/client";
 import chalk from "chalk";
 
 // get the functions of the core assistant

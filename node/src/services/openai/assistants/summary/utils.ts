@@ -1,13 +1,14 @@
-import { createRun } from "../run";
-import { getSummaryAssistantId } from "./summary.assistant";
-import { getOpenAIClient } from "../../openai.client";
-import { latestMessage } from "../utils";
+import { createRun } from "@services/openai/assistants"
+import getOpenAIClient from "@services/openai/client";
+import { latestMessage } from "@services/openai/utils";
+import { getSummaryAssistantId } from "@services/openai/assistants/summary"
+import { infoLogger } from "@utils/logger";
 
 export const summariseChat = async (threadId: string) => {
   const client = getOpenAIClient();
   const response = await createRun(threadId, client, getSummaryAssistantId());
   if (!response) {
-    console.error("Error creating thread summarising run");
+    infoLogger({ message: "Error creating thread summarising run", status: "failed" })
     return null;
   }
   const summary = latestMessage(response[0]);

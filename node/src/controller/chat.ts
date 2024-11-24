@@ -1,6 +1,6 @@
 import { Response } from "express";
 import { IAuthRequest } from "../middlewares/auth";
-import { getOpenAIClient } from "../services/openai/openai.client";
+import getOpenAIClient from "@services/openai/client";
 import {
   StreamCallbacks,
   addMessageToThread,

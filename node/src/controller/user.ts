@@ -92,7 +92,7 @@ const userLoginCredsSchema = Joi.object({
 
 // TODO: Implement proper response types, telling if the request was successful or not.
 export const LoginUser = async (req: Request, res: Response) => {
-  console.log("this is req.body", req.body);
+  infoLogger({ status: "alert", message: `login attempt by ${req.body.email}` })
 
   // validate if the request body is valid.
   const isValid = userLoginCredsSchema.validate(req.body);

@@ -8,7 +8,6 @@ import HealthRouter from "./routes/health";
 import threadRouter from "./routes/threads";
 import cors from "cors";
 import swaggerDocs from "./utils/swagger";
-import chalk from "chalk";
 import { authenticateUser } from "./middlewares/auth";
 import bodyParser from "body-parser";
 import { createAllAssistants } from "./services/openai/assistants/utils";
@@ -25,7 +24,7 @@ app.use(bodyParser.json());
 const port = 9090;
 
 app.use(express.json());
-app.use("/api", userRouter);
+app.use("/auth", userRouter);
 app.use(authenticateUser);
 app.use("/api/vitals", VitalRouter);
 app.use("/api/chat", ChatRouter);

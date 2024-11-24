@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { IUserPreferences } from "../../../../../types/user/userPreferences";
+import { IUserPreferences } from "@senseii/types";
 import chalk from "chalk";
 
 // Maybe these validations will be seperated at some later point

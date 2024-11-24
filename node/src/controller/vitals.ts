@@ -11,7 +11,7 @@ import {
   IRespiratoryRateRecord,
   IRestingHeartRateRecord,
   IVo2MaxRecord,
-} from '../types/vitals';
+} from '@senseii/types';
 import { UserVitalsModel } from '../models/vitals';
 
 

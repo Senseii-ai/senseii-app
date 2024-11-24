@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { IRFToken } from "../types/auth";
+import { IRFToken } from "@senseii/types"
 
 const RefreshTokenSchema: Schema<IRFToken> = new Schema({
   token: {

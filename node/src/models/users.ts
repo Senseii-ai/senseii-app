@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
-import { User } from "@senseii/types/dtos/user"
-// import { User } from "../types/dtos/user";
+import { User } from "@senseii/types"
+import { infoLogger } from "@utils/logger";
 
 const UserSchema: Schema = new Schema<User>({
   email: {
@@ -25,7 +25,7 @@ const UserSchema: Schema = new Schema<User>({
 export const getUserByEmail = async (email: string) => {
   const user = await UserModel.findOne({ email: email });
   if (!user) {
-    console.error("Error finding user");
+    infoLogger({ status: "failed", message: "Error finding user" })
     throw new Error("Error finding user");
   }
   const userDTO: User = {

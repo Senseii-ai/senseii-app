@@ -1,6 +1,6 @@
 import { AssistantCreateParams } from "openai/resources/beta/assistants";
 import { zodResponseFormat } from "openai/helpers/zod"
-import { nutritionPlanObject } from "../../../../types/interfaces";
+import { nutritionPlanObject } from "@senseii/types";
 
 // NOTE: Testing out multiple instructions input.
 const backupInstructions = `As an AI nutrition expert, confidently and expertly craft individual meal

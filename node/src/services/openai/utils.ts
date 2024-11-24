@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import getOpenAIClient from "@services/openai/client"
 import { IFunctionType } from "@services/openai/assistants";
-import { ICreateNutritionPlanArguments } from "@senseii/types/user/nutritionPlan"
+import { ICreateNutritionPlanArguments } from "@senseii/types"
 import { Message } from "openai/resources/beta/threads/messages";
 import { Assistants } from "@services/openai/assistants";
 import { Assistant, AssistantCreateParams } from "openai/resources/beta/assistants";

@@ -1,20 +1,20 @@
 import { Response } from "express";
-import { IAuthRequest } from "../middlewares/auth";
+import { IAuthRequest } from "@middlewares/auth";
 import getOpenAIClient from "@services/openai/client";
 import {
+  createRun,
   StreamCallbacks,
   addMessageToThread,
   createStreamableRun,
   getChatsFromThreadIds,
   getNewThreadWithMessages,
-} from "../services/openai/assistants/threads";
-import { createRun } from "../services/openai/assistants/run";
-import { getCoreAssistantId } from "../services/openai/assistants/core/core.assistant";
+} from "@services/openai";
+import { getCoreAssistantId } from "@services/openai/assistants/core";
 import {
   Message,
   MessageCreateParams,
 } from "openai/resources/beta/threads/messages";
-import { getNutritionAssistantId } from "../services/openai/assistants/nutrition/nutrition.assistant";
+import { getNutritionAssistantId } from "../services/openai/assistants/nutrition/assistant";
 import {
   addChatToUser,
   getThreadAndUserByChatId,

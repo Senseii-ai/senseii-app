@@ -1,6 +1,5 @@
 import bcrypt from "bcryptjs";
-import jwt, { JwtPayload } from "jsonwebtoken";
-import { IUserDecoded } from "../types/auth";
+import jwt from "jsonwebtoken";
 
 export const getRefreshToken = (userId: string) => {
   return jwt.sign(userId, getRefreshTokenKey());

@@ -1,12 +1,10 @@
 import { FunctionDefinition } from "openai/resources";
 import chalk from "chalk";
-import { ICreateNutritionPlanArguments } from "../../../../types/user/nutritionPlan";
-import { NutritionPlan, nutritionPlanObject } from "../../../../types/interfaces";
-import { userPreferencesValidatorObject } from "../../../../types/user/userPreferences";
-import { CREATE_NUTRITION_FUNC } from "../core/constants";
-import { chatComplete, validateResponse } from "../utils";
-import { NutritionSystemPrompt } from "./constants";
-import { getValidArguments } from "../core/core.functions";
+import { NutritionPlan, nutritionPlanObject, userPreferencesValidatorObject, ICreateNutritionPlanArguments } from "@senseii/types";
+import { CREATE_NUTRITION_FUNC } from "@services/openai/assistants/core/constants";
+import { NutritionSystemPrompt } from "@services/openai/assistants/nutrition/constants";
+import { chatComplete } from "@services/openai/utils";
+import { getValidArguments } from "@services/openai/assistants/core";
 
 export type NutritionToolArguments = ICreateNutritionPlanArguments;
 

@@ -1,10 +1,10 @@
 import { IFunctionType } from "../functions";
 import { saveInitialGoal, saveNutritionPlan, saveUpdatedUserConstraints, saveUpdatedDietPreferences, saveUpdatedBasicInformaion, saveUpdatedEatingHabits } from "../../../../models/goals";
-import { InitialGoal } from "@senseii/types/user/goals"
+import { InitialGoal } from "@senseii/types"
 import { validateResponse } from "@services/openai/utils";
-import { basicInformation, constraints, dietPreferences, eatingHabits } from "../../../../types/user/userPreferences";
+import { basicInformation, constraints, dietPreferences, eatingHabits } from "@senseii/types";
 import { z } from "zod"
-import { createNutritionPlan } from "../nutrition/nutrition.functions";
+import { createNutritionPlan } from "../nutrition";
 
 const createDietPlanFunc = async (args: string) => {
   const response = await createNutritionPlan(args)

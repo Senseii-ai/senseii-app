@@ -2,9 +2,9 @@ const supportedAssistants = ["core", "fitness", "nutrition"];
 
 const client = getOpenAIClient();
 
-import { Request, Response } from "express";
-import { IAuthRequest } from "../middlewares/auth";
-import { getCoreAssistantTools } from "../services/openai/assistants/core/core.assistant";
+import { Response } from "express";
+import { IAuthRequest } from "@middlewares/auth";
+import { getCoreAssistantTools } from "../services/openai/assistants/core/assistant";
 import getOpenAIClient from "@services/openai/client";
 import chalk from "chalk";
 

@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../utils/crypt";
 import {
   AsyncLocalStorage,
-  AsyncLocalStorage as asnycLocalStorage,
 } from "async_hooks";
 
 type UserContext = Map<string, string>;
@@ -29,18 +28,14 @@ export const authenticateUser = async (
   next: NextFunction
 ) => {
   try {
-    console.log("I WAS RUN");
     const store = new Map<string, any>();
     const { userId } = req.body;
     userStorage.run(store, () => {
       store.set("userId", userId);
       next();
     });
-  } catch (error) {}
+  } catch (error) { }
 };
-
-// senseii.in
-// app.senseii.in
 
 export const authenticateUserMain = async (
   req: IAuthRequest,

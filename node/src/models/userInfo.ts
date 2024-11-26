@@ -1,20 +1,13 @@
 import chalk from "chalk";
 import { Schema, model, Types } from "mongoose";
 import { infoLogger } from "../utils/logger/logger";
+import { CreateUserRequest, UserDTO, UserProfile, UserProfileModel, userChatsSchema, userProfileModelSchema } from "@senseii/types";
+import { z } from "zod";
 
-export interface IUserProfile {
-  user: Types.ObjectId; // unique ID of the user in the backend
-  chats: IChat[]; // List of chat IDs related to the user. Chat ID is a nano Id for the frontend
-}
-
-export interface IChat {
-  id: string;
-  threadId: string;
-  summary: string;
-}
-
-interface IUserProfileDocument extends IUserProfile, Document { }
-interface IChatsDocument extends IChat, Document { }
+type Chat = z.infer<typeof userChatsSchema>
+export type UserProfileModelSchema = z.infer<typeof userProfileModelSchema>
+interface IUserProfileDocument extends UserProfileModel, Document { }
+interface IChatsDocument extends Chat, Document { }
 
 const IChatSchema: Schema<IChatsDocument> = new Schema({
   id: {
@@ -32,8 +25,8 @@ const IChatSchema: Schema<IChatsDocument> = new Schema({
 });
 
 const UserProfileSchema: Schema<IUserProfileDocument> = new Schema({
-  user: {
-    type: Schema.Types.ObjectId,
+  id: {
+    type: String,
     ref: "Users",
     required: true,
   },
@@ -47,6 +40,18 @@ const UserProfileModel = model<IUserProfileDocument>(
   UserProfileSchema,
 );
 
+export const saveNewUserProfile = async (user: UserProfileModelSchema) => {
+  try {
+    const newProfile = await (new UserProfileModel(user)).save()
+    infoLogger({ status: "success", message: "profile saved in db" })
+    return newProfile
+  } catch (error) {
+    infoLogger({ status: "failed", message: error as string })
+    throw error
+  }
+
+}
+
 export const getUserByUserId = async (userId: string) => {
   infoLogger({ message: "get user by userid" });
   const response = await UserProfileModel.findOne({
@@ -55,7 +60,7 @@ export const getUserByUserId = async (userId: string) => {
   if (!response) {
     return null;
   }
-  return response as IUserProfile;
+  return response;
 };
 
 export const getThreadAndUserByChatId = async (chatId: string) => {
@@ -64,7 +69,7 @@ export const getThreadAndUserByChatId = async (chatId: string) => {
   });
   const requiredThreadId = response?.chats.find((item) => item.id === chatId);
   return {
-    user: String(response?.user),
+    user: String(response?.id),
     existingThreadId: requiredThreadId,
   };
 };
@@ -104,7 +109,7 @@ export const addChatToUser = async (
   summary: string,
 ) => {
   try {
-    const newChat: IChat = {
+    const newChat: Chat = {
       id: chatId,
       threadId: threadId,
       summary: summary,

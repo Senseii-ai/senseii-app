@@ -28,7 +28,7 @@ const getAccessTokenKey = (): string => {
   return AccessTokenKey;
 };
 
-const getSalt = (): string => {
+export const getSalt = (): string => {
   return bcrypt.genSaltSync(10);
 };
 

@@ -17,6 +17,8 @@ import { MongooseError } from "mongoose";
 
 export const getUser = async (req: Request, res: Response) => {
   try {
+    infoLogger({ status: "INFO", message: `get user ${req.body.email}` })
+    console.log(req.body)
     const { email }: { email: string } = req.body;
     infoLogger({
       message: `Get user ${email}`,
@@ -50,9 +52,13 @@ export const createNewUser = async (req: Request, res: Response) => {
     infoLogger({ status: "INFO", message: `create user ${validatedUser.email}` });
     const existingUser = await getUserByEmail(validatedUser.email)
     if (existingUser) {
-      const responseObject: ApiError = {
-        code: HTTP.STATUS.CONFLICT.toString(),
-        message: "user already exists"
+      const responseObject: ErrorResponse = {
+        success: false,
+        error: {
+          code: HTTP.STATUS_MESSAGE[HTTP.STATUS.CONFLICT],
+          message: "user alredy exists",
+          details: ""
+        }
       }
       infoLogger({ status: "failed", message: 'user already exists' })
       return res.status(HTTP.STATUS.CONFLICT).json(responseObject)
@@ -71,18 +77,23 @@ export const createNewUser = async (req: Request, res: Response) => {
 
     const result = await saveNewUserProfile(newProfile)
     if (!result) {
-      const responseObject: ApiError = {
-        code: HTTP.STATUS.INTERNAL_SERVER_ERROR.toString(),
-        message: "error creating user profile"
+      const responseObject: ErrorResponse = {
+        success: false,
+        error: {
+          message: "error creating user",
+          code: HTTP.STATUS.INTERNAL_SERVER_ERROR.toString(),
+          details: ""
+        }
       }
       res.status(HTTP.STATUS.INTERNAL_SERVER_ERROR).json(responseObject)
     }
 
     infoLogger({ message: `user ${validatedUser.email} created successfully`, status: "success" });
-    const responseObject: ApiResponse<string> = {
+
+    type SuccessResponse = z.infer<ReturnType<typeof SuccessResponseSchema>>
+    const responseObject: SuccessResponse = {
       success: true,
-      error: "",
-      data: "user created successfully"
+      data: "user create successfully"
     }
     res.status(HTTP.STATUS.OK).json(
       responseObject
@@ -90,13 +101,33 @@ export const createNewUser = async (req: Request, res: Response) => {
     return
   } catch (error) {
     infoLogger({ status: "failed", message: error as string })
-    const responseObject: ApiError = {
-      code: HTTP.STATUS.INTERNAL_SERVER_ERROR.toString(),
-      message: "error creating user"
+    const responseObject: ErrorResponse = {
+      success: false,
+      error: {
+        message: "error creating user",
+        code: HTTP.STATUS.INTERNAL_SERVER_ERROR.toString(),
+        details: ""
+      }
     }
     return res.status(HTTP.STATUS.INTERNAL_SERVER_ERROR).json(responseObject)
   }
 };
+
+const SuccessResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) => z.object({
+  success: z.literal(true),
+  data: dataSchema
+});
+
+const ErrorResponseSchema = z.object({
+  success: z.literal(false),
+  error: z.object({
+    code: z.string(),
+    message: z.string(),
+    details: z.any().optional()
+  })
+});
+
+type ErrorResponse = z.infer<typeof ErrorResponseSchema>
 
 // TODO: Implement proper response types, telling if the request was successful or not.
 export const loginUser = async (req: Request, res: Response) => {
@@ -104,9 +135,13 @@ export const loginUser = async (req: Request, res: Response) => {
     const validateUser = userLoginDTO.safeParse(req.body)
     if (!validateUser.success) {
       infoLogger({ status: "failed", message: "invalid credentials" })
-      const responseObject: ApiError = {
-        code: HTTP.STATUS.BAD_REQUEST.toString(),
-        message: "invalid credentials"
+      const responseObject: ErrorResponse = {
+        success: false,
+        error: {
+          code: HTTP.STATUS.BAD_REQUEST.toString(),
+          message: "invalid credentials",
+          details: ""
+        }
       }
       return res.status(HTTP.STATUS.BAD_REQUEST).json(responseObject)
     }
@@ -114,18 +149,27 @@ export const loginUser = async (req: Request, res: Response) => {
     const user = await getUserByEmail(validateUser.data?.email)
     if (!user) {
       infoLogger({ status: "failed", message: "user not found" })
-      const responseObject: ApiError = {
-        code: HTTP.STATUS.NOT_FOUND.toString(),
-        message: HTTP.STATUS_MESSAGE[HTTP.STATUS.NOT_FOUND]
+      const responseObject: ErrorResponse = {
+        success: false,
+        error: {
+          code: HTTP.STATUS.NOT_FOUND.toString(),
+          message: HTTP.STATUS_MESSAGE[HTTP.STATUS.NOT_FOUND],
+          details: ""
+        }
       }
       return res.status(HTTP.STATUS.NOT_FOUND).json(responseObject);
     }
 
     if (!(await comparePassword(validateUser.data.password, user.password))) {
-      const responseObject: ApiError = {
-        code: HTTP.STATUS.BAD_REQUEST.toString(),
-        message: "invalid email or password"
+      const responseObject: ErrorResponse = {
+        success: false,
+        error: {
+          code: HTTP.STATUS.BAD_REQUEST.toString(),
+          message: "invalid user email or password",
+          details: ""
+        }
       }
+
       return res.status(HTTP.STATUS.BAD_REQUEST).json(responseObject);
     }
 
@@ -142,22 +186,28 @@ export const loginUser = async (req: Request, res: Response) => {
       expiresAt: expiresAt,
     });
 
-    const responseObject: ApiResponse<UserLoginReponseDTO> = {
+    // FIX: maybe extract this to another function.
+    type SuccessResponse = z.infer<ReturnType<typeof SuccessResponseSchema>>
+    const responseObject: SuccessResponse = {
       success: true,
-      message: "login successful",
       data: {
         id: user._id.toString(),
         email: user.email,
         accessToken: accessToken,
         refreshToken: refreshToken
       },
-      error: ""
     }
     return res.status(HTTP.STATUS.OK).json(responseObject)
   } catch (error) {
     console.error(error);
-    let responseObject: ApiError
-    responseObject = { code: HTTP.STATUS.INTERNAL_SERVER_ERROR.toString(), message: "internal server error" }
+    const responseObject: ErrorResponse = {
+      success: false,
+      error: {
+        code: HTTP.STATUS.INTERNAL_SERVER_ERROR.toString(),
+        message: HTTP.STATUS_MESSAGE[HTTP.STATUS.INTERNAL_SERVER_ERROR],
+        details: ""
+      }
+    }
     return res.status(HTTP.STATUS.INTERNAL_SERVER_ERROR).json(responseObject)
   }
 };

@@ -68,7 +68,7 @@ export async function createStreamableRun(
     // Process stream events until completion
     await processStream(stream, client, threadId, callbacks);
 
-    infoLogger({ message: "RUN SUCCESSFUL" });
+    infoLogger({ status: "success", message: "run successful" });
     callbacks.onComplete?.();
   } catch (error) {
     callbacks.onError?.(error);

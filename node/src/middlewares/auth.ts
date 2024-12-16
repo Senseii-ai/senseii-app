@@ -4,6 +4,7 @@ import {
   AsyncLocalStorage,
 } from "async_hooks";
 
+// UserContext interface defines how the userStorage looks.
 type UserContext = Map<string, string>;
 const userStorage = new AsyncLocalStorage<UserContext>();
 
@@ -21,55 +22,38 @@ export const getUserId = () => {
   return userId;
 };
 
-// NOTE: This is temporary implementation.
 export const authenticateUser = async (
   req: IAuthRequest,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const store = new Map<string, any>();
-    const { userId } = req.body;
-    userStorage.run(store, () => {
-      store.set("userId", userId);
-      next();
-    });
-  } catch (error) { }
-};
-
-export const authenticateUserMain = async (
-  req: IAuthRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    console.log("I WAS RUN");
     const authHeader = req.headers["authorization"] as string;
-    const token = authHeader && authHeader.split(" ")[1];
 
+    const token = authHeader && authHeader.split(" ")[1];
     if (!token) {
       console.error("Auth Token does not exist");
-      res.status(401).json({ message: "Authentication error" });
-      return;
+      return res.status(401).json({ message: "Authentication error" });
     }
 
     try {
-      console.log("VERIFYING TOKEN");
       const userId = verifyToken(token);
-      console.log("USER ID", userId);
       if (!userId) {
         throw new Error("Error decoding JWT");
       }
 
-      req.userId = userId;
+      const store = new Map<string, any>();
+      userStorage.run(store, () => {
+        store.set("userId", userId);
+        req.userId = userId;
+        next(); // Call next only inside the correct flow
+      });
     } catch (error) {
       console.error("Token verification failed", error);
       return res.status(403).json({ message: "Authentication error" });
     }
-
-    next();
   } catch (error) {
-    console.error(error);
-    res.status(400).json({ message: "Authentication error" });
+    console.error("Unexpected error", error);
+    return res.status(400).json({ message: "Authentication error" });
   }
 };

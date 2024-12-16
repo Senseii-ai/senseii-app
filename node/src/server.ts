@@ -24,7 +24,7 @@ app.use(express.json());
 app.use("/auth", userRouter);
 app.use(authenticateUser);
 app.use("/api/vitals", vitalsRouter);
-app.use("/api/chat", chatRouter);
+app.use("/chat", chatRouter);
 app.use("/api/health", healthRouter);
 createAllAssistants()
 

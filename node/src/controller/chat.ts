@@ -23,6 +23,7 @@ import {
 } from "../models/userInfo";
 import { summariseChat } from "../services/openai/assistants/summary/utils";
 import { infoLogger } from "../utils/logger/logger";
+import { HTTP } from "@senseii/types";
 
 const OpenAIClient = getOpenAIClient();
 
@@ -132,13 +133,15 @@ export const getChatMessages = async (req: IAuthRequest, res: Response) => {
 
 // chat API
 export const chat = async (req: IAuthRequest, res: Response) => {
+  infoLogger({ status: "INFO", message: `initiating chat ${req.body.chatId}` })
   const headers = {
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache",
     Connection: "keep-alive",
   };
   try {
-    const { userId, chatId, content } = req.body;
+    const { chatId, content } = req.body
+    const userId = req.userId as string
     if (typeof chatId !== "string") {
       throw new Error("threadId or message not provided");
     }
@@ -208,15 +211,12 @@ export const chat = async (req: IAuthRequest, res: Response) => {
         throw new Error("Error generating Summary");
       }
 
-      const updatedProfile = await addChatToUser(
+      await addChatToUser(
         chatId,
         userId,
         threadId,
         summary,
       );
-      if (!updatedProfile) {
-        throw new Error("Error adding thread Id for user");
-      }
     }
   } catch (error) {
     console.error(error);

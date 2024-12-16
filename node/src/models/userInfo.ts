@@ -119,11 +119,13 @@ export const addChatToUser = async (
       throw new Error("Invalid user ID");
     }
 
+
     const updatedUserProfile = await UserProfileModel.findOneAndUpdate(
-      { user: new Types.ObjectId(userId) },
+      { id: new Types.ObjectId(userId) },
       { $push: { chats: newChat } },
       { new: true, useFindAndModify: false },
-    ).exec();
+    )
+
     infoLogger({ message: "Profile was updated" });
 
     return updatedUserProfile;

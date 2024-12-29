@@ -1,13 +1,9 @@
-import { saveEmailVerificationCode, verifyUser } from "@models/verificationToken"
+import { verifyUser } from "@models/verificationToken"
+import { User } from "@senseii/types"
 import { Result } from "types"
 
-interface verifyEmail {
-  redirectTo: string
-}
-
 const authService = {
-  verifyEmail: (token: string): Promise<Result<verifyEmail>> => {
-    console.log("Hello")
+  verifyEmail: (token: string): Promise<Result<User>> => {
     return verifyUser(token)
   }
 }

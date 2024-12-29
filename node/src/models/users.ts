@@ -31,6 +31,18 @@ const UserSchema: Schema = new Schema<UserModelSchema>({
     type: Date,
     required: true
   }
+}, {
+  toJSON: {
+    transform: (doc, ret) => {
+      return {
+        email: ret.email,
+        firstName: ret.firstName,
+        lastName: ret.lastName,
+        lastLoginAt: ret.lastLoginAt,
+        createdAt: ret.createdAt,
+      }
+    },
+  }
 });
 
 export const getUserByEmail = async (email: string) => {

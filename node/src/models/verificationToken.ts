@@ -4,6 +4,7 @@ import { z } from "zod"
 import { handleDBError } from "./utils/error";
 import UserProfileModel from "./userInfo";
 import { UserModel } from "./users";
+import { User, UserDTO, UserModelSchema } from "@senseii/types";
 
 /**
  * Represents an email verification token object.
@@ -88,14 +89,46 @@ export const saveEmailVerificationCode = async (userId: string, token: string): 
 }
 
 /**
- * verifyUser verifies the token, if correct, it updates the user status to verified.
-*/
-export const verifyUser = async (token: string): Promise<Result<Boolean>> => {
+ * Verifies a user by checking the provided email verification token and updating the user's verified status.
+ *
+ * @param {string} token - The email verification token sent to the user.
+ * @returns {Promise<Result<UserDTO>>} - A promise that resolves to a `Result` object containing either the verified user data or an error message.
+ *
+ * @example
+ * const result = await verifyUser("some-verification-token");
+ * if (result.success) {
+ *   console.log("User verified:", result.data);
+ * } else {
+ *   console.error("Error:", result.error);
+ * }
+ *
+ * @throws {Error} - Throws an error if the token is invalid or expired, or if the user is not found.
+ *
+ * @description
+ * This function performs the following steps:
+ * 1. Finds the email verification token in the database.
+ * 2. If the token is valid, updates the corresponding user's `verified` status to `true`.
+ * 3. Returns the updated user data as a DTO (Data Transfer Object).
+ * 4. Handles and returns specific errors for invalid tokens, missing users, and database issues.
+ */
+export const verifyUser = async (token: string): Promise<Result<User>> => {
   try {
     const user = (await EmailVerificationModel.findOne({ token: token }))?.userId
-    // TODO: update User status to verified.
-    const verifiedUser = await UserModel.findOneAndUpdate({ id: user }, { verified: true })
+    if (!user) {
+      throw new Error("Invalid or expired token")
+    }
+    const verifiedUser = (await UserModel.findOneAndUpdate({ id: user }, { verified: true }, { new: true }))
+    if (!verifiedUser) {
+      throw new Error("User not found")
+    }
+    return {
+      success: true,
+      data: verifiedUser.toJSON()
+    }
   } catch (error) {
-
+    return {
+      success: false,
+      error: handleDBError(error)
+    }
   }
 }

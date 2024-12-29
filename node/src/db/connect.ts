@@ -12,10 +12,10 @@ const connectDB = async () => {
         "MONGODB_URL is not defined in the environment variables",
       );
     await mongoose.connect(url);
-    infoLogger({ status: "success", message: "connected to database successful" })
+    infoLogger({ layer: "SERVER", status: "success", message: "connected to database successful" })
   } catch (error) {
 
-    infoLogger({ status: "failed", message: "error connecting to database" })
+    infoLogger({ layer: "SERVER", status: "failed", message: "error connecting to database" })
     console.error("", error);
   }
 };

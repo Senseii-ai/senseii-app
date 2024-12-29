@@ -38,7 +38,7 @@ app.get("/ping", (req: Request, res: Response) => {
 const start = async () => {
   await connectDB();
   app.listen(port, () => {
-    infoLogger({ status: "success", message: `server listening on port ${port}` })
+    infoLogger({ layer: "SERVER", status: "success", message: `server listening on port ${port}` })
   });
 
   swaggerDocs(app, port);

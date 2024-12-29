@@ -58,7 +58,12 @@ export const verifyEmail = async (req: IAuthRequest, res: Response) => {
     return res.status(HTTP.STATUS.BAD_REQUEST).json({ success: false, error: err })
   }
 
-  const result = await authService.verifyEmail(token)
+  const response = await authService.verifyEmail(token)
+  if (!response.success) {
+    infoLogger({ layer: "SERVICE", name: "auth", status: "success", message: "user verification -> success" })
+    return res.status(response.error.code).json(response)
+  }
+
   infoLogger({ status: "success", message: "user verification -> success" })
-  res.status(HTTP.STATUS.OK).json(result)
+  res.status(HTTP.STATUS.OK).json(response.data)
 }

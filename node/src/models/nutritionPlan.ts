@@ -29,6 +29,7 @@ const MacroNutrientsSchema: Schema<IMacroNutrientsDocument> = new Schema({
 });
 
 const MicroNutrientsSchema: Schema<IMicroNutrientsDocument> = new Schema({
+  // TODO: Define these more properly
   vitamins: { type: Number, required: true },
   dietryMinerals: { type: Number, required: true },
 });

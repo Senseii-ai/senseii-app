@@ -23,7 +23,6 @@ import {
 } from "../models/userInfo";
 import { summariseChat } from "../services/openai/assistants/summary/utils";
 import { infoLogger } from "../utils/logger/logger";
-import { HTTP } from "@senseii/types";
 
 const OpenAIClient = getOpenAIClient();
 

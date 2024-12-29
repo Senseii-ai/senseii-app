@@ -1,5 +1,5 @@
-import { UserModel, getUserByEmail, saveNewUser } from "../models/users";
-import { Request, Response, response } from "express";
+import { getUserByEmail, saveNewUser } from "../models/users";
+import { Request, Response } from "express";
 import {
   comparePassword,
   getAccessToken,
@@ -8,12 +8,12 @@ import {
 import { z } from "zod";
 
 import RefreshTokenModel from "@models/refreshToken";
-import Joi from "joi";
 import { UserProfileModelSchema, saveNewUserProfile } from "../models/userInfo";
 import { infoLogger } from "../utils/logger/logger";
-import { ApiError, ApiResponse, UserLoginReponseDTO, createUserSchema, userLoginDTO, userLoginResponseDTO } from "@senseii/types";
+import { User, createUserSchema, userLoginDTO } from "@senseii/types";
 import { HTTP } from "@utils/http";
-import { MongooseError } from "mongoose";
+import authService from "@services/auth/auth";
+import { Result } from "types";
 
 export const getUser = async (req: Request, res: Response) => {
   try {
@@ -45,8 +45,37 @@ export const getUser = async (req: Request, res: Response) => {
   }
 };
 
+export const createNewUserTemp = async (req: Request, res: Response): Promise<Result<User>> => {
+  infoLogger({ status: "INFO", message: "create new user" })
+  const validatedUser = createUserSchema.safeParse(req.body)
+  if (!validatedUser.success) {
+    const response: Result<Boolean> = {
+      success: false,
+      error: {
+        code: HTTP.STATUS.BAD_REQUEST,
+        message: "invalid credentials",
+        timestamp: new Date()
+      }
+    }
+    res.status(HTTP.STATUS.BAD_REQUEST).json(response)
+    return response
+  }
+
+  const response = await authService.createNewUser(validatedUser.data)
+  if (!response.success) {
+    infoLogger({ layer: "CONTROLLER", status: "failed", message: `user creation failed: ${response.error.message}` })
+    res.status(response.error.code).json(response)
+    return response
+  }
+
+  infoLogger({ status: "success", message: "user verification -> success" })
+  res.status(HTTP.STATUS.OK).json(response.data)
+  return response
+}
+
 // createNewUser creates a new User and it's related profile.
 export const createNewUser = async (req: Request, res: Response) => {
+  infoLogger({ status: "INFO", message: "create new user" });
   try {
     const validatedUser = createUserSchema.parse(req.body)
     infoLogger({ status: "INFO", message: `create user ${validatedUser.email}` });
@@ -72,6 +101,7 @@ export const createNewUser = async (req: Request, res: Response) => {
       updatedAt: new Date(newUser.updatedAt),
       email: newUser.email,
       firstName: newUser.firstName,
+      verified: false,
       lastName: newUser.lastName
     }
 

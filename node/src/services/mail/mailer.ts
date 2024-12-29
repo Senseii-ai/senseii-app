@@ -4,7 +4,7 @@ import { infoLogger } from "@utils/logger";
 const connectionString = "endpoint=https://mailing-service.unitedstates.communication.azure.com/;accesskey=2bBZlMjX3P7nX9dBxA4qaS3w4lSaYERXC96GT34D4x1JZRNtQD5aJQQJ99ALACULyCp3wfdgAAAAAZCSziec";
 const client = new EmailClient(connectionString);
 
-interface IEmailContent {
+export interface IEmailContent {
   subject: string,
   plainText: string,
   html: string
@@ -13,8 +13,12 @@ interface IEmailContent {
 
 const senderAddress = "DoNotReply@3a9f3f5e-5273-495e-b1cf-890e48711502.azurecomm.net"
 
+export const mailService = {
+  sendMail: (data: IEmailContent) => sendMail(data)
+}
+
 // FIX: Write docs
-const sendMail = async ({ subject, plainText, html, recipients }: IEmailContent) => {
+const sendMail = async ({ subject, plainText, html, recipients }: IEmailContent): Promise<{ success: boolean }> => {
   infoLogger({ status: 'INFO', message: "sending verification email" })
   const emailMessage: EmailMessage = {
     senderAddress,
@@ -31,7 +35,7 @@ const sendMail = async ({ subject, plainText, html, recipients }: IEmailContent)
   const poller = await client.beginSend(emailMessage)
   await poller.pollUntilDone();
   infoLogger({ status: 'success', message: "mail sent successfully" })
-
+  return { success: true }
 }
 
 async function main() {

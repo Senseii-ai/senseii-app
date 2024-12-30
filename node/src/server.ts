@@ -2,13 +2,14 @@ import "tsconfig-paths"
 import express, { Express, Request, Response } from "express";
 require("dotenv").config();
 import connectDB from "@db/connect";
-import { userRouter, vitalsRouter, chatRouter, healthRouter, threadsRouter } from "@routes";
+import { userRouter, vitalsRouter, chatRouter, healthRouter, threadsRouter, authRouter } from "@routes";
 import cors from "cors";
-import swaggerDocs from "@utils/swagger";
 import { authenticateUser } from "middlewares/auth";
 import bodyParser from "body-parser";
 import { createAllAssistants } from "@services/openai/utils";
 import { infoLogger } from "@utils/logger";
+import swaggerUi from "swagger-ui-express"
+import { swaggerDocs } from "@utils/swagger";
 
 const app: Express = express();
 app.use(cors());
@@ -21,7 +22,10 @@ app.use(bodyParser.json());
 const port = 9090;
 
 app.use(express.json());
-app.use("/auth", userRouter);
+app.use("/auth", authRouter);
+app.use("/user", userRouter)
+// FIX: for production drop this route below authenticator.
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs))
 app.use(authenticateUser);
 app.use("/api/vitals", vitalsRouter);
 app.use("/chat", chatRouter);
@@ -40,10 +44,6 @@ const start = async () => {
   app.listen(port, () => {
     infoLogger({ layer: "SERVER", status: "success", message: `server listening on port ${port}` })
   });
-
-  swaggerDocs(app, port);
 };
 
 start();
-
-// TODO: Add the feature for Core assistant to give some examples in the beginning of convo.

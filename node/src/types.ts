@@ -19,6 +19,7 @@ type ErrorCode = z.infer<typeof ZErrorCode>
 
 export type Result<T> = { success: true, data: T } | { success: false, error: AppError }
 
+// details field is populated only when I throw error, otherwise message will only contain database error.
 export const createError = (code: HTTPStatus, message: string, details?: Record<string, unknown>): AppError => (
   {
     code, message, details, timestamp: new Date()

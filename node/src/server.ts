@@ -18,7 +18,6 @@ app.use(
     extended: true,
   }),
 );
-app.use(bodyParser.json());
 const port = 9090;
 
 app.use(express.json());

@@ -1,70 +1,70 @@
 import mongoose, { Schema } from "mongoose";
 import { infoLogger } from "@utils/logger";
-import { CreateUserRequest, User, UserModelSchema } from "@senseii/types";
+import { CreateUserRequest, User, UserLoginReponseDTO, UserModelSchema } from "@senseii/types";
 import { getSalt, hashPassword } from "@utils/crypt";
 import { Result } from "types";
 import { handleDBError } from "./utils/error";
 
-const UserSchema: Schema = new Schema<UserModelSchema>({
-  email: {
-    type: String,
-    unique: true,
-    required: [true, "Email must be provided"],
-  },
-  firstName: {
-    type: String,
-  },
-  lastName: {
-    type: String
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  passwordSalt: {
-    type: String,
-    required: true,
-  },
-  lastLoginAt: {
-    type: Date,
-    required: true
-  },
-  createdAt: {
-    type: Date,
-    required: true
-  }
-}, {
-  toJSON: {
-    transform: (doc, ret) => {
-      return {
-        email: ret.email,
-        firstName: ret.firstName,
-        lastName: ret.lastName,
-        lastLoginAt: ret.lastLoginAt,
-        createdAt: ret.createdAt,
-      }
-    },
-  }
-});
-
-export const getUserByEmail = async (email: string) => {
-  return await UserModel.findOne({ email: email })
+export const userStore = {
+  getUserByEmail: (email: string) => getUserByEmail(email),
+  saveNewUser: (user: CreateUserRequest) => saveNewUser(user),
+  getUserWithPassword: (email: string) => getUserWithPassword(email)
 }
 
-/**
- * saveNewUserTemp, saves a new user entry in the User collection.
- * @param {CreateUserRequest} user - The object containing required information to create the new user.
- * @returns {Promse<Result<User>>} User object returned after saving the document in the DB.
-*/
-export const saveNewUserTemp = async (user: CreateUserRequest): Promise<Result<User>> => {
+const UserSchema: Schema = new Schema<UserModelSchema>(
+  {
+    email: {
+      type: String,
+      unique: true,
+      required: [true, "Email must be provided"],
+    },
+    firstName: {
+      type: String,
+    },
+    lastName: {
+      type: String,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    passwordSalt: {
+      type: String,
+      required: true,
+    },
+    lastLoginAt: {
+      type: Date,
+      required: true,
+    },
+    createdAt: {
+      type: Date,
+      required: true,
+    },
+  },
+  {
+    toJSON: {
+      transform: (doc, ret) => {
+        return {
+          email: ret.email,
+          firstName: ret.firstName,
+          lastName: ret.lastName,
+          lastLoginAt: ret.lastLoginAt,
+          createdAt: ret.createdAt,
+        };
+      },
+    },
+  }
+);
+
+const getUserWithPassword = async (email: string): Promise<Result<UserModelSchema>> => {
   try {
-    const salt = getSalt()
-    const hashedPassword: string = await hashPassword(user.password, salt);
-    const newUser = await (new UserModel({ ...user, lastLoginAt: new Date, passwordSalt: salt, password: hashedPassword }).save())
-    infoLogger({ layer: "DB", status: "INFO", message: `saved ${user} in db` })
+    const response = await UserModel.findOne({ email: email });
+    if (!response) {
+      throw new Error("user does not exist")
+    }
     return {
       success: true,
-      data: newUser.toJSON()
+      data: response
     }
   } catch (error) {
     return {
@@ -74,20 +74,48 @@ export const saveNewUserTemp = async (user: CreateUserRequest): Promise<Result<U
   }
 }
 
-export const saveNewUser = async (user: CreateUserRequest) => {
-  infoLogger({ status: "INFO", message: "save new user", layer: "DB" })
+export const getUserByEmail = async (email: string): Promise<Result<User>> => {
   try {
-    const salt = getSalt()
-    const hashedPassword: string = await hashPassword(user.password, salt);
-    const newUser = await (new UserModel({ ...user, lastLoginAt: new Date, passwordSalt: salt, password: hashedPassword }).save())
-    infoLogger({ layer: "DB", status: "INFO", message: `saved ${user} in db` })
-    return newUser
+    const response = await UserModel.findOne({ email: email });
+    if (!response) {
+      throw new Error("user does not exist")
+    }
+    return {
+      success: true,
+      data: response
+    }
   } catch (error) {
-    infoLogger({ layer: "DB", status: "failed", message: `unable to save ${user} in db` })
-    throw error
+    return {
+      success: false,
+      error: handleDBError(error)
+    }
   }
-}
+};
 
+export const saveNewUser = async (
+  user: CreateUserRequest
+): Promise<Result<User>> => {
+  try {
+    const salt = getSalt();
+    const hashedPassword: string = await hashPassword(user.password, salt);
+    const newUser = await new UserModel({
+      ...user,
+      lastLoginAt: new Date(),
+      passwordSalt: salt,
+      password: hashedPassword,
+    }).save();
+    infoLogger({ layer: "DB", status: "INFO", message: `saved ${user} in db` });
+    return {
+      success: true,
+      data: newUser.toJSON(),
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleDBError(error),
+    };
+  }
+};
 
 // export const getUserByEmail = async (email: string) => {
 //   const user = await UserModel.findOne({ email: email });

@@ -67,6 +67,7 @@ const userLogin = async (
   }
 
   if (!(await comparePassword(existingUser.data.password, data.password))) {
+    infoLogger({ status: "failed", message: "user login -> user found -> wrong password", layer: "SERVICE", name: "auth" })
     return {
       success: false,
       error: {

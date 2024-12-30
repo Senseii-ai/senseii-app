@@ -2,6 +2,7 @@ import { Schema, model } from "mongoose";
 import { IRFToken } from "@senseii/types";
 import { Result } from "types";
 import { handleDBError } from "./utils/error";
+import { infoLogger } from "@utils/logger";
 
 /**
  * Mongoose schema for the RefreshToken model.
@@ -58,6 +59,7 @@ const saveRefreshToken = async (
   userId: string
 ): Promise<Result<IRFToken>> => {
   try {
+    infoLogger({ status: "INFO", message: "user login -> save refresh token", layer: "DB", })
     const currentDate = new Date();
     const response = await new RefreshTokenModel({
       token: token,
@@ -65,6 +67,8 @@ const saveRefreshToken = async (
       expiresAt: currentDate.setDate(currentDate.getDate() + 1),
       createdAt: currentDate,
     }).save();
+
+    infoLogger({ status: "success", message: "user login -> save refresh token", layer: "DB", })
     return {
       success: true,
       data: response,
@@ -72,7 +76,7 @@ const saveRefreshToken = async (
   } catch (error) {
     return {
       success: false,
-      error: handleDBError(error),
+      error: handleDBError(error, "RFToken store"),
     };
   }
 };

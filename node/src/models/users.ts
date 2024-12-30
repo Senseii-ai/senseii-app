@@ -69,7 +69,7 @@ const getUserWithPassword = async (email: string): Promise<Result<UserModelSchem
   } catch (error) {
     return {
       success: false,
-      error: handleDBError(error)
+      error: handleDBError(error, "User Store")
     }
   }
 }
@@ -87,7 +87,7 @@ export const getUserByEmail = async (email: string): Promise<Result<User>> => {
   } catch (error) {
     return {
       success: false,
-      error: handleDBError(error)
+      error: handleDBError(error, "User Store")
     }
   }
 };
@@ -112,27 +112,9 @@ export const saveNewUser = async (
   } catch (error) {
     return {
       success: false,
-      error: handleDBError(error),
+      error: handleDBError(error, "User Store"),
     };
   }
 };
-
-// export const getUserByEmail = async (email: string) => {
-//   const user = await UserModel.findOne({ email: email });
-//   if (!user) {
-//     infoLogger({ status: "failed", message: "Error finding user" })
-//     throw new Error("Error finding user");
-//   }
-//   // FIX: replace with UserDTO
-//   const userDTO: User = {
-//     id: user.id,
-//     email: user.email,
-//     password: user.password,
-//     salt: user.salt,
-//     accessToken: user.accessToken,
-//   };
-//
-//   return userDTO;
-// };
 
 export const UserModel = mongoose.model<UserModelSchema>("Users", UserSchema);

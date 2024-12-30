@@ -204,8 +204,10 @@ const loginUser = async (
   req: IAuthRequest,
   res: Response
 ): Promise<Result<UserLoginReponseDTO>> => {
+  infoLogger({ status: "INFO", message: "user login", layer: "CONTROLLER", name: "auth" })
   const validatedUser = userLoginDTO.safeParse(req.body);
   if (!validatedUser.success) {
+    infoLogger({ status: "failed", message: "user login -> invalid credentials", layer: "CONTROLLER", name: "auth" })
     const response: Result<Boolean> = {
       success: false,
       error: {
@@ -224,5 +226,6 @@ const loginUser = async (
     return response;
   }
   res.status(HTTP.STATUS.OK).json(response.data);
+  infoLogger({ status: "success", message: "user login -> success", layer: "CONTROLLER", name: "auth" })
   return response;
 };

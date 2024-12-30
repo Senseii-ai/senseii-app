@@ -21,7 +21,7 @@ function getCurrentTime(): string {
 export const infoLogger = ({ message, status, layer, name }: InfoParams) => {
   let output = ""
   const prefix = () => {
-    if (layer == "SERVICE" || layer == "CONTROLLER") {
+    if (layer == "SERVICE" || layer == "CONTROLLER" || layer == "DB") {
       return `[${layer}]:[${name}]`
     }
     return `[${layer}]`

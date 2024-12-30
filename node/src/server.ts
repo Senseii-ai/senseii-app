@@ -21,7 +21,7 @@ app.use(
 const port = 9090;
 
 app.use(express.json());
-app.use("/auth", authRouter);
+app.use(authRouter);
 app.use("/user", userRouter)
 // FIX: for production drop this route below authenticator.
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs))

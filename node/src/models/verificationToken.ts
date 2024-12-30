@@ -1,6 +1,6 @@
-import mongoose, { Document, Schema, Types } from "mongoose"
+import mongoose, { Document, Schema, Types } from "mongoose";
 import { Result } from "types";
-import { z } from "zod"
+import { z } from "zod";
 import { handleDBError } from "./utils/error";
 import UserProfileModel from "./userInfo";
 import { UserModel } from "./users";
@@ -35,58 +35,68 @@ const emailVerificationTokenObject = z.object({
 });
 
 /**
- * type EmailVerificationToken 
+ * type EmailVerificationToken
  */
-type EmailVerificatoinToken = z.infer<typeof emailVerificationTokenObject>
+type EmailVerificatoinToken = z.infer<typeof emailVerificationTokenObject>;
 
-interface EmailVerificationDocument extends EmailVerificatoinToken, Document { }
+interface EmailVerificationDocument extends EmailVerificatoinToken, Document {}
 
 /**
  * EmailVerificationDocument represents the schema followed by the Email verfication documents.
-*/
+ */
 const EmailVerificationSchema = new Schema<EmailVerificationDocument>({
   userId: {
     type: String,
-    required: true
+    required: true,
   },
   token: {
     type: String,
-    required: true
+    required: true,
   },
   issueTime: {
     type: String,
-    required: true
+    required: true,
   },
   expirationTime: {
     type: Number,
     default: 2,
-    required: true
-  }
-})
+    required: true,
+  },
+});
 
-const EmailVerificationModel = mongoose.model<EmailVerificationDocument>("EmailToken", EmailVerificationSchema)
-export default EmailVerificationModel
+const EmailVerificationModel = mongoose.model<EmailVerificationDocument>(
+  "EmailToken",
+  EmailVerificationSchema
+);
+export default EmailVerificationModel;
 
 interface VerifyEmail {
-  redirectTo: string
+  redirectTo: string;
 }
 
-export const saveEmailVerificationCode = async (userId: string, token: string): Promise<Result<VerifyEmail>> => {
+export const saveEmailVerificationCode = async (
+  userId: string,
+  token: string
+): Promise<Result<VerifyEmail>> => {
   try {
-    await (new EmailVerificationModel({ userId: userId, token: token, issueTime: new Date().toISOString() }).save())
+    await new EmailVerificationModel({
+      userId: userId,
+      token: token,
+      issueTime: new Date().toISOString(),
+    }).save();
     return {
       success: true,
       data: {
-        redirectTo: "/login"
-      }
-    }
+        redirectTo: "/login",
+      },
+    };
   } catch (error) {
     return {
       success: false,
-      error: handleDBError(error)
-    }
+      error: handleDBError(error, "VFToken Store"),
+    };
   }
-}
+};
 
 /**
  * Verifies a user by checking the provided email verification token and updating the user's verified status.
@@ -113,22 +123,27 @@ export const saveEmailVerificationCode = async (userId: string, token: string): 
  */
 export const verifyUser = async (token: string): Promise<Result<User>> => {
   try {
-    const user = (await EmailVerificationModel.findOne({ token: token }))?.userId
+    const user = (await EmailVerificationModel.findOne({ token: token }))
+      ?.userId;
     if (!user) {
-      throw new Error("Invalid or expired token")
+      throw new Error("Invalid or expired token");
     }
-    const verifiedUser = (await UserModel.findOneAndUpdate({ id: user }, { verified: true }, { new: true }))
+    const verifiedUser = await UserModel.findOneAndUpdate(
+      { id: user },
+      { verified: true },
+      { new: true }
+    );
     if (!verifiedUser) {
-      throw new Error("User not found")
+      throw new Error("User not found");
     }
     return {
       success: true,
-      data: verifiedUser.toJSON()
-    }
+      data: verifiedUser.toJSON(),
+    };
   } catch (error) {
     return {
       success: false,
-      error: handleDBError(error)
-    }
+      error: handleDBError(error, "VFToken Verify"),
+    };
   }
-}
+};

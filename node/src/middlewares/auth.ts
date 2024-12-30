@@ -9,6 +9,9 @@ type UserContext = Map<string, string>;
 const userStorage = new AsyncLocalStorage<UserContext>();
 
 // TODO: Implement Custom Errors
+/**
+ * Represents the request object for authentication-related endpoints.
+ */
 export interface IAuthRequest extends Request {
   userId?: string;
 }

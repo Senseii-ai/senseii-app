@@ -5,6 +5,13 @@ export const getRefreshToken = (userId: string) => {
   return jwt.sign(userId, getRefreshTokenKey());
 };
 
+export const getAuthTokens = (id: string) => {
+  return {
+    accessToken: getAccessToken(id),
+    refreshToken: getRefreshToken(id)
+  }
+}
+
 const getRefreshTokenKey = (): string => {
   const RefreshTokenKey = process.env.REFRESH_TOKEN_KEY;
 

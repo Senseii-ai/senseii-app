@@ -3,6 +3,8 @@ import chalk from "chalk";
 interface InfoParams {
   message: string;
   status?: "success" | "failed" | "INFO" | "alert";
+  layer?: "DB" | "SERVICE" | "CONTROLLER" | "SERVER"
+  name?: string
 }
 
 function getCurrentTime(): string {
@@ -15,8 +17,16 @@ function getCurrentTime(): string {
   return chalk.white(chalk.bgGray(" TIME: " + `${hours}:${minutes}:${seconds}`) + " ")
 }
 
-export const infoLogger = ({ message, status }: InfoParams) => {
+// FIX: implement using class, so context can be switched depending on layers and service names.
+export const infoLogger = ({ message, status, layer, name }: InfoParams) => {
   let output = ""
+  const prefix = () => {
+    if (layer == "SERVICE" || layer == "CONTROLLER") {
+      return `[${layer}]:[${name}]`
+    }
+    return `[${layer}]`
+  }
+  // const prefix = `[${layer ? layer : ""}]:[${serviceName ? serviceName : ""}]`
   switch (status) {
     case "success":
       output = successMessage(message)
@@ -31,7 +41,7 @@ export const infoLogger = ({ message, status }: InfoParams) => {
       output = alertMessage(message)
       break
   }
-  console.log(output)
+  console.log(prefix() + output)
 };
 
 const successMessage = (message: string) => {

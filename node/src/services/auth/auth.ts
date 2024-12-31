@@ -118,7 +118,7 @@ const userLogin = async (
  * 1. Calls the `verifyUser` function to verify the token and update the user's email verification status.
  * 2. Returns the result of the verification process.
  */
-const verifyEmail = async (token: string): Promise<Result<User>> => {
+const verifyEmail = async (token: string): Promise<Result<String>> => {
   return await verifyUser(token);
 };
 

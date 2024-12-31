@@ -161,7 +161,7 @@ export const signup = async (
   }
 
   infoLogger({ status: "success", message: "user verification -> success" });
-  res.status(HTTP.STATUS.OK).json(response.data);
+  res.status(HTTP.STATUS.OK).json(response);
   return response;
 };
 
@@ -225,7 +225,7 @@ const loginUser = async (
     res.status(response.error.code).json(response.error);
     return response;
   }
-  res.status(HTTP.STATUS.OK).json(response.data);
+  res.status(HTTP.STATUS.OK).json(response);
   infoLogger({ status: "success", message: "user login -> success", layer: "CONTROLLER", name: "auth" })
   return response;
 };

@@ -59,7 +59,7 @@ const saveRefreshToken = async (
   userId: string
 ): Promise<Result<IRFToken>> => {
   try {
-    infoLogger({ status: "INFO", message: "user login -> save refresh token", layer: "DB", })
+    infoLogger({ status: "INFO", message: "user login -> save refresh token", layer: "DB", name: "RFToken store" })
     const currentDate = new Date();
     const response = await new RefreshTokenModel({
       token: token,
@@ -68,7 +68,7 @@ const saveRefreshToken = async (
       createdAt: currentDate,
     }).save();
 
-    infoLogger({ status: "success", message: "user login -> save refresh token", layer: "DB", })
+    infoLogger({ status: "success", message: "user login -> save refresh token", layer: "DB", name: "RFToken store" })
     return {
       success: true,
       data: response,

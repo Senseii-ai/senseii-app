@@ -45,6 +45,7 @@ const UserSchema: Schema = new Schema<UserModelSchema>(
     toJSON: {
       transform: (doc, ret) => {
         return {
+          id: doc.id,
           email: ret.email,
           firstName: ret.firstName,
           lastName: ret.lastName,

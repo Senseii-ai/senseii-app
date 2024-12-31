@@ -49,7 +49,7 @@ const router: Router = express.Router();
  *                       type: string
  *                       example: Invalid token
  */
-router.route("/auth/verify-token").get(authController.verifyEmail);
+router.route("/auth/verify-email").post(authController.verifyEmail);
 
 /**
  * @swagger

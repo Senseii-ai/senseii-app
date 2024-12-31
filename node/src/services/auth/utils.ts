@@ -1,4 +1,6 @@
+import { vfTokenStore } from "@models/verificationToken";
 import { IEmailContent, mailService } from "@services/mail/mailer";
+import { randomBytes } from "crypto";
 
 
 /**
@@ -24,14 +26,22 @@ import { IEmailContent, mailService } from "@services/mail/mailer";
  */
 export const sendVerificationMail = async (email: string): Promise<boolean> => {
   // FIX: repace placeholder email with the actual email address.
+  const token = randomBytes(64).toString("hex")
+  // NOTE: Expecting that saving document wouldn't fail.
+  await vfTokenStore.saveEmailVerificationCode(email, token)
+
+  const verificationLink = `${process.env.FE_URL}/verify-email?token=${token}`
+
   const emailData: IEmailContent = {
     subject: "email verification",
     plainText: "please click the following link to verify your email",
-    html: `<html>
-				<body>
-					<h1>click the link to verify your email.</h1>
-				</body>
-			</html>`,
+    html: `
+            <h1>Email Verification</h1>
+            <p>Thank you for signing up. Please verify your email address by clicking the link below:</p>
+            <a href="${verificationLink}" target="_blank">Verify Email</a>
+            <p>If the button doesn't work, copy and paste this URL into your browser:</p>
+            <p>${verificationLink}</p>
+        `,
     recipients: [{ address: "1w1l1.test@inbox.testmail.app" }],
   };
   const { success } = await mailService.sendMail(emailData);

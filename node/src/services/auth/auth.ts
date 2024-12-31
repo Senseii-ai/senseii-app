@@ -66,7 +66,7 @@ const userLogin = async (
     return existingUser;
   }
 
-  if (!(await comparePassword(existingUser.data.password, data.password))) {
+  if (!(await comparePassword(data.password, existingUser.data.password))) {
     infoLogger({ status: "failed", message: "user login -> user found -> wrong password", layer: "SERVICE", name: "auth" })
     return {
       success: false,
@@ -118,7 +118,7 @@ const userLogin = async (
  * 1. Calls the `verifyUser` function to verify the token and update the user's email verification status.
  * 2. Returns the result of the verification process.
  */
-const verifyEmail = async (token: string): Promise<Result<User>> => {
+const verifyEmail = async (token: string): Promise<Result<String>> => {
   return await verifyUser(token);
 };
 

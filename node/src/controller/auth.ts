@@ -59,9 +59,10 @@ export const authController = {
  * 4. Logs the verification process using `infoLogger`.
  * 5. Returns a `200 OK` response with the verification result or an appropriate error response.
  */
-export const verifyEmail = async (req: IAuthRequest, res: Response) => {
+export const verifyEmail = async (req: IAuthRequest, res: Response): Promise<Result<String>> => {
   infoLogger({ status: "INFO", message: "user verification triggered" });
-  const token = req.body;
+  const { token } = req.body;
+  console.log("token", token)
 
   if (!token) {
     const err: AppError = {
@@ -73,9 +74,13 @@ export const verifyEmail = async (req: IAuthRequest, res: Response) => {
       status: "failed",
       message: "user verification -> invalid token",
     });
-    return res
+    res
       .status(HTTP.STATUS.BAD_REQUEST)
       .json({ success: false, error: err });
+    return {
+      success: false,
+      error: err
+    }
   }
 
   const response = await authService.verifyEmail(token);
@@ -86,11 +91,13 @@ export const verifyEmail = async (req: IAuthRequest, res: Response) => {
       status: "success",
       message: "user verification -> success",
     });
-    return res.status(response.error.code).json(response);
+    res.status(response.error.code).json(response);
+    return response
   }
 
   infoLogger({ status: "success", message: "user verification -> success" });
-  res.status(HTTP.STATUS.OK).json(response.data);
+  res.status(HTTP.STATUS.OK).json(response);
+  return response
 };
 
 /**
@@ -161,7 +168,7 @@ export const signup = async (
   }
 
   infoLogger({ status: "success", message: "user verification -> success" });
-  res.status(HTTP.STATUS.OK).json(response.data);
+  res.status(HTTP.STATUS.OK).json(response);
   return response;
 };
 
@@ -225,7 +232,7 @@ const loginUser = async (
     res.status(response.error.code).json(response.error);
     return response;
   }
-  res.status(HTTP.STATUS.OK).json(response.data);
+  res.status(HTTP.STATUS.OK).json(response);
   infoLogger({ status: "success", message: "user login -> success", layer: "CONTROLLER", name: "auth" })
   return response;
 };

@@ -5,6 +5,7 @@ import { handleDBError } from "./utils/error";
 import UserProfileModel from "./userInfo";
 import { UserModel } from "./users";
 import { User, UserDTO, UserModelSchema } from "@senseii/types";
+import { infoLogger } from "@utils/logger";
 
 /**
  * Represents an email verification token object.
@@ -14,7 +15,7 @@ const emailVerificationTokenObject = z.object({
   /**
    * The unique identifier for the user associated with this token.
    */
-  userId: z.string(),
+  email: z.string().email(),
 
   /**
    * A secure token string used for email verification.
@@ -39,13 +40,13 @@ const emailVerificationTokenObject = z.object({
  */
 type EmailVerificatoinToken = z.infer<typeof emailVerificationTokenObject>;
 
-interface EmailVerificationDocument extends EmailVerificatoinToken, Document {}
+interface EmailVerificationDocument extends EmailVerificatoinToken, Document { }
 
 /**
  * EmailVerificationDocument represents the schema followed by the Email verfication documents.
  */
 const EmailVerificationSchema = new Schema<EmailVerificationDocument>({
-  userId: {
+  email: {
     type: String,
     required: true,
   },
@@ -74,13 +75,18 @@ interface VerifyEmail {
   redirectTo: string;
 }
 
+export const vfTokenStore = {
+  saveEmailVerificationCode: (email: string, token: string) => saveEmailVerificationCode(email, token)
+}
+
 export const saveEmailVerificationCode = async (
-  userId: string,
+  email: string,
   token: string
 ): Promise<Result<VerifyEmail>> => {
   try {
+    infoLogger({ message: "save email verification code", status: "INFO", layer: "DB", name: "VFToken" })
     await new EmailVerificationModel({
-      userId: userId,
+      email: email,
       token: token,
       issueTime: new Date().toISOString(),
     }).save();
@@ -98,6 +104,7 @@ export const saveEmailVerificationCode = async (
   }
 };
 
+// FIX: This probably shouldn't be here.
 /**
  * Verifies a user by checking the provided email verification token and updating the user's verified status.
  *
@@ -121,15 +128,15 @@ export const saveEmailVerificationCode = async (
  * 3. Returns the updated user data as a DTO (Data Transfer Object).
  * 4. Handles and returns specific errors for invalid tokens, missing users, and database issues.
  */
-export const verifyUser = async (token: string): Promise<Result<User>> => {
+export const verifyUser = async (token: string): Promise<Result<String>> => {
   try {
-    const user = (await EmailVerificationModel.findOne({ token: token }))
-      ?.userId;
-    if (!user) {
+    const userEmail = (await EmailVerificationModel.findOne({ token: token }))
+      ?.email;
+    if (!userEmail) {
       throw new Error("Invalid or expired token");
     }
     const verifiedUser = await UserModel.findOneAndUpdate(
-      { id: user },
+      { email: userEmail },
       { verified: true },
       { new: true }
     );
@@ -138,7 +145,7 @@ export const verifyUser = async (token: string): Promise<Result<User>> => {
     }
     return {
       success: true,
-      data: verifiedUser.toJSON(),
+      data: "user verified",
     };
   } catch (error) {
     return {

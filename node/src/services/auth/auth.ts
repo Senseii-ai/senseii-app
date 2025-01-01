@@ -3,6 +3,7 @@ import { verifyUser } from "@models/verificationToken";
 import {
   CreateUserRequest,
   HTTP,
+  OAuthSigninDTO,
   User,
   UserLoginDTO,
   UserLoginReponseDTO,
@@ -24,12 +25,80 @@ import { tokenStore } from "@models/refreshToken";
  * 1. Verifying a user's email using a verification token.
  * 2. Creating a new user and initiating the email verification process.
  * 3. Logging in a user using the provided credentials.
+ * 4. Logging in a user using OAuth Credentials.
  */
 const authService = {
-  createNewUser: (data: CreateUserRequest) => createNewUser(data),
-  userLogin: (data: UserLoginDTO) => userLogin(data),
-  verifyEmail: (token: string) => verifyEmail(token),
+  OAuthSignin: (data: OAuthSigninDTO): Promise<Result<UserLoginReponseDTO>> => OAuthSignin(data),
+  createNewUser: (data: CreateUserRequest): Promise<Result<User>> => createNewUser(data),
+  userLogin: (data: UserLoginDTO): Promise<Result<UserLoginReponseDTO>> => userLogin(data),
+  verifyEmail: (token: string): Promise<Result<String>> => verifyEmail(token),
 };
+
+const OAuthSignin = async (data: OAuthSigninDTO): Promise<Result<UserLoginReponseDTO>> => {
+  infoLogger({ message: "OAuth login", layer: "SERVICE", name: "AUTH", status: "INFO" })
+  const existingUser = await userStore.getUserByEmail(data.email);
+  // User does not exist, save them.
+  if (!existingUser.success) {
+
+    const newUser: CreateUserRequest = {
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      verified: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+
+    const user = await userStore.saveNewUser(newUser, true, data.name)
+    if (!user.success) {
+      return user
+    }
+
+
+    const { id: userId, name, verified, email } = user.data;
+
+    const { accessToken, refreshToken } = getAuthTokens(userId);
+    const response = await tokenStore.saveRefreshToken(refreshToken, userId);
+    if (!response.success) {
+      return response;
+    }
+
+
+    infoLogger({ message: "OAuth login -> Success", layer: "SERVICE", name: "AUTH", status: "success" })
+    return {
+      success: true,
+      data: {
+        name: name,
+        id: userId,
+        verified: verified,
+        email: email,
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+      },
+    };
+  }
+
+  const { id: userId, verified, name, email } = existingUser.data;
+  // TODO: implement expiring tokens
+  const { accessToken, refreshToken } = getAuthTokens(userId);
+  const response = await tokenStore.saveRefreshToken(refreshToken, userId);
+
+  if (!response.success) {
+    return response;
+  }
+
+  return {
+    success: true,
+    data: {
+      id: userId,
+      name: name,
+      verified: verified,
+      email: email,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    },
+  };
+}
 
 /**
  * Logs in a user using the provided credentials.
@@ -78,7 +147,7 @@ const userLogin = async (
     };
   }
 
-  const { id: userId, verified, email } = existingUser.data;
+  const { id: userId, name, verified, email } = existingUser.data;
   // TODO: implement expiring tokens
   const { accessToken, refreshToken } = getAuthTokens(userId);
   const response = await tokenStore.saveRefreshToken(refreshToken, userId);
@@ -90,6 +159,7 @@ const userLogin = async (
     success: true,
     data: {
       id: userId,
+      name: name,
       verified: verified,
       email: email,
       accessToken: accessToken,
@@ -143,7 +213,7 @@ const verifyEmail = async (token: string): Promise<Result<String>> => {
  *
  * @description
  * This function performs the following steps:
- * 1. Calls the `saveNewUserTemp` function to save the new user data temporarily.
+ * 1. Calls the `saveNewUser` function to save the new user data temporarily.
  * 2. If the user data is not saved successfully, returns the error response.
  * 3. Initiates the email verification process by calling the `sendVerificationMail` function.
  * 4. If there is an error in sending the verification email, returns an internal server error response.
@@ -158,7 +228,7 @@ const createNewUser = async (
     name: "auth",
     message: "create user",
   });
-  const response = await userStore.saveNewUser(data);
+  const response = await userStore.saveNewUser(data, false, "");
   // if user not saved in DB, return error without initiating user verification.
   if (!response.success) {
     return response;

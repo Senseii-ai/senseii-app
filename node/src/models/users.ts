@@ -1,22 +1,25 @@
 import mongoose, { Schema } from "mongoose";
 import { infoLogger } from "@utils/logger";
-import { CreateUserRequest, User, UserLoginReponseDTO, UserModelSchema } from "@senseii/types";
+import { CreateUserRequest, User, UserModelSchema } from "@senseii/types";
 import { getSalt, hashPassword } from "@utils/crypt";
 import { Result } from "types";
 import { handleDBError } from "./utils/error";
 
 export const userStore = {
-  getUserByEmail: (email: string) => getUserByEmail(email),
-  saveNewUser: (user: CreateUserRequest) => saveNewUser(user),
-  getUserWithPassword: (email: string) => getUserWithPassword(email)
+  getUserByEmail: (email: string): Promise<Result<User>> => getUserByEmail(email),
+  saveNewUser: (user: CreateUserRequest, isOAuth: boolean, name?: string): Promise<Result<User>> => saveNewUser(user, isOAuth, name),
+  getUserWithPassword: (email: string): Promise<Result<UserModelSchema>> => getUserWithPassword(email),
 }
 
-const UserSchema: Schema = new Schema<UserModelSchema>(
+const UserSchema: Schema<UserModelSchema> = new Schema<UserModelSchema>(
   {
     email: {
       type: String,
       unique: true,
       required: [true, "Email must be provided"],
+    },
+    name: {
+      type: String,
     },
     firstName: {
       type: String,
@@ -40,17 +43,24 @@ const UserSchema: Schema = new Schema<UserModelSchema>(
       type: Date,
       required: true,
     },
+    verified: {
+      type: Boolean,
+      required: true
+    }
   },
   {
     toJSON: {
+      // FIX: This a single point of failure for queries.
       transform: (doc, ret) => {
         return {
           id: doc.id,
+          name: doc.name,
           email: ret.email,
           firstName: ret.firstName,
           lastName: ret.lastName,
           lastLoginAt: ret.lastLoginAt,
           createdAt: ret.createdAt,
+          verified: doc.verified
         };
       },
     },
@@ -94,13 +104,40 @@ export const getUserByEmail = async (email: string): Promise<Result<User>> => {
 };
 
 export const saveNewUser = async (
-  user: CreateUserRequest
+  user: CreateUserRequest,
+  isOAuth: boolean,
+  name?: string
 ): Promise<Result<User>> => {
   try {
+    infoLogger({ message: "saving new user in DB", layer: "DB", name: "User Store", status: "INFO" })
+    let firstName = ""
+    let lastName = ""
+    if (name) {
+      const nameArray = name?.split(" ")
+      firstName = nameArray[0]
+      lastName = nameArray[1]
+    }
     const salt = getSalt();
     const hashedPassword: string = await hashPassword(user.password, salt);
+
+    infoLogger({
+      message: `SAVE:`, layer: "DB", name: "User Store", status: "INFO"
+    })
+    console.log({
+      ...user,
+      name: name,
+      firstName: firstName,
+      lastName: lastName,
+      lastLoginAt: new Date(),
+      passwordSalt: salt,
+      password: hashedPassword,
+    })
+
     const newUser = await new UserModel({
       ...user,
+      name: name,
+      firstName: firstName,
+      lastName: lastName,
       lastLoginAt: new Date(),
       passwordSalt: salt,
       password: hashedPassword,

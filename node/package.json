@@ -27,7 +27,7 @@
   "dependencies": {
     "@azure/communication-email": "^1.0.0",
     "@azure/openai": "^2.0.0",
-    "@senseii/types": "^1.2.24",
+    "@senseii/types": "^1.2.30",
     "@types/bcryptjs": "^2.4.6",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.6",

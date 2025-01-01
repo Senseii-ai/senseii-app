@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import { randomBytes } from "crypto";
 import jwt from "jsonwebtoken";
 
 export const getRefreshToken = (userId: string) => {
@@ -45,6 +46,10 @@ export const comparePassword = async (
 ): Promise<Boolean> => {
   return await bcrypt.compare(userPassword, savedPassword);
 };
+
+export const generateRandomString = (length: number): string => {
+  return randomBytes(length).toString('hex').slice(0, length);
+}
 
 export const hashPassword = async (
   password: string,

@@ -54,6 +54,7 @@ export const tokenStore = {
  * @param userId - The ID of the user.
  * @returns A promise that resolves to the result of the save operation.
  */
+// FIX: modify this to save using user email instead of user id.
 const saveRefreshToken = async (
   token: string,
   userId: string

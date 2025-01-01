@@ -171,4 +171,6 @@ router.route("/auth/signup").post(authController.signup);
  */
 router.route("/auth/login").post(authController.login);
 
+router.route("/auth/non-credentials").post(authController.OAuthLogin)
+
 export default router;

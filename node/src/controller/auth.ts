@@ -2,14 +2,17 @@ import { IAuthRequest } from "@middlewares/auth";
 import {
   HTTP,
   User,
+  UserLoginDTO,
   UserLoginReponseDTO,
   createUserSchema,
   userLoginDTO,
 } from "@senseii/types";
 import authService from "@services/auth/auth";
+import { generateRandomString } from "@utils/crypt";
 import { infoLogger } from "@utils/logger";
 import { Response } from "express";
 import { AppError, Result } from "types";
+import { z } from "zod";
 
 /**
  * The authController object contains methods for handling authentication-related requests.
@@ -19,10 +22,53 @@ import { AppError, Result } from "types";
  * @property {Function} login - Logs in a user using the provided credentials.
  */
 export const authController = {
-  verifyEmail: (req: IAuthRequest, res: Response) => verifyEmail(req, res),
-  signup: (req: IAuthRequest, res: Response) => signup(req, res),
-  login: (req: IAuthRequest, res: Response) => loginUser(req, res),
+  OAuthLogin: (req: IAuthRequest, res: Response): Promise<Result<UserLoginReponseDTO>> => OAuthLogin(req, res),
+  verifyEmail: (req: IAuthRequest, res: Response): Promise<Result<String>> => verifyEmail(req, res),
+  signup: (req: IAuthRequest, res: Response): Promise<Result<User>> => signup(req, res),
+  login: (req: IAuthRequest, res: Response): Promise<Result<UserLoginReponseDTO>> => loginUser(req, res),
 };
+
+const OAuthLoginObject = z.object({
+  email: z.string().email(),
+  name: z.string()
+})
+
+const OAuthLogin = async (req: IAuthRequest, res: Response): Promise<Result<UserLoginReponseDTO>> => {
+  infoLogger({ status: "INFO", message: "OAuth signin", layer: "CONTROLLER", name: "auth" })
+  console.log("received this", req.body)
+  const validatedUser = OAuthLoginObject.safeParse(req.body);
+  if (!validatedUser.success) {
+    infoLogger({ status: "failed", message: "OAuth signin -> invalid credentials", layer: "CONTROLLER", name: "auth" })
+    const response: Result<Boolean> = {
+      success: false,
+      error: {
+        code: HTTP.STATUS.BAD_REQUEST,
+        message: "invalid credentials",
+        timestamp: new Date(),
+      },
+    };
+    res.status(HTTP.STATUS.BAD_REQUEST).json(response);
+    return response;
+  }
+
+  // generate random password for system to be consistent with credentials auth.
+  const generatedPassword = generateRandomString(10)
+  const user: UserLoginDTO = {
+    email: validatedUser.data.email,
+    name: validatedUser.data.name,
+    password: generatedPassword
+  }
+
+  const response = await authService.OAuthSignin(user);
+  if (!response.success) {
+    res.status(response.error.code).json(response.error);
+    return response;
+  }
+  console.log("GOT THIS FROM SERVICE", response.data)
+  res.status(HTTP.STATUS.OK).json(response);
+  infoLogger({ status: "success", message: "OAuth login -> success", layer: "CONTROLLER", name: "auth" })
+  return response;
+}
 
 /**
  * Verifies a user's email using the provided verification token.
@@ -62,7 +108,6 @@ export const authController = {
 export const verifyEmail = async (req: IAuthRequest, res: Response): Promise<Result<String>> => {
   infoLogger({ status: "INFO", message: "user verification triggered" });
   const { token } = req.body;
-  console.log("token", token)
 
   if (!token) {
     const err: AppError = {

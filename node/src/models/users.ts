@@ -1,14 +1,14 @@
 import mongoose, { Schema } from "mongoose";
 import { infoLogger } from "@utils/logger";
-import { CreateUserRequest, User, UserLoginReponseDTO, UserModelSchema } from "@senseii/types";
+import { CreateUserRequest, User, UserModelSchema } from "@senseii/types";
 import { getSalt, hashPassword } from "@utils/crypt";
 import { Result } from "types";
 import { handleDBError } from "./utils/error";
 
 export const userStore = {
-  getUserByEmail: (email: string) => getUserByEmail(email),
-  saveNewUser: (user: CreateUserRequest) => saveNewUser(user),
-  getUserWithPassword: (email: string) => getUserWithPassword(email)
+  getUserByEmail: (email: string): Promise<Result<User>> => getUserByEmail(email),
+  saveNewUser: (user: CreateUserRequest, name?: string): Promise<Result<User>> => saveNewUser(user, name),
+  getUserWithPassword: (email: string): Promise<Result<UserModelSchema>> => getUserWithPassword(email),
 }
 
 const UserSchema: Schema = new Schema<UserModelSchema>(
@@ -17,6 +17,9 @@ const UserSchema: Schema = new Schema<UserModelSchema>(
       type: String,
       unique: true,
       required: [true, "Email must be provided"],
+    },
+    name: {
+      type: String,
     },
     firstName: {
       type: String,
@@ -43,9 +46,11 @@ const UserSchema: Schema = new Schema<UserModelSchema>(
   },
   {
     toJSON: {
+      // FIX: This a single point of failure for queries.
       transform: (doc, ret) => {
         return {
           id: doc.id,
+          name: doc.name,
           email: ret.email,
           firstName: ret.firstName,
           lastName: ret.lastName,
@@ -56,6 +61,36 @@ const UserSchema: Schema = new Schema<UserModelSchema>(
     },
   }
 );
+
+// const saveOAuthUser = async (data: OAuthSigninDTO): Promise<Result<User>> => {
+//   try {
+//     infoLogger({ message: "OAuth Login", status: "INFO", layer: "DB", name: "User Store" })
+//     const [firstName, lastName] = data.name.split(" ")
+//     const generatedPassword = generateRandomString(10)
+//     const salt = getSalt();
+//     const hashedPassword: string = await hashPassword(generatedPassword, salt);
+//     const response = await (new UserModel({
+//       email: data.email,
+//       password: hashedPassword,
+//       firstName: firstName,
+//       lastName: lastName,
+//       lastLoginAt: new Date(),
+//     })).save()
+//
+//     infoLogger({ message: "OAuth Login -> Success", status: "success", layer: "DB", name: "User Store" })
+//     return {
+//       success: true,
+//       data: response.toJSON()
+//     }
+//   } catch (error) {
+//
+//     infoLogger({ message: "OAuth Login -> Failed", status: "failed", layer: "DB", name: "User Store" })
+//     return {
+//       success: false,
+//       error: handleDBError(error, "User Store"),
+//     };
+//   }
+// }
 
 const getUserWithPassword = async (email: string): Promise<Result<UserModelSchema>> => {
   try {
@@ -94,13 +129,24 @@ export const getUserByEmail = async (email: string): Promise<Result<User>> => {
 };
 
 export const saveNewUser = async (
-  user: CreateUserRequest
+  user: CreateUserRequest,
+  name?: string
 ): Promise<Result<User>> => {
   try {
+    let firstName = ""
+    let lastName = ""
+    if (name) {
+      const nameArray = name?.split(" ")
+      firstName = nameArray[0]
+      lastName = nameArray[1]
+    }
     const salt = getSalt();
     const hashedPassword: string = await hashPassword(user.password, salt);
     const newUser = await new UserModel({
       ...user,
+      name: name,
+      firstName: firstName,
+      lastName: lastName,
       lastLoginAt: new Date(),
       passwordSalt: salt,
       password: hashedPassword,

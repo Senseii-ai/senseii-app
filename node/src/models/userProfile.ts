@@ -119,7 +119,6 @@ export const addChatToUser = async (
       throw new Error("Invalid user ID");
     }
 
-
     const updatedUserProfile = await UserProfileModel.findOneAndUpdate(
       { id: new Types.ObjectId(userId) },
       { $push: { chats: newChat } },

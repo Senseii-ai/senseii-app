@@ -49,7 +49,7 @@ const OAuthSignin = async (data: OAuthSigninDTO): Promise<Result<UserLoginRepons
       updatedAt: new Date()
     }
 
-    const user = await userStore.saveNewUser(newUser, data.name)
+    const user = await userStore.saveNewUser(newUser, true, data.name)
     if (!user.success) {
       return user
     }
@@ -228,7 +228,7 @@ const createNewUser = async (
     name: "auth",
     message: "create user",
   });
-  const response = await userStore.saveNewUser(data,);
+  const response = await userStore.saveNewUser(data, false, "");
   // if user not saved in DB, return error without initiating user verification.
   if (!response.success) {
     return response;

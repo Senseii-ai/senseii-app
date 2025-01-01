@@ -30,7 +30,7 @@ export const getAccessToken = (userId: string) => {
 const getAccessTokenKey = (): string => {
   const AccessTokenKey = process.env.ACCESS_TOKEN_KEY;
   if (!AccessTokenKey) {
-    console.log("Unable to find Signing token Key");
+    console.error("Unable to find Signing token Key");
     throw new Error("Internal Server Error");
   }
   return AccessTokenKey;

@@ -35,7 +35,6 @@ const OAuthLoginObject = z.object({
 
 const OAuthLogin = async (req: IAuthRequest, res: Response): Promise<Result<UserLoginReponseDTO>> => {
   infoLogger({ status: "INFO", message: "OAuth signin", layer: "CONTROLLER", name: "auth" })
-  console.log("received this", req.body)
   const validatedUser = OAuthLoginObject.safeParse(req.body);
   if (!validatedUser.success) {
     infoLogger({ status: "failed", message: "OAuth signin -> invalid credentials", layer: "CONTROLLER", name: "auth" })
@@ -64,7 +63,6 @@ const OAuthLogin = async (req: IAuthRequest, res: Response): Promise<Result<User
     res.status(response.error.code).json(response.error);
     return response;
   }
-  console.log("GOT THIS FROM SERVICE", response.data)
   res.status(HTTP.STATUS.OK).json(response);
   infoLogger({ status: "success", message: "OAuth login -> success", layer: "CONTROLLER", name: "auth" })
   return response;

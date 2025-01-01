@@ -2,7 +2,7 @@ import mongoose, { Document, Schema, Types } from "mongoose";
 import { Result } from "types";
 import { z } from "zod";
 import { handleDBError } from "./utils/error";
-import UserProfileModel from "./userInfo";
+import UserProfileModel from "./userProfile";
 import { UserModel } from "./users";
 import { User, UserDTO, UserModelSchema } from "@senseii/types";
 import { infoLogger } from "@utils/logger";

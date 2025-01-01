@@ -20,7 +20,7 @@ import {
   getThreadAndUserByChatId,
   getThreadByChatId,
   getUserByUserId,
-} from "../models/userInfo";
+} from "../models/userProfile";
 import { summariseChat } from "../services/openai/assistants/summary/utils";
 import { infoLogger } from "../utils/logger/logger";
 
@@ -132,13 +132,14 @@ export const getChatMessages = async (req: IAuthRequest, res: Response) => {
 
 // chat API
 export const chat = async (req: IAuthRequest, res: Response) => {
-  infoLogger({ status: "INFO", message: `initiating chat ${req.body.chatId}` })
-  const headers = {
-    "Content-Type": "text/event-stream",
-    "Cache-Control": "no-cache",
-    Connection: "keep-alive",
-  };
   try {
+    infoLogger({ status: "INFO", message: `initiating chat ${req.body.chatId}` })
+    // Define headers.
+    const headers = {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+    };
     const { chatId, content } = req.body
     const userId = req.userId as string
     if (typeof chatId !== "string") {

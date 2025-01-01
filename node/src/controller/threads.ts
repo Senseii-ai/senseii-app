@@ -5,7 +5,7 @@ import {
 } from "../services/openai/assistants/threads";
 import { IAuthRequest } from "../middlewares/auth";
 import { Response } from "express";
-import { getUserThreads } from "../models/userInfo";
+import { getUserThreads } from "../models/userProfile";
 import { MessagesPage } from "openai/resources/beta/threads/messages";
 
 const client = getOpenAIClient();

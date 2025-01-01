@@ -28,37 +28,13 @@ export interface Chat extends Record<string, any> {
   sharePath?: string;
 }
 
-export const getChatsFromThreadIds = async (threadIds: chat[]) => {
-  infoLogger({ message: "getting all chats from threads" });
-  try {
-    let finalResponse: Chat[] = [];
-    for (const thread of threadIds) {
-      finalResponse.push({
-        id: thread.id,
-        title: thread.title,
-        createdAt: new Date(),
-        userId: thread.userId,
-        path: `/chat/${thread.id}`,
-        messages: [],
-        sharePath: "sharing not supported",
-      });
-    }
-
-    return finalResponse;
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-};
-
 export async function createStreamableRun(
   client: AzureOpenAI,
   threadId: string,
   assistantId: string,
   callbacks: StreamCallbacks,
 ) {
-  infoLogger({ message: "creating a streamable run" });
-
+  infoLogger({ message: "creating a streamable run", status: "INFO", layer: "SERVICE", name: "OPENAI" });
   try {
     let stream = await client.beta.threads.runs.create(threadId, {
       assistant_id: assistantId,
@@ -68,7 +44,7 @@ export async function createStreamableRun(
     // Process stream events until completion
     await processStream(stream, client, threadId, callbacks);
 
-    infoLogger({ status: "success", message: "run successful" });
+    infoLogger({ status: "success", layer: "SERVICE", name: "OPENAI", message: "run successful" });
     callbacks.onComplete?.();
   } catch (error) {
     callbacks.onError?.(error);
@@ -162,6 +138,30 @@ async function handleToolAction(
   infoLogger({ message: "Response submitted" });
   return newStream;
 }
+
+export const getChatsFromThreadIds = async (threadIds: chat[]) => {
+  infoLogger({ message: "getting all chats from threads" });
+  try {
+    let finalResponse: Chat[] = [];
+    for (const thread of threadIds) {
+      finalResponse.push({
+        id: thread.id,
+        title: thread.title,
+        createdAt: new Date(),
+        userId: thread.userId,
+        path: `/chat/${thread.id}`,
+        messages: [],
+        sharePath: "sharing not supported",
+      });
+    }
+
+    return finalResponse;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
+
 
 function handleMessageDelta(event: any, callbacks: StreamCallbacks) {
   if (event.data.delta.content?.[0]?.type === "text") {

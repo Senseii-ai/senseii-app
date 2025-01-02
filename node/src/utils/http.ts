@@ -1,5 +1,13 @@
 // constants/http.ts
 
+import { Response } from "express";
+import { AppError, ZAppError } from "types";
+import { z } from "zod";
+import { infoLogger } from "./logger";
+import { OpenAIError } from "openai";
+import { start } from "repl";
+import { Text, TextDelta } from "openai/resources/beta/threads/messages";
+
 export const HTTP = {
   METHOD: {
     GET: 'GET',
@@ -229,3 +237,121 @@ if (isSuccessStatus(response.status)) {
   // Handle success
 }
 */
+
+// FIX: remove later.
+const baseMessageSchema = z.object({
+  type: z.enum(['start', 'content', 'error', 'done']),
+  timestamp: z.string().datetime(),
+  requestId: z.string()
+})
+
+const startMessageSchema = baseMessageSchema.extend({ type: z.literal('start') })
+
+const contentMessageSchema = baseMessageSchema.extend({ type: z.literal('content'), content: z.string() })
+
+const errorMessageSchema = baseMessageSchema.extend({
+  type: z.literal('error'), error: ZAppError
+})
+
+const doneMessageSchema = baseMessageSchema.extend({ type: z.literal('done') })
+
+const streamMessageSchema = z.discriminatedUnion("type", [startMessageSchema, contentMessageSchema, errorMessageSchema, doneMessageSchema])
+
+export type StreamMessage = z.infer<typeof streamMessageSchema>
+export type ErrorMessage = z.infer<typeof errorMessageSchema>
+export type ContentMessage = z.infer<typeof contentMessageSchema>
+export type StartMessage = z.infer<typeof startMessageSchema>
+
+export const createStreamContent = (text: TextDelta): Omit<ContentMessage, 'requestId'> => {
+  const message: Omit<ContentMessage, 'requestId'> = {
+    type: "content",
+    content: text.value || "",
+    timestamp: new Date().toISOString(),
+  }
+  return message
+}
+
+export const createStateUpdateMessage = (content: string): Omit<ContentMessage, 'requestId'> => {
+  const message: Omit<ContentMessage, 'requestId'> = {
+    type: "content",
+    content,
+    timestamp: new Date().toISOString(),
+  }
+  return message
+}
+
+
+export const createStreamStart = (): Omit<StartMessage, 'requestId'> => {
+  return {
+    type: 'start',
+    timestamp: new Date().toISOString()
+  }
+}
+
+export type StreamHandler = {
+  onMessage: (message: Omit<StreamMessage, 'requestId'>) => void;
+  onError: (error: AppError) => void;
+  onComplete: () => void;
+};
+
+export const createSSEHandler = (res: Response, requestId: string): StreamHandler => ({
+  onMessage: (message: Omit<StreamMessage, 'requestId'>) => {
+    // NOTE: This might be wrong.
+    const fullMessage = {
+      ...message,
+      requestId
+    }
+    try {
+      infoLogger({ message: `streaming`, status: "success" })
+      console.log(message)
+      streamMessageSchema.parse(fullMessage)
+      infoLogger({ message: `steraming`, status: "success" })
+      res.write(`data: ${JSON.stringify(fullMessage)}\n\n`);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        infoLogger({ message: "zod error while streaming response", layer: "SERVICE", name: "HTTP UTILS", status: "failed" })
+        console.error(error.message)
+        const errorMessage: ErrorMessage = {
+          type: 'error',
+          timestamp: new Date().toISOString(),
+          requestId,
+          error: {
+            code: HTTP.STATUS.INTERNAL_SERVER_ERROR,
+            message: "Invalid message format generated",
+            timestamp: new Date().toISOString(),
+          }
+        }
+        res.write(`data: ${JSON.stringify(errorMessage)}\n\n`);
+        return
+      }
+      infoLogger({ message: "unknown error occured while sending message through stream", layer: "SERVICE", name: "HTTP UTILS", status: "failed" })
+    }
+  },
+  onError: (error: AppError) => {
+    const message = error instanceof OpenAIError ? 'provider error' : "internal server error"
+    const errorMessage: ErrorMessage = {
+      type: "error",
+      timestamp: new Date().toISOString(),
+      requestId,
+      error: error
+    }
+    res.write(`data: ${JSON.stringify(errorMessage)}\n\n`);
+    res.end()
+  },
+  onComplete: () => {
+    const doneMessage = doneMessageSchema.parse({
+      type: 'done',
+      timestamp: Date.now(),
+      requestId,
+    });
+
+    res.write(`data: ${JSON.stringify(doneMessage)}\n\n`);
+    res.end();
+  },
+});
+
+export const setSSEHeaders = (res: Response) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+}

@@ -2,9 +2,9 @@ import chalk from "chalk";
 import getOpenAIClient from "@services/openai/client"
 import { IFunctionType, supportedFunctions } from "@services/openai/assistants";
 import { HTTP, ICreateNutritionPlanArguments, createError } from "@senseii/types"
-import { Message, MessageCreateParams, MessageDelta, Text, TextDelta } from "openai/resources/beta/threads/messages";
+import { Message, MessageCreateParams, Text, TextDelta } from "openai/resources/beta/threads/messages";
 import { Assistants } from "@services/openai/assistants";
-import { Assistant, AssistantCreateParams, AssistantStreamEvent } from "openai/resources/beta/assistants";
+import { Assistant, AssistantCreateParams } from "openai/resources/beta/assistants";
 import { infoLogger } from "@utils/logger";
 import { z } from "zod"
 import { zodResponseFormat } from "openai/helpers/zod";

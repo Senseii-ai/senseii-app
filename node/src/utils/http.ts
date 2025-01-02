@@ -321,8 +321,6 @@ export const createSSEHandler = (
     }
   },
   onError: (error: AppError) => {
-    const message =
-      error instanceof OpenAIError ? "provider error" : "internal server error";
     const errorMessage: ErrorMessage = {
       type: "error",
       timestamp: new Date().toISOString(),
@@ -335,7 +333,7 @@ export const createSSEHandler = (
   onComplete: () => {
     const doneMessage = doneMessageSchema.parse({
       type: "done",
-      timestamp: Date.now(),
+      timestamp: new Date().toISOString(),
       requestId,
     });
 

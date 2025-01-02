@@ -43,7 +43,7 @@ const OAuthLogin = async (req: IAuthRequest, res: Response): Promise<Result<User
       error: {
         code: HTTP.STATUS.BAD_REQUEST,
         message: "invalid credentials",
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       },
     };
     res.status(HTTP.STATUS.BAD_REQUEST).json(response);
@@ -111,7 +111,7 @@ export const verifyEmail = async (req: IAuthRequest, res: Response): Promise<Res
     const err: AppError = {
       code: HTTP.STATUS.BAD_REQUEST,
       message: HTTP.STATUS_MESSAGE[HTTP.STATUS.BAD_REQUEST],
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
     };
     infoLogger({
       status: "failed",
@@ -192,7 +192,7 @@ export const signup = async (
       error: {
         code: HTTP.STATUS.BAD_REQUEST,
         message: "invalid credentials",
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       },
     };
     res.status(HTTP.STATUS.BAD_REQUEST).json(response);
@@ -263,7 +263,7 @@ const loginUser = async (
       error: {
         code: HTTP.STATUS.BAD_REQUEST,
         message: "invalid credentials",
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       },
     };
     res.status(HTTP.STATUS.BAD_REQUEST).json(response);

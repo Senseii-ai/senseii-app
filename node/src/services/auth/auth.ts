@@ -4,12 +4,12 @@ import {
   CreateUserRequest,
   HTTP,
   OAuthSigninDTO,
+  Result,
   User,
   UserLoginDTO,
   UserLoginReponseDTO,
 } from "@senseii/types";
 import { infoLogger } from "@utils/logger";
-import { Result } from "types";
 import { sendVerificationMail } from "./utils";
 import {
   comparePassword,

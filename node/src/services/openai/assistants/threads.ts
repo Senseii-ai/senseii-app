@@ -1,4 +1,3 @@
-import { ThreadCreateParams } from "openai/resources/beta/threads/threads";
 import { AzureOpenAI } from "openai";
 import { createRun } from "./run";
 import {
@@ -6,7 +5,6 @@ import {
   MessageCreateParams,
 } from "openai/resources/beta/threads/messages";
 import { infoLogger } from "../../../utils/logger/logger";
-import { chat } from "../../../controller/chat";
 import { supportedFunctions } from "./functions";
 import { AssistantStreamEvent } from "openai/resources/beta/assistants";
 import { Stream } from "openai/streaming";
@@ -139,29 +137,29 @@ async function handleToolAction(
   return newStream;
 }
 
-export const getChatsFromThreadIds = async (threadIds: chat[]) => {
-  infoLogger({ message: "getting all chats from threads" });
-  try {
-    let finalResponse: Chat[] = [];
-    for (const thread of threadIds) {
-      finalResponse.push({
-        id: thread.id,
-        title: thread.title,
-        createdAt: new Date(),
-        userId: thread.userId,
-        path: `/chat/${thread.id}`,
-        messages: [],
-        sharePath: "sharing not supported",
-      });
-    }
-
-    return finalResponse;
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-};
-
+// export const getChatsFromThreadIds = async (threadIds: chat[]) => {
+//   infoLogger({ message: "getting all chats from threads" });
+//   try {
+//     let finalResponse: Chat[] = [];
+//     for (const thread of threadIds) {
+//       finalResponse.push({
+//         id: thread.id,
+//         title: thread.title,
+//         createdAt: new Date(),
+//         userId: thread.userId,
+//         path: `/chat/${thread.id}`,
+//         messages: [],
+//         sharePath: "sharing not supported",
+//       });
+//     }
+//
+//     return finalResponse;
+//   } catch (error) {
+//     console.error(error);
+//     return null;
+//   }
+// };
+//
 
 function handleMessageDelta(event: any, callbacks: StreamCallbacks) {
   if (event.data.delta.content?.[0]?.type === "text") {

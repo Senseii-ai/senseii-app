@@ -1,24 +1,12 @@
-import { StreamHandler, createStreamContent, createStreamStart } from "@utils/http"
-import { z } from "zod"
+import { StreamHandler, createStreamStart } from "@utils/http"
 import getOpenAIClient from "./client"
 import { CoreAssistantId } from "./assistants"
 import { userProfileStore } from "@models/userProfile"
 import { infoLogger } from "@utils/logger"
-import { AppError } from "types"
-import { HTTP } from "@senseii/types"
+import { AppError, HTTP, RunRequestDTO } from "@senseii/types"
 import { openAIUtils } from "./utils"
-import { Text } from "openai/resources/beta/threads/messages"
 
 const client = getOpenAIClient()
-
-// FIX:: remove this later
-const runRequestDTO = z.object({
-  content: z.string(),
-  chatId: z.string(),
-  userId: z.string()
-})
-
-export type RunRequestDTO = z.infer<typeof runRequestDTO>
 
 export const openAIService = {
   StreamComplete: (data: RunRequestDTO, handler: StreamHandler) => streamComplete(data, handler),

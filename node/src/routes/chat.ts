@@ -2,7 +2,7 @@ import express, { Router } from "express";
 import {
   // getChats,
   // getChatMessages,
-  chat, openAIController,
+  openAIController,
 } from "../controller/chat";
 import { openAIService } from "@services/openai/service";
 

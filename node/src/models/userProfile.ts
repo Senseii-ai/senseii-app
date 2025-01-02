@@ -1,12 +1,9 @@
 import chalk from "chalk";
 import { Schema, model, Types } from "mongoose";
 import { infoLogger } from "../utils/logger/logger";
-import { CreateUserRequest, UserDTO, UserProfile, UserProfileModel, userChatsSchema, userProfileModelSchema } from "@senseii/types";
+import { Result, RunRequestDTO, UserProfileModel, userChatsSchema, userProfileModelSchema } from "@senseii/types";
 import { z } from "zod";
-import { RunRequestDTO } from "@services/openai/service";
-import { Result } from "types";
 import { handleDBError } from "./utils/error";
-import { IChat } from "@controller/chat";
 
 type Chat = z.infer<typeof userChatsSchema>
 export type UserProfileModelSchema = z.infer<typeof userProfileModelSchema>

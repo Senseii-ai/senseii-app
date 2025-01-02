@@ -1,6 +1,9 @@
 import { IAuthRequest } from "@middlewares/auth";
 import {
+  AppError,
   HTTP,
+  OAuthLoginObject,
+  Result,
   User,
   UserLoginDTO,
   UserLoginReponseDTO,
@@ -11,8 +14,6 @@ import authService from "@services/auth/auth";
 import { generateRandomString } from "@utils/crypt";
 import { infoLogger } from "@utils/logger";
 import { Response } from "express";
-import { AppError, Result } from "types";
-import { z } from "zod";
 
 /**
  * The authController object contains methods for handling authentication-related requests.
@@ -27,11 +28,6 @@ export const authController = {
   signup: (req: IAuthRequest, res: Response): Promise<Result<User>> => signup(req, res),
   login: (req: IAuthRequest, res: Response): Promise<Result<UserLoginReponseDTO>> => loginUser(req, res),
 };
-
-const OAuthLoginObject = z.object({
-  email: z.string().email(),
-  name: z.string()
-})
 
 const OAuthLogin = async (req: IAuthRequest, res: Response): Promise<Result<UserLoginReponseDTO>> => {
   infoLogger({ status: "INFO", message: "OAuth signin", layer: "CONTROLLER", name: "auth" })

@@ -1,8 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { infoLogger } from "@utils/logger";
-import { CreateUserRequest, User, UserModelSchema } from "@senseii/types";
+import { CreateUserRequest, Result, User, UserModelSchema } from "@senseii/types";
 import { getSalt, hashPassword } from "@utils/crypt";
-import { Result } from "types";
 import { handleDBError } from "./utils/error";
 
 export const userStore = {

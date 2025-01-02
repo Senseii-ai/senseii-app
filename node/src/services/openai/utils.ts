@@ -1,18 +1,15 @@
 import chalk from "chalk";
 import getOpenAIClient from "@services/openai/client"
 import { IFunctionType, supportedFunctions } from "@services/openai/assistants";
-import { HTTP, ICreateNutritionPlanArguments } from "@senseii/types"
+import { HTTP, ICreateNutritionPlanArguments, createError } from "@senseii/types"
 import { Message, MessageCreateParams, MessageDelta, Text, TextDelta } from "openai/resources/beta/threads/messages";
 import { Assistants } from "@services/openai/assistants";
 import { Assistant, AssistantCreateParams, AssistantStreamEvent } from "openai/resources/beta/assistants";
 import { infoLogger } from "@utils/logger";
 import { z } from "zod"
 import { zodResponseFormat } from "openai/helpers/zod";
-import { Stream } from "openai/streaming";
 import { AzureOpenAI } from "openai";
-import { ContentMessage, StreamHandler, createStateUpdateMessage, createStreamContent, createStreamStart } from "@utils/http";
-import { RequiredActionFunctionToolCall, RunSubmitToolOutputsParams } from "openai/resources/beta/threads/runs/runs";
-import { createError } from "types";
+import { StreamHandler, createStateUpdateMessage, createStreamContent, createStreamStart } from "@utils/http";
 import { ThreadCreateParams } from "openai/resources/beta/threads/threads";
 import { AssistantStream } from "openai/lib/AssistantStream";
 import { FunctionToolCall, ToolCall, ToolCallDelta } from "openai/resources/beta/threads/runs/steps";

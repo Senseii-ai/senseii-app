@@ -1,15 +1,144 @@
 import chalk from "chalk";
 import getOpenAIClient from "@services/openai/client"
-import { IFunctionType } from "@services/openai/assistants";
-import { ICreateNutritionPlanArguments } from "@senseii/types"
-import { Message } from "openai/resources/beta/threads/messages";
+import { IFunctionType, supportedFunctions } from "@services/openai/assistants";
+import { HTTP, ICreateNutritionPlanArguments } from "@senseii/types"
+import { Message, MessageCreateParams, MessageDelta, Text, TextDelta } from "openai/resources/beta/threads/messages";
 import { Assistants } from "@services/openai/assistants";
-import { Assistant, AssistantCreateParams } from "openai/resources/beta/assistants";
+import { Assistant, AssistantCreateParams, AssistantStreamEvent } from "openai/resources/beta/assistants";
 import { infoLogger } from "@utils/logger";
 import { z } from "zod"
 import { zodResponseFormat } from "openai/helpers/zod";
+import { Stream } from "openai/streaming";
+import { AzureOpenAI } from "openai";
+import { ContentMessage, StreamHandler, createStateUpdateMessage, createStreamContent, createStreamStart } from "@utils/http";
+import { RequiredActionFunctionToolCall, RunSubmitToolOutputsParams } from "openai/resources/beta/threads/runs/runs";
+import { createError } from "types";
+import { ThreadCreateParams } from "openai/resources/beta/threads/threads";
+import { AssistantStream } from "openai/lib/AssistantStream";
+import { FunctionToolCall, ToolCall, ToolCallDelta } from "openai/resources/beta/threads/runs/steps";
 
 let client = getOpenAIClient()
+
+export const openAIUtils = {
+  ProcessStream: (stream: AssistantStream,
+    client: AzureOpenAI,
+    threadId: string,
+    callbacks: StreamHandler,
+  ) => processStream(stream, client, threadId, callbacks),
+  // HandleToolAction: (event: AssistantStreamEvent.ThreadRunRequiresAction,
+  //   client: AzureOpenAI,
+  //   threadId: string,
+  //   handler: StreamHandler): Promise<Stream<AssistantStreamEvent>> => handleToolAction(event, client, threadId, handler),
+  CreateThreadWIthMessage: (message: string, type: "user" | "assistant"
+  ): Promise<string> => createThreadWithMessage(message, type),
+  CreateMessage: (message: string, type: "user" | "assistant"): ThreadCreateParams.Message => createMessage(message, type)
+}
+
+/**
+  * createMessage creates an OpenAI message out of user message content.
+*/
+const createMessage = (content: string, type: "user" | "assistant"): ThreadCreateParams.Message => {
+  const message: ThreadCreateParams.Message = {
+    content: content,
+    role: type
+  }
+  return message
+}
+
+/**
+ * getNewThreadWithMessages creates a new OpenAI thread using user messages.
+*/
+export const createThreadWithMessage = async (
+  message: string,
+  type: "user" | "assistant"
+): Promise<string> => {
+  const createdMessage = openAIUtils.CreateMessage(message, type)
+  const messages = [createdMessage];
+  const thread = await client.beta.threads.create({
+    messages: messages,
+  });
+  return thread.id;
+};
+
+// recursively processing stream
+async function processStream(
+  run: AssistantStream,
+  client: AzureOpenAI,
+  threadId: string,
+  handler: StreamHandler,
+): Promise<void> {
+  infoLogger({ message: "processing stream", status: "INFO", layer: "SERVICE", name: "OAI UTILS" })
+  run
+    .on("runStepCreated", () => handler.onMessage(createStreamStart()))
+    // since we are only straming text, we are only looking at text delta.
+    .on("textDelta", (text: TextDelta, snapshot: Text) => handleTextDelta(text, snapshot, handler))
+    .on("toolCallDelta", (toolCallDelta: ToolCallDelta, toolCall: ToolCall) => handleToolAction(toolCall, handler))
+    // .on("toolCallCreated", ()=> )
+    .on("end", () => handler.onComplete())
+}
+
+async function handleToolAction(
+  toolCall: ToolCall,
+  handler: StreamHandler,
+) {
+  infoLogger({ message: "below tool action triggered", status: "INFO", layer: "SERVICE", name: "OAI UTILS" })
+  // we only support function calling as of now.
+  if (toolCall.type === "function") {
+    handler.onMessage(createStateUpdateMessage("tool Call"))
+    const response = await executeFunc(toolCall)
+    // submit tool call response
+    toolCall.function.output = response
+
+  }
+  infoLogger({ message: "below tool action successfull", status: "success", layer: "SERVICE", name: "OAI UTILS" })
+}
+
+/**
+ * executeFunc executes one of the supported functions and returns the response in the 
+ * Response object.
+*/
+const executeFunc = async (tool: FunctionToolCall): Promise<string> => {
+  infoLogger({ status: "INFO", message: `running tool ${tool.function.name}` })
+
+  const toolToCall = supportedFunctions[tool.function.name];
+  if (!toolToCall) {
+    infoLogger({ message: "tool not supported", status: "failed", name: "OAI UTILS", layer: "SERVICE" })
+    const err = createError(HTTP.STATUS.INTERNAL_SERVER_ERROR, "internal server error")
+    throw err
+  }
+
+  infoLogger({ status: "INFO", message: `calling tool ${toolToCall.name} with below arguments`, layer: "SERVICE", name: "OAI UTILS" })
+  console.log(tool.function.arguments)
+
+  const response = await toolToCall.function(tool.function.arguments);
+  infoLogger({ status: "success", message: `tool ${toolToCall.name} successfully called`, layer: "SERVICE", name: "OAI UTILS" })
+  return response
+}
+
+
+function handleTextDelta(message: TextDelta, snapshot: Text, handler: StreamHandler) {
+  handler.onMessage(createStreamContent(message));
+}
+
+// addMessageToThread adds a message to a thread, when a threadId is provided.
+export const addMessageToThread = async (
+  client: AzureOpenAI,
+  threadId: string,
+  inputMessage: MessageCreateParams,
+) => {
+  try {
+    const addedMessage = await client.beta.threads.messages.create(
+      threadId,
+      inputMessage,
+    );
+    return addedMessage;
+  } catch (error) {
+    console.error("Error adding message to thread");
+    throw error;
+  }
+};
+
+
 
 // parseFunctionArguments parses the function arguments based on the function definition.
 export const parseFunctionArguments = async (

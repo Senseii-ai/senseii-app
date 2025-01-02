@@ -229,16 +229,6 @@ export const continueThread = async (
   }
 };
 
-export const getNewThreadWithMessages = async (
-  message: ThreadCreateParams.Message,
-  client: AzureOpenAI,
-): Promise<string> => {
-  const messages = [message];
-  const thread = await client.beta.threads.create({
-    messages: messages,
-  });
-  return thread.id;
-};
 
 export const getNewEmptyThread = async (client: AzureOpenAI) => {
   const thread = await client.beta.threads.create();

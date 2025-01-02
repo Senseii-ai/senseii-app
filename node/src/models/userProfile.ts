@@ -3,6 +3,10 @@ import { Schema, model, Types } from "mongoose";
 import { infoLogger } from "../utils/logger/logger";
 import { CreateUserRequest, UserDTO, UserProfile, UserProfileModel, userChatsSchema, userProfileModelSchema } from "@senseii/types";
 import { z } from "zod";
+import { RunRequestDTO } from "@services/openai/service";
+import { Result } from "types";
+import { handleDBError } from "./utils/error";
+import { IChat } from "@controller/chat";
 
 type Chat = z.infer<typeof userChatsSchema>
 export type UserProfileModelSchema = z.infer<typeof userProfileModelSchema>
@@ -40,6 +44,10 @@ const UserProfileModel = model<IUserProfileDocument>(
   UserProfileSchema,
 );
 
+export const userProfileStore = {
+  GetThreadByChatId: (data: RunRequestDTO): Promise<Result<Chat>> => getUserThreadId(data)
+}
+
 export const saveNewUserProfile = async (user: UserProfileModelSchema) => {
   try {
     const newProfile = await (new UserProfileModel(user)).save()
@@ -63,15 +71,30 @@ export const getUserByUserId = async (userId: string) => {
   return response;
 };
 
-export const getThreadAndUserByChatId = async (chatId: string) => {
-  const response = await UserProfileModel.findOne({
-    "chats.id": chatId,
-  });
-  const requiredThreadId = response?.chats.find((item) => item.id === chatId);
-  return {
-    user: String(response?.id),
-    existingThreadId: requiredThreadId,
-  };
+// FIX: Is this Database call costly?
+export const getUserThreadId = async ({ chatId, userId }: RunRequestDTO): Promise<Result<Chat>> => {
+  try {
+    const response = await UserProfileModel.findOne({
+      "chats.id": chatId,
+    });
+    if (!response) {
+      throw new Error("Chat not Found")
+    }
+    const requiredThread = response.chats.find((item: Chat) => item.id === chatId);
+    if (!requiredThread) {
+      throw new Error("Thread not Found")
+    }
+    return {
+      success: true,
+      data: requiredThread,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleDBError(error, "User Profile Store")
+    }
+  }
+
 };
 
 export const getThreadByChatId = async (chatId: string) => {

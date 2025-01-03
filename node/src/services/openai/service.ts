@@ -3,13 +3,15 @@ import getOpenAIClient from "./client"
 import { CoreAssistantId } from "./assistants"
 import { userProfileStore } from "@models/userProfile"
 import { infoLogger } from "@utils/logger"
-import { AppError, HTTP, RunRequestDTO } from "@senseii/types"
+import { AppError, HTTP, Result, RunRequestDTO } from "@senseii/types"
 import { openAIUtils } from "./utils"
+import { summaryAssistant } from "./assistants/summary"
 
 const client = getOpenAIClient()
 
 export const openAIService = {
   StreamComplete: (data: RunRequestDTO, handler: StreamHandler) => streamComplete(data, handler),
+  SummariseThread: (threadId: string, wordLimit: number): Promise<Result<string>> => summaryAssistant.summariseChat(client, threadId, wordLimit)
 }
 
 /**
@@ -21,76 +23,57 @@ const streamComplete = async (data: RunRequestDTO, handler: StreamHandler, assis
     // start stream processing
     handler.onMessage(createStreamStart())
 
+    // gettingthe assistant id
     let assistant_id = assistantId ? assistantId : CoreAssistantId as string
+
     let threadId = ""
     const thread = await userProfileStore.GetThreadByChatId(data)
-    // thread found in database.
     if (thread.success) {
+
+      // thread found in database.
       infoLogger({ message: `chat ${data.chatId} found` })
       threadId = thread.data.threadId
     } else {
+
       // error occured
       if (thread.error.code === HTTP.STATUS.NOT_FOUND) {
-        // chat not found in database.
+
+        // chat not found in database, create new.
+        // FIX: Try to make this process parallel, currently it is blockgin the stream.
         infoLogger({ message: `chat ${data.chatId} does not exist, creating new` })
-        threadId = await openAIUtils.CreateThreadWIthMessage(data.content, "user")
+        threadId = await openAIUtils.CreateThreadWIthMessage(client, data.content, "user")
+
+        // summarise the chat in <N> words.
+        const summary = await openAIService.SummariseThread(threadId, 4)
+        if (!summary.success) {
+          return handler.onError(summary.error)
+        }
+
+        // Add the new chat to the user profile
+        const response = await userProfileStore.AddChatToUser(data.chatId, data.userId, threadId, summary.data)
+        if (!response.success) {
+          return handler.onError(response.error)
+        }
       } else {
         // internal server error
-        handler.onError(thread.error)
-        return
+        return handler.onError(thread.error)
       }
     }
 
-    // create a stream and process it.
-    const run = client.beta.threads.runs.stream(threadId, {
-      assistant_id
+    let stream = client.beta.threads.runs.stream(threadId, {
+      assistant_id: assistant_id
     })
-    await openAIUtils.ProcessStream(run, client, threadId, handler)
-    infoLogger({ message: "creating a streamable run -> success [THIS IS A CHECK]", status: "success", layer: "SERVICE", name: "OPENAI" });
-  } catch (error) {
 
-    infoLogger({ message: "some error occured", status: "success", layer: "SERVICE", name: "OPENAI" });
-    // FIX: Need to change this.
-    // All the thrown errors come here.
-    //
-    // 1:
+    // create a stream and process it.
+    await openAIUtils.ProcessStream(stream, client, threadId, handler)
+    infoLogger({ message: "creating a streamable run -> success", status: "success", layer: "SERVICE", name: "OPENAI" });
+  } catch (error) {
+    infoLogger({ message: "error processing stream", status: "failed", layer: "SERVICE", name: "OPENAI" });
     const err: AppError = {
       code: HTTP.STATUS.INTERNAL_SERVER_ERROR,
-      message: 'inernal server error',
+      message: 'internal server error',
       timestamp: new Date().toISOString()
     }
-    handler.onError(err)
-    return
+    return handler.onError(err)
   }
 }
-
-
-
-
-// export async function createStreamableRun(
-//   client: AzureOpenAI,
-//   threadId: string,
-//   assistantId: string,
-//   callbacks: StreamCallbacks,
-// ) {
-//   infoLogger({ message: "creating a streamable run", status: "INFO", layer: "SERVICE", name: "OPENAI" });
-//   try {
-//     let stream = await client.beta.threads.runs.create(threadId, {
-//       assistant_id: assistantId,
-//       stream: true,
-//     });
-//
-//     // Process stream events until completion
-//     await processStream(stream, client, threadId, callbacks);
-//
-//     infoLogger({ status: "success", layer: "SERVICE", name: "OPENAI", message: "run successful" });
-//     callbacks.onComplete?.();
-//   } catch (error) {
-//     callbacks.onError?.(error);
-//     throw error;
-//   }
-// }
-
-
-
-

@@ -5,6 +5,11 @@ import { validateResponse } from "@services/openai/utils";
 import { basicInformation, constraints, dietPreferences, eatingHabits } from "@senseii/types";
 import { z } from "zod"
 import { createNutritionPlan } from "../nutrition";
+import { infoLogger } from "@utils/logger";
+
+export const coreAssistant = {
+  CreateDietPlanFunc: (args: string) => createDietPlanFunc(args)
+}
 
 const createDietPlanFunc = async (args: string) => {
   const response = await createNutritionPlan(args)
@@ -17,6 +22,7 @@ const createDietPlanFunc = async (args: string) => {
 // createInitialGoalFunction gets the string format funciton calling input
 // validates them and saves them in the database.
 const createInitialGoalFunc = async (args: string) => {
+  infoLogger({ message: "initiating function call" })
   const validArgs = await getValidArguments({ data: args, validatorSchemaName: "create-initial-goal", validatorSchema: InitialGoal })
   if (await saveInitialGoal(validArgs)) {
     return "User Initial Goal Created Successfully"

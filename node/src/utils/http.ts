@@ -3,8 +3,7 @@
 import { Response } from "express";
 import { z } from "zod";
 import { infoLogger } from "./logger";
-import { OpenAIError } from "openai";
-import { TextDelta } from "openai/resources/beta/threads/messages";
+import { MessageDelta } from "openai/resources/beta/threads/messages";
 import { AppError, ContentMessage, ErrorMessage, StartMessage, StreamMessage, doneMessageSchema, streamMessageSchema } from "@senseii/types";
 
 export const HTTP = {
@@ -240,11 +239,15 @@ if (isSuccessStatus(response.status)) {
 */
 
 export const createStreamContent = (
-  text: TextDelta
+  delta: MessageDelta
 ): Omit<ContentMessage, "requestId"> => {
+  let content = " "
+  if (delta.content && delta?.content[0].type === "text") {
+    content = delta.content[0].text?.value as string
+  }
   const message: Omit<ContentMessage, "requestId"> = {
     type: "content",
-    content: text.value || "",
+    content,
     timestamp: new Date().toISOString(),
   };
   return message;
@@ -285,10 +288,7 @@ export const createSSEHandler = (
       requestId,
     };
     try {
-      infoLogger({ message: `streaming`, status: "success" });
-      console.log(message);
       streamMessageSchema.parse(fullMessage);
-      infoLogger({ message: `steraming`, status: "success" });
       res.write(`data: ${JSON.stringify(fullMessage)}\n\n`);
     } catch (error) {
       if (error instanceof z.ZodError) {

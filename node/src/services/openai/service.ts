@@ -6,12 +6,42 @@ import { infoLogger } from "@utils/logger"
 import { AppError, HTTP, Result, RunRequestDTO } from "@senseii/types"
 import { openAIUtils } from "./utils"
 import { summaryAssistant } from "./assistants/summary"
+import { userStore } from "@models/users"
+import { Message } from "openai/resources/beta/threads/messages"
+import { ChatWithMessages } from "@controller/chat"
 
 const client = getOpenAIClient()
 
+const layer = "SERVICE"
+const name = "OPENAI"
+
 export const openAIService = {
   StreamComplete: (data: RunRequestDTO, handler: StreamHandler) => streamComplete(data, handler),
-  SummariseThread: (threadId: string, wordLimit: number): Promise<Result<string>> => summaryAssistant.summariseChat(client, threadId, wordLimit)
+  SummariseThread: (threadId: string, wordLimit: number): Promise<Result<string>> => summaryAssistant.summariseChat(client, threadId, wordLimit),
+  GetChatMessages: (chatId: string, email: string): Promise<Result<ChatWithMessages>> => getChatMessages(chatId, email)
+}
+
+/**
+ * getChatMessages returns all the messages in the thread
+*/
+const getChatMessages = async (chatId: string, email: string): Promise<Result<ChatWithMessages>> => {
+  infoLogger({ message: `get message for chat: ${chatId}: user: ${email}`, layer, name })
+  const response = await userProfileStore.GetThreadByChatId(chatId)
+  if (!response.success) {
+    return response
+  }
+
+  const { threadId } = response.data
+  const chats = await client.beta.threads.messages.list(threadId)
+  infoLogger({ message: "chats found successfully", status: "success", layer, name })
+  return {
+    success: true,
+    data: {
+      email: email,
+      chatId: chatId,
+      messages: chats.data
+    }
+  }
 }
 
 /**
@@ -27,7 +57,7 @@ const streamComplete = async (data: RunRequestDTO, handler: StreamHandler, assis
     let assistant_id = assistantId ? assistantId : CoreAssistantId as string
 
     let threadId = ""
-    const thread = await userProfileStore.GetThreadByChatId(data)
+    const thread = await userProfileStore.GetThreadByChatId(data.chatId)
     if (thread.success) {
 
       // thread found in database.

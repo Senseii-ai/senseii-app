@@ -6,11 +6,13 @@ import { createSSEHandler, setSSEHeaders } from "@utils/http";
 import { AppError, HTTP, IChat, Result, createError } from "@senseii/types";
 import { openAIService } from "@services/openai/service";
 import { userProfileStore } from "@models/userProfile";
+import { Message } from "openai/resources/beta/threads/messages";
 
 export const openAIController = {
   Chat: (req: IAuthRequest, res: Response): Promise<void> => chat(req, res),
   GetChats: (req: IAuthRequest, res: Response): Promise<Result<IChat[]>> =>
     getChats(req, res),
+  GetChatMessages: (req: IAuthRequest, res: Response): Promise<Result<ChatWithMessages>> => getChatMessages(req, res)
 };
 
 const layer = "CONTROLLER";
@@ -20,6 +22,27 @@ const runCreateDTO = z.object({
   content: z.string(),
   chatId: z.string(),
 });
+
+export interface ChatWithMessages {
+  email: string,
+  chatId: string,
+  messages: Message[]
+}
+
+const getChatMessages = async (req: IAuthRequest, res: Response): Promise<Result<ChatWithMessages>> => {
+  infoLogger({ message: `get message for chat: ${req.params.chatId}: user: ${req.params.email}` })
+  const { chatId, email } = req.params
+  if (!chatId || !email) {
+    const response = {
+      success: false,
+      error: createError(HTTP.STATUS.BAD_REQUEST, "invalid request parameters")
+    }
+    res.status(HTTP.STATUS.BAD_REQUEST).json(response)
+  }
+  const chats = await openAIService.GetChatMessages(chatId, email)
+  res.status(HTTP.STATUS.OK).json(chats)
+  return chats
+}
 
 const chat = async (req: IAuthRequest, res: Response) => {
   infoLogger({

@@ -13,8 +13,8 @@ const layer = "DB";
 const name = "USER PROFILE STORE";
 
 export const userProfileStore = {
-  GetThreadByChatId: (data: RunRequestDTO): Promise<Result<IChat>> =>
-    getUserThreadId(data),
+  GetThreadByChatId: (chatId: string): Promise<Result<IChat>> =>
+    getUserThreadId({ chatId }),
   AddChatToUser: (
     chatId: string,
     userId: string,
@@ -154,7 +154,7 @@ export const getUserByUserId = async (userId: string) => {
 export const getUserThreadId = async ({
   chatId,
   userId,
-}: RunRequestDTO): Promise<Result<IChat>> => {
+}: { chatId: string, userId?: string }): Promise<Result<IChat>> => {
   try {
     const response = await UserProfileModel.findOne({
       "chats.id": chatId,

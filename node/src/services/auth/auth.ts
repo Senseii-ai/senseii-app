@@ -4,12 +4,12 @@ import {
   CreateUserRequest,
   HTTP,
   OAuthSigninDTO,
+  Result,
   User,
   UserLoginDTO,
   UserLoginReponseDTO,
 } from "@senseii/types";
 import { infoLogger } from "@utils/logger";
-import { Result } from "types";
 import { sendVerificationMail } from "./utils";
 import {
   comparePassword,
@@ -142,7 +142,7 @@ const userLogin = async (
       error: {
         code: HTTP.STATUS.BAD_REQUEST,
         message: "wrong username or password",
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       },
     };
   }
@@ -243,7 +243,7 @@ const createNewUser = async (
       error: {
         code: HTTP.STATUS.INTERNAL_SERVER_ERROR,
         message: "internal server error",
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       },
     };
   }

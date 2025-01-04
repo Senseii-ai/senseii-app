@@ -1,6 +1,5 @@
 // this file will handle the run related tasks and actions
 import { AzureOpenAI } from "openai";
-import { createMessage } from "./threads";
 import {
   RequiredActionFunctionToolCall,
   Run,
@@ -17,33 +16,6 @@ const runStatus = {
   IN_PROGRESS: "in_progress",
   REQUIRES_ACTION: "requires_action",
   COMPLETED: "completed",
-};
-
-// create a run after adding a message into the thread
-export const addMessageAndCreateRun = async (
-  threadId: string,
-  message: string,
-  client: AzureOpenAI,
-  assistantId: string,
-) => {
-  try {
-    const addedMessage = await createMessage(message, client, threadId);
-    const run = await client.beta.threads.runs.create(threadId, {
-      assistant_id: assistantId,
-    });
-    const messages = await responsePoller(run, client, threadId);
-    if (!messages) {
-      console.error("error creating run", run);
-      return;
-    }
-    if (messages.length > 0) {
-      console.log(chalk.green("run succesful"));
-      return messages;
-    }
-  } catch (error) {
-    console.log(chalk.red("error adding message and creating run"));
-    throw error;
-  }
 };
 
 // createRun creates a run on a thread, expecting the message is already added to the thread.

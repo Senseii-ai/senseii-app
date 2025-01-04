@@ -1,6 +1,5 @@
 import { Schema, model } from "mongoose";
-import { IRFToken } from "@senseii/types";
-import { Result } from "types";
+import { IRFToken, Result } from "@senseii/types";
 import { handleDBError } from "./utils/error";
 import { infoLogger } from "@utils/logger";
 

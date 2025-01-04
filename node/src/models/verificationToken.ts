@@ -1,11 +1,9 @@
-import mongoose, { Document, Schema, Types } from "mongoose";
-import { Result } from "types";
+import mongoose, { Document, Schema } from "mongoose";
 import { z } from "zod";
 import { handleDBError } from "./utils/error";
-import UserProfileModel from "./userInfo";
 import { UserModel } from "./users";
-import { User, UserDTO, UserModelSchema } from "@senseii/types";
 import { infoLogger } from "@utils/logger";
+import { Result } from "@senseii/types";
 
 /**
  * Represents an email verification token object.

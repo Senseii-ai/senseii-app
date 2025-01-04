@@ -6,7 +6,7 @@ import { userRouter, vitalsRouter, chatRouter, healthRouter, threadsRouter, auth
 import cors from "cors";
 import { authenticateUser } from "middlewares/auth";
 import bodyParser from "body-parser";
-import { createAllAssistants } from "@services/openai/utils";
+// import { createAllAssistants } from "@services/openai/utils";
 import { infoLogger } from "@utils/logger";
 import swaggerUi from "swagger-ui-express"
 import { swaggerDocs } from "@utils/swagger";
@@ -29,7 +29,7 @@ app.use(authenticateUser);
 app.use("/api/vitals", vitalsRouter);
 app.use("/chat", chatRouter);
 app.use("/api/health", healthRouter);
-createAllAssistants()
+// createAllAssistants()
 
 // list of test routers
 app.use("/api/threads", threadsRouter);

@@ -1,6 +1,9 @@
 import { IAuthRequest } from "@middlewares/auth";
 import {
+  AppError,
   HTTP,
+  OAuthLoginObject,
+  Result,
   User,
   UserLoginDTO,
   UserLoginReponseDTO,
@@ -11,8 +14,6 @@ import authService from "@services/auth/auth";
 import { generateRandomString } from "@utils/crypt";
 import { infoLogger } from "@utils/logger";
 import { Response } from "express";
-import { AppError, Result } from "types";
-import { z } from "zod";
 
 /**
  * The authController object contains methods for handling authentication-related requests.
@@ -28,11 +29,6 @@ export const authController = {
   login: (req: IAuthRequest, res: Response): Promise<Result<UserLoginReponseDTO>> => loginUser(req, res),
 };
 
-const OAuthLoginObject = z.object({
-  email: z.string().email(),
-  name: z.string()
-})
-
 const OAuthLogin = async (req: IAuthRequest, res: Response): Promise<Result<UserLoginReponseDTO>> => {
   infoLogger({ status: "INFO", message: "OAuth signin", layer: "CONTROLLER", name: "auth" })
   const validatedUser = OAuthLoginObject.safeParse(req.body);
@@ -43,7 +39,7 @@ const OAuthLogin = async (req: IAuthRequest, res: Response): Promise<Result<User
       error: {
         code: HTTP.STATUS.BAD_REQUEST,
         message: "invalid credentials",
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       },
     };
     res.status(HTTP.STATUS.BAD_REQUEST).json(response);
@@ -111,7 +107,7 @@ export const verifyEmail = async (req: IAuthRequest, res: Response): Promise<Res
     const err: AppError = {
       code: HTTP.STATUS.BAD_REQUEST,
       message: HTTP.STATUS_MESSAGE[HTTP.STATUS.BAD_REQUEST],
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
     };
     infoLogger({
       status: "failed",
@@ -192,7 +188,7 @@ export const signup = async (
       error: {
         code: HTTP.STATUS.BAD_REQUEST,
         message: "invalid credentials",
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       },
     };
     res.status(HTTP.STATUS.BAD_REQUEST).json(response);
@@ -263,7 +259,7 @@ const loginUser = async (
       error: {
         code: HTTP.STATUS.BAD_REQUEST,
         message: "invalid credentials",
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       },
     };
     res.status(HTTP.STATUS.BAD_REQUEST).json(response);

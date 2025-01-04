@@ -1,7 +1,6 @@
-import { AppError, createError } from "types";
 import mongoose from "mongoose";
 import { infoLogger } from "@utils/logger";
-import { HTTP } from "@senseii/types";
+import { AppError, HTTP, createError } from "@senseii/types";
 
 export const handleDBError = (error: unknown, name: string): AppError => {
   // Mongoose-specific error handling.

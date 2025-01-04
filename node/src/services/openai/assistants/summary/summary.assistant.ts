@@ -39,7 +39,21 @@ export const createSummaryAssistant = async (client: AzureOpenAI) => {
     model: "gpt-4o",
     name: "Summariser",
     description: "Utility assistant to summarise threads",
-    instructions: `You are a helpful assistant that reads all the chats in the thread and gives a very small topic of what the entire conversation about`,
+    instructions: `Review the Conversation:
+      Read through the entire conversation to understand the main topics, themes, or intents discussed.
+      Identify Key Points:
+      Focus on the central topics, recurring themes, or most significant points raised.
+      Look for specific actions, decisions, or conclusions made during the chat.
+      Create a <WORD LIMIT> Word Summary:
+      Condense the main idea of the conversation into a <WORD LIMIT> word phrase.
+      Ensure it is concise, relevant, and representative of the discussion.
+      Examples:
+      For a conversation about scheduling a meeting: "Meeting Schedule."
+      For a discussion about a new project: "Project Kickoff."
+      For a chat about troubleshooting an issue: "Bug Fix."
+      Ensure Clarity:
+      Use clear and straightforward language.
+      Avoid ambiguity or overly technical jargon unless it's contextually relevant.`
   });
   return assistant;
 };

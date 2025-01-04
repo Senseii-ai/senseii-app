@@ -1,14 +1,12 @@
 import express, { Router } from "express";
 import {
-  getChats,
-  getChatMessages,
-  chat,
+  openAIController,
 } from "../controller/chat";
 
 const router: Router = express.Router();
 
-router.route("/").post(chat);
-router.route("/user/:userId/chat/:chatId").get(getChatMessages);
-router.route("/user/:userId/chats").get(getChats);
+router.route("/").post(openAIController.Chat);
+router.route("/user/:email/chat/:chatId").get(openAIController.GetChatMessages);
+router.route("/user/:email/chats").get(openAIController.GetChats);
 
 export default router;

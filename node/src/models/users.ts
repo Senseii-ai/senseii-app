@@ -1,9 +1,9 @@
 import mongoose, { Schema } from "mongoose";
 import { infoLogger } from "@utils/logger";
-import { CreateUserRequest, User, UserModelSchema } from "@senseii/types";
+import { CreateUserRequest, Result, User, UserModelSchema } from "@senseii/types";
 import { getSalt, hashPassword } from "@utils/crypt";
-import { Result } from "types";
 import { handleDBError } from "./utils/error";
+import { userProfileStore } from "./userProfile";
 
 export const userStore = {
   getUserByEmail: (email: string): Promise<Result<User>> => getUserByEmail(email),
@@ -142,7 +142,15 @@ export const saveNewUser = async (
       passwordSalt: salt,
       password: hashedPassword,
     }).save();
-    infoLogger({ layer: "DB", status: "INFO", message: `saved ${user} in db` });
+    infoLogger({ layer: "DB", status: "success", message: `saved ${user} in db` });
+
+    infoLogger({ layer: "DB", status: "INFO", message: "creating user profile" })
+    const response = await userProfileStore.CreateProfile(newUser)
+    if (!response.success) {
+      return response
+    }
+
+    infoLogger({ layer: "DB", status: "success", message: "user profile created successfully" })
     return {
       success: true,
       data: newUser.toJSON(),

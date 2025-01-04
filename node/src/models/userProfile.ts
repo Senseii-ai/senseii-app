@@ -1,75 +1,53 @@
-import chalk from "chalk";
 import { Schema, model, Types } from "mongoose";
 import { infoLogger } from "../utils/logger/logger";
-import { Result, RunRequestDTO, User, UserProfile, UserProfileModel, userChatsSchema, userProfileModelSchema } from "@senseii/types";
-import { z } from "zod";
+import {
+  IChat,
+  Result,
+  RunRequestDTO,
+  User,
+  UserProfile,
+} from "@senseii/types";
 import { handleDBError } from "./utils/error";
 
-type Chat = z.infer<typeof userChatsSchema>
-export type UserProfileModelSchema = z.infer<typeof userProfileModelSchema>
-interface IUserProfileDocument extends UserProfileModel, Document { }
-interface IChatsDocument extends Chat, Document { }
-
-const IChatSchema: Schema<IChatsDocument> = new Schema({
-  id: {
-    type: String,
-    required: true,
-  },
-  threadId: {
-    type: String,
-    required: true,
-  },
-  summary: {
-    type: String,
-    required: true,
-  },
-});
-
-
-// FIX: This is not the complete user information.
-const UserProfileSchema: Schema<IUserProfileDocument> = new Schema({
-  id: {
-    type: String,
-    ref: "Users",
-    required: true,
-  },
-  email: {
-    type: String,
-    unique: true,
-    required: [true, "Email must be provided"],
-  },
-  name: {
-    type: String,
-  },
-  firstName: {
-    type: String,
-  },
-  lastName: {
-    type: String,
-  },
-  createdAt: {
-    type: Date,
-    required: true,
-  },
-  verified: {
-    type: Boolean,
-    required: true
-  },
-  chats: {
-    type: [IChatSchema],
-  },
-});
-
-const UserProfileModel = model<IUserProfileDocument>(
-  "UserProfile",
-  UserProfileSchema,
-);
+const layer = "DB";
+const name = "USER PROFILE STORE";
 
 export const userProfileStore = {
-  GetThreadByChatId: (data: RunRequestDTO): Promise<Result<Chat>> => getUserThreadId(data),
-  AddChatToUser: (chatId: string, userId: string, threadId: string, summary: string): Promise<Result<null>> => addChatToUser(chatId, userId, threadId, summary),
-  CreateProfile: (user: User) => createUserProfile(user)
-}
+  GetThreadByChatId: (data: RunRequestDTO): Promise<Result<IChat>> =>
+    getUserThreadId(data),
+  AddChatToUser: (
+    chatId: string,
+    userId: string,
+    threadId: string,
+    summary: string
+  ): Promise<Result<null>> => addChatToUser(chatId, userId, threadId, summary),
+  CreateProfile: (user: User) => createUserProfile(user),
+  GetAllChats: (email: string): Promise<Result<IChat[]>> => getAllChats(email),
+};
+
+const getAllChats = async (email: string): Promise<Result<IChat[]>> => {
+  try {
+    infoLogger({ message: `user: ${email}`, status: "INFO", layer, name })
+    const userProfile = await UserProfileModel.findOne({ email: email })
+      .select("chats")
+      .exec();
+    if (!userProfile) {
+      throw new Error("chats not found");
+    }
+
+    const chats = userProfile.chats
+    infoLogger({ message: `chats found for user: ${email}`, status: "INFO", layer, name })
+    return {
+      success: true,
+      data: chats,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleDBError(error, name),
+    };
+  }
+};
 
 const createUserProfile = async (user: User): Promise<Result<null>> => {
   try {
@@ -81,74 +59,85 @@ const createUserProfile = async (user: User): Promise<Result<null>> => {
       lastName: user.lastName,
       createdAt: user.createdAt,
       verified: user.verified,
-      chats: []
-    }).save()
+      chats: [],
+    }).save();
     return {
       success: true,
-      data: null
-    }
+      data: null,
+    };
   } catch (error) {
     return {
       success: false,
-      error: handleDBError(error, "USER PROFILE DATASTORE")
-    }
+      error: handleDBError(error, "USER PROFILE DATASTORE"),
+    };
   }
-
-}
+};
 
 export const addChatToUser = async (
   chatId: string,
   userId: string,
   threadId: string,
-  summary: string,
+  summary: string
 ): Promise<Result<null>> => {
   try {
-    infoLogger({ message: "saving new chat in user profile", status: "INFO", layer: 'DB', name: "USER PROFILE STORE" })
-    const newChat: Chat = {
+    infoLogger({
+      message: "saving new chat in user profile",
+      status: "INFO",
+      layer: "DB",
+      name: "USER PROFILE STORE",
+    });
+    const newChat: IChat = {
       id: chatId,
       threadId: threadId,
-      summary: summary,
+      title: summary,
+      userId: userId,
+      createdAt: new Date().toISOString(),
+      path: "not supported yet",
+      sharePath: "not supported yet"
     };
 
     if (!Types.ObjectId.isValid(userId)) {
       throw new Error("Invalid user ID");
     }
 
-
     const updatedUserProfile = await UserProfileModel.findOneAndUpdate(
       { id: userId },
       { $push: { chats: newChat } },
-      { new: true, useFindAndModify: false },
-    )
+      { new: true, useFindAndModify: false }
+    );
 
     if (!updatedUserProfile) {
-      throw new Error("error updating profile")
+      throw new Error("error updating profile");
     }
 
-    infoLogger({ message: "Profile was updated", status: "success", layer: "DB", name: "USER PROFILE STORE" });
+    infoLogger({
+      message: "Profile was updated",
+      status: "success",
+      layer: "DB",
+      name: "USER PROFILE STORE",
+    });
     return {
       success: true,
-      data: null
-    }
+      data: null,
+    };
   } catch (error) {
     return {
       success: false,
-      error: handleDBError(error, "USER PROFILE STORE")
-    }
+      error: handleDBError(error, "USER PROFILE STORE"),
+    };
   }
 };
 
-export const saveNewUserProfile = async (user: UserProfileModelSchema) => {
+export const saveNewUserProfile = async (user: UserProfile) => {
   try {
-    const newProfile = await (new UserProfileModel(user)).save()
-    infoLogger({ status: "success", message: "profile saved in db" })
-    return newProfile
+    const newProfile = await new UserProfileModel(user).save();
+    infoLogger({ status: "success", message: "profile saved in db" });
+    return newProfile;
   } catch (error) {
-    infoLogger({ status: "failed", message: error as string })
-    throw error
+    infoLogger({ status: "failed", message: error as string });
+    throw error;
   }
-
-}
+};
 
 export const getUserByUserId = async (userId: string) => {
   infoLogger({ message: "get user by userid" });
@@ -162,17 +151,22 @@ export const getUserByUserId = async (userId: string) => {
 };
 
 // FIX: Is this Database call costly?
-export const getUserThreadId = async ({ chatId, userId }: RunRequestDTO): Promise<Result<Chat>> => {
+export const getUserThreadId = async ({
+  chatId,
+  userId,
+}: RunRequestDTO): Promise<Result<IChat>> => {
   try {
     const response = await UserProfileModel.findOne({
       "chats.id": chatId,
     });
     if (!response) {
-      throw new Error("Chat not Found")
+      throw new Error("Chat not Found");
     }
-    const requiredThread = response.chats.find((item: Chat) => item.id === chatId);
+    const requiredThread = response.chats.find(
+      (item: IChat) => item.id === chatId
+    );
     if (!requiredThread) {
-      throw new Error("Thread not Found")
+      throw new Error("Thread not Found");
     }
     return {
       success: true,
@@ -181,10 +175,9 @@ export const getUserThreadId = async ({ chatId, userId }: RunRequestDTO): Promis
   } catch (error) {
     return {
       success: false,
-      error: handleDBError(error, "User Profile Store")
-    }
+      error: handleDBError(error, "User Profile Store"),
+    };
   }
-
 };
 
 export const getThreadByChatId = async (chatId: string) => {
@@ -214,5 +207,80 @@ export const getUserThreads = async (userId: string) => {
 
   return response?.chats;
 };
+
+const IChatSchema: Schema<IChat> = new Schema({
+  id: {
+    type: String,
+    required: true
+  },
+  threadId: {
+    type: String,
+    required: true,
+  },
+  title: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: String,
+    required: true,
+  },
+  userId: {
+    type: String,
+    required: true,
+  },
+  path: {
+    // NOTE: We don't support sharing chats as of now.
+    type: String,
+  },
+  // NOTE: messages is missing.
+  sharePath: {
+    type: String
+  }
+})
+
+interface IUserProfileDocument extends UserProfile, Document { }
+
+const UserProfileSchema: Schema<IUserProfileDocument> = new Schema({
+  id: {
+    type: String,
+    ref: "Users",
+    required: true,
+  },
+  email: {
+    type: String,
+    unique: true,
+    required: [true, "Email must be provided"],
+  },
+  name: {
+    type: String,
+  },
+  firstName: {
+    type: String,
+  },
+  lastName: {
+    type: String,
+  },
+  createdAt: {
+    type: Date,
+    required: true,
+  },
+  verified: {
+    type: Boolean,
+    required: true,
+  },
+  updatedAt: {
+    type: Date,
+    required: true
+  },
+  chats: {
+    type: [IChatSchema],
+  },
+});
+
+const UserProfileModel = model<IUserProfileDocument>(
+  "UserProfile",
+  UserProfileSchema
+);
 
 export default UserProfileModel;

@@ -45,8 +45,8 @@ const OAuthSignin = async (data: OAuthSigninDTO): Promise<Result<UserLoginRepons
       email: data.email,
       password: data.password,
       verified: true,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     }
 
     const user = await userStore.saveNewUser(newUser, true, data.name)

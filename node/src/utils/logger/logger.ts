@@ -7,6 +7,10 @@ interface InfoParams {
   name?: string
 }
 
+export const routeLogger = (route: string, method: string) => {
+  routeMessage(`[${method.toUpperCase()}:[${route}]`)
+}
+
 function getCurrentTime(): string {
   const date = new Date(Date.now());
 
@@ -46,6 +50,10 @@ export const infoLogger = ({ message, status, layer, name }: InfoParams) => {
 
 const successMessage = (message: string) => {
   return chalk.black(chalk.bgGreen("SUCCESS ") + getCurrentTime() + chalk.white(message))
+}
+
+const routeMessage = (message: string) => {
+  return chalk.black(chalk.bgHex("#FFC0CB")("INFO") + getCurrentTime() + chalk.white(message))
 }
 
 const infoMessage = (message: string) => {

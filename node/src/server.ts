@@ -11,6 +11,8 @@ import { swaggerDocs } from "@utils/swagger";
 import { clerkMiddleware, requireAuth } from "@clerk/express";
 import { handleWebhook } from "@controller/clerk.webhook";
 
+const layer = "SERVER"
+
 // FIX: replace with actual port number
 const port = 9090;
 
@@ -23,6 +25,11 @@ app.post("/api/webhooks", bodyParser.raw({ type: 'application/json' }), handleWe
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(clerkMiddleware());
+
+// app.get("/ping", (req, res) => {
+//   infoLogger({ message: "PING", status: "alert", layer })
+//   res.status(200).json({ message: "pong" })
+// })
 
 // FIX: for production drop this route below authenticator.
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));

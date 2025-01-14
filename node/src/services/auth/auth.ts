@@ -10,7 +10,7 @@ import {
   UserLoginReponseDTO,
 } from "@senseii/types";
 import { infoLogger } from "@utils/logger";
-import { sendVerificationMail } from "./utils";
+// import { sendVerificationMail } from "./utils";
 import {
   comparePassword,
   getAuthTokens,
@@ -235,19 +235,19 @@ const createNewUser = async (
   }
 
   // initiate user verification.
-  const emailSent = await sendVerificationMail(response.data.email);
-  // if error in sending email, return internal server error.
-  if (!emailSent) {
-    return {
-      success: false,
-      error: {
-        code: HTTP.STATUS.INTERNAL_SERVER_ERROR,
-        message: "internal server error",
-        timestamp: new Date().toISOString(),
-      },
-    };
-  }
-
+  // const emailSent = await sendVerificationMail(response.data.email);
+  // // if error in sending email, return internal server error.
+  // if (!emailSent) {
+  //   return {
+  //     success: false,
+  //     error: {
+  //       code: HTTP.STATUS.INTERNAL_SERVER_ERROR,
+  //       message: "internal server error",
+  //       timestamp: new Date().toISOString(),
+  //     },
+  //   };
+  // }
+  //
   // return user information if the entire flow works ok.
   return response;
 };

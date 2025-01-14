@@ -3,16 +3,15 @@ import { IAuthRequest } from "@middlewares/auth";
 import { infoLogger } from "../utils/logger/logger";
 import { z } from "zod";
 import { createSSEHandler, setSSEHeaders } from "@utils/http";
-import { AppError, HTTP, IChat, Result, createError } from "@senseii/types";
+import { AppError, HTTP, IChat, Result, createError, message } from "@senseii/types";
 import { openAIService } from "@services/openai/service";
 import { userProfileStore } from "@models/userProfile";
-import { Message } from "openai/resources/beta/threads/messages";
 
 export const openAIController = {
   Chat: (req: IAuthRequest, res: Response): Promise<void> => chat(req, res),
   GetChats: (req: IAuthRequest, res: Response): Promise<Result<IChat[]>> =>
     getChats(req, res),
-  GetChatMessages: (req: IAuthRequest, res: Response): Promise<Result<ChatWithMessages>> => getChatMessages(req, res)
+  GetChatMessages: (req: IAuthRequest, res: Response): Promise<Result<IChat>> => getChatMessages(req, res)
 };
 
 const layer = "CONTROLLER";
@@ -23,13 +22,7 @@ const runCreateDTO = z.object({
   chatId: z.string(),
 });
 
-export interface ChatWithMessages {
-  email: string,
-  chatId: string,
-  messages: Message[]
-}
-
-const getChatMessages = async (req: IAuthRequest, res: Response): Promise<Result<ChatWithMessages>> => {
+const getChatMessages = async (req: IAuthRequest, res: Response): Promise<Result<IChat>> => {
   infoLogger({ message: `get message for chat: ${req.params.chatId}: user: ${req.params.email}` })
   const { chatId, email } = req.params
   if (!chatId || !email) {
@@ -39,7 +32,7 @@ const getChatMessages = async (req: IAuthRequest, res: Response): Promise<Result
     }
     res.status(HTTP.STATUS.BAD_REQUEST).json(response)
   }
-  const chats = await openAIService.GetChatMessages(chatId, email)
+  const chats = await openAIService.GetChatMessages(chatId, req.userId as string)
   res.status(HTTP.STATUS.OK).json(chats)
   return chats
 }

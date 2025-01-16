@@ -1,47 +1,50 @@
-import "tsconfig-paths"
-import express, { Express, Request, Response } from "express";
+import "tsconfig-paths";
+import express, { Express } from "express";
 require("dotenv").config();
 import connectDB from "@db/connect";
-import { userRouter, vitalsRouter, chatRouter, healthRouter, threadsRouter, authRouter } from "@routes";
+import { userRouter, vitalsRouter, chatRouter } from "@routes";
 import cors from "cors";
-import { authenticateUser } from "middlewares/auth";
 import bodyParser from "body-parser";
-// import { createAllAssistants } from "@services/openai/utils";
 import { infoLogger } from "@utils/logger";
-import swaggerUi from "swagger-ui-express"
+import swaggerUi from "swagger-ui-express";
 import { swaggerDocs } from "@utils/swagger";
+import { clerkMiddleware, requireAuth } from "@clerk/express";
+import { handleWebhook } from "@controller/clerk.webhook";
+
+const layer = "SERVER"
+
+// FIX: replace with actual port number
+const port = 9090;
 
 const app: Express = express();
 app.use(cors());
-app.use(
-  bodyParser.urlencoded({
-    extended: true,
-  }),
-);
-const port = 9090;
+
+
+app.post("/api/webhooks", bodyParser.raw({ type: 'application/json' }), handleWebhook);
 
 app.use(express.json());
-app.use(authRouter);
-app.use("/user", userRouter)
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(clerkMiddleware());
+
+// app.get("/ping", (req, res) => {
+//   infoLogger({ message: "PING", status: "alert", layer })
+//   res.status(200).json({ message: "pong" })
+// })
+
 // FIX: for production drop this route below authenticator.
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs))
-app.use(authenticateUser);
-app.use("/api/vitals", vitalsRouter);
-app.use("/chat", chatRouter);
-app.use("/api/health", healthRouter);
-// createAllAssistants()
-
-// list of test routers
-app.use("/api/threads", threadsRouter);
-
-app.get("/ping", (req: Request, res: Response) => {
-  res.send("pong");
-});
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+app.use("/user", requireAuth(), userRouter);
+app.use("/api/vitals", requireAuth(), vitalsRouter);
+app.use("/chat", requireAuth(), chatRouter);
 
 const start = async () => {
   await connectDB();
   app.listen(port, () => {
-    infoLogger({ layer: "SERVER", status: "success", message: `server listening on port ${port}` })
+    infoLogger({
+      layer: "SERVER",
+      status: "success",
+      message: `server listening on port ${port}`,
+    });
   });
 };
 

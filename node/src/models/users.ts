@@ -40,7 +40,7 @@ const UserSchema: Schema<UserModelSchema> = new Schema<UserModelSchema>(
       required: true,
     },
     createdAt: {
-      type: Date,
+      type: String,
       required: true,
     },
     verified: {

@@ -1,33 +1,56 @@
 import { Schema, model, Types } from "mongoose";
 import { infoLogger } from "../utils/logger/logger";
-import {
-  IChat,
-  Result,
-  RunRequestDTO,
-  User,
-  UserProfile,
-} from "@senseii/types";
+import { IChat, Result, User, UserProfile, createError } from "@senseii/types";
 import { handleDBError } from "./utils/error";
 
 const layer = "DB";
 const name = "USER PROFILE STORE";
 
 export const userProfileStore = {
-  GetThreadByChatId: (chatId: string): Promise<Result<IChat>> =>
-    getUserThreadId({ chatId }),
-  AddChatToUser: (
-    chatId: string,
-    userId: string,
-    threadId: string,
-    summary: string
-  ): Promise<Result<null>> => addChatToUser(chatId, userId, threadId, summary),
+  AddChatToUser: (chat: IChat, userId: string): Promise<Result<string>> =>
+    addChatToUser(chat, userId),
+
+  // FIX: Add temporary image URL.
   CreateProfile: (user: User) => createUserProfile(user),
   GetAllChats: (email: string): Promise<Result<IChat[]>> => getAllChats(email),
+  GetChat: (userId: string, chatId: string): Promise<Result<IChat>> => getChat(userId, chatId),
+};
+
+const getChat = async (
+  userId: string,
+  chatId: string
+): Promise<Result<IChat>> => {
+  try {
+    infoLogger({ message: `trying to get chat ${chatId}`, status: "INFO", layer, name })
+    const user = await UserProfileModel.findOne({
+      id: userId,
+    })
+    if (!user) {
+      throw new Error(`user with chat ${userId} not found`);
+    }
+
+    infoLogger({ message: "CHATS PRESENT IN THE DATABASE:::", status: "alert", layer, name })
+    user.chats.map(item => console.log(item.id))
+
+    const requiredChat = user.chats.find(item => item.id === chatId)
+    if (!requiredChat) {
+      throw new Error(`chat ${chatId} does not exist`);
+    }
+    return {
+      success: true,
+      data: requiredChat,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleDBError(error, name),
+    };
+  }
 };
 
 const getAllChats = async (email: string): Promise<Result<IChat[]>> => {
   try {
-    infoLogger({ message: `user: ${email}`, status: "INFO", layer, name })
+    infoLogger({ message: `user: ${email}`, status: "INFO", layer, name });
     const userProfile = await UserProfileModel.findOne({ email: email })
       .select("chats")
       .exec();
@@ -35,8 +58,13 @@ const getAllChats = async (email: string): Promise<Result<IChat[]>> => {
       throw new Error("chats not found");
     }
 
-    const chats = userProfile.chats
-    infoLogger({ message: `chats found for user: ${email}`, status: "INFO", layer, name })
+    const chats = userProfile.chats;
+    infoLogger({
+      message: `chats found for user: ${email}`,
+      status: "INFO",
+      layer,
+      name,
+    });
     return {
       success: true,
       data: chats,
@@ -51,16 +79,20 @@ const getAllChats = async (email: string): Promise<Result<IChat[]>> => {
 
 const createUserProfile = async (user: User): Promise<Result<null>> => {
   try {
+    infoLogger({ message: "Creating new User profile", status: "INFO", layer, name })
     const newProfile = await new UserProfileModel({
       id: user.id,
       email: user.email,
       name: user.name,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      // firstName: user.firstName,
+      // lastName: user.lastName,
       createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
       verified: user.verified,
       chats: [],
     }).save();
+
+    infoLogger({ message: "new user profile created", status: "success", layer, name })
     return {
       success: true,
       data: null,
@@ -74,11 +106,9 @@ const createUserProfile = async (user: User): Promise<Result<null>> => {
 };
 
 export const addChatToUser = async (
-  chatId: string,
-  userId: string,
-  threadId: string,
-  summary: string
-): Promise<Result<null>> => {
+  chat: IChat,
+  userId: string
+): Promise<Result<string>> => {
   try {
     infoLogger({
       message: "saving new chat in user profile",
@@ -86,28 +116,30 @@ export const addChatToUser = async (
       layer: "DB",
       name: "USER PROFILE STORE",
     });
-    const newChat: IChat = {
-      id: chatId,
-      threadId: threadId,
-      title: summary,
-      userId: userId,
-      createdAt: new Date().toISOString(),
-      path: "not supported yet",
-      sharePath: "not supported yet"
-    };
 
-    if (!Types.ObjectId.isValid(userId)) {
-      throw new Error("Invalid user ID");
+    if (!chat.messages || chat.messages.length === 0 || !chat.messages[0]) {
+      throw new Error("Invalid Chat Object");
     }
 
-    const updatedUserProfile = await UserProfileModel.findOneAndUpdate(
-      { id: userId },
-      { $push: { chats: newChat } },
-      { new: true, useFindAndModify: false }
-    );
+    await UserProfileModel.updateOne(
+      { id: userId, "chats.id": chat.id }, // Find the user and the specific chat
+      {
+        $push: { "chats.$.messages": chat.messages[0] }, // Push the new message to the messages array
+      },
+      { upsert: false } // Do not create a new chat if it doesn't exist here
+    ).exec()
 
-    if (!updatedUserProfile) {
-      throw new Error("error updating profile");
+    const userProfile = await UserProfileModel.findOne({
+      id: userId,
+      "chats.id": chat.id,
+    });
+
+    if (!userProfile) {
+      await UserProfileModel.updateOne(
+        { id: userId },
+        { $push: { chats: chat } }, // Add the new chat to the chats array
+        { upsert: true } // Ensure the user exists
+      ).exec();
     }
 
     infoLogger({
@@ -118,7 +150,7 @@ export const addChatToUser = async (
     });
     return {
       success: true,
-      data: null,
+      data: chat.id,
     };
   } catch (error) {
     return {
@@ -154,11 +186,20 @@ export const getUserByUserId = async (userId: string) => {
 export const getUserThreadId = async ({
   chatId,
   userId,
-}: { chatId: string, userId?: string }): Promise<Result<IChat>> => {
+}: {
+  chatId: string;
+  userId: string;
+}): Promise<Result<IChat>> => {
   try {
-    const response = await UserProfileModel.findOne({
-      "chats.id": chatId,
-    });
+    const response = await UserProfileModel.findOne({ id: userId })
+    if (!response) {
+      throw new Error(`user:${userId} not found`)
+    }
+
+    response.chats.map(item => console.log("CHAT", item))
+    // const response = await UserProfileModel.findOne({
+    //   "chats.id": chatId,
+    // });
     if (!response) {
       throw new Error("Chat not Found");
     }
@@ -208,10 +249,22 @@ export const getUserThreads = async (userId: string) => {
   return response?.chats;
 };
 
+const MessageSchema = new Schema({
+  role: {
+    type: String,
+    enum: ["user", "assistant"], // Matches z.enum(["user", "assistant"])
+    required: true,
+  },
+  content: {
+    type: String, // Matches z.string()
+    required: true,
+  },
+});
+
 const IChatSchema: Schema<IChat> = new Schema({
   id: {
     type: String,
-    required: true
+    required: true,
   },
   threadId: {
     type: String,
@@ -229,15 +282,19 @@ const IChatSchema: Schema<IChat> = new Schema({
     type: String,
     required: true,
   },
+  messages: {
+    type: [MessageSchema],
+    required: true,
+  },
   path: {
     // NOTE: We don't support sharing chats as of now.
     type: String,
   },
   // NOTE: messages is missing.
   sharePath: {
-    type: String
-  }
-})
+    type: String,
+  },
+});
 
 interface IUserProfileDocument extends UserProfile, Document { }
 
@@ -262,7 +319,7 @@ const UserProfileSchema: Schema<IUserProfileDocument> = new Schema({
     type: String,
   },
   createdAt: {
-    type: Date,
+    type: String,
     required: true,
   },
   verified: {
@@ -270,8 +327,8 @@ const UserProfileSchema: Schema<IUserProfileDocument> = new Schema({
     required: true,
   },
   updatedAt: {
-    type: Date,
-    required: true
+    type: String,
+    required: true,
   },
   chats: {
     type: [IChatSchema],

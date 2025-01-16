@@ -3,6 +3,7 @@ import { verifyToken } from "../utils/crypt";
 import {
   AsyncLocalStorage,
 } from "async_hooks";
+import { AuthObject, ClerkClient } from "@clerk/express";
 
 // UserContext interface defines how the userStorage looks.
 type UserContext = Map<string, string>;
@@ -13,6 +14,7 @@ const userStorage = new AsyncLocalStorage<UserContext>();
  * Represents the request object for authentication-related endpoints.
  */
 export interface IAuthRequest extends Request {
+  auth?: AuthObject
   userId?: string;
 }
 

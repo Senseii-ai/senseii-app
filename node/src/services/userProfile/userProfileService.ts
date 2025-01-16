@@ -1,5 +1,5 @@
-import { CreateUserGoalDTO } from "@models/temp.types";
 import { userProfileStore } from "@models/userProfile";
+import { CreateUserGoalDTO } from "@senseii/types";
 
 export const userProfileService = {
   CreateNewGoal: async (args: CreateUserGoalDTO) => {

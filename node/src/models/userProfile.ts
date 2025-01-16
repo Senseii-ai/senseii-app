@@ -1,8 +1,7 @@
 import { Schema, Types, model } from "mongoose";
 import { infoLogger } from "../utils/logger/logger";
-import { IChat, Result, User, UserProfile } from "@senseii/types";
+import { CreateUserGoalDTO, IChat, Result, User, UserProfile } from "@senseii/types";
 import { handleDBError } from "./utils/error";
-import { CreateUserGoalDTO } from "./temp.types";
 import { UserGoalModel } from "./goals";
 import { ChatModel } from "./chats";
 

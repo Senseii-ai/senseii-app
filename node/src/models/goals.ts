@@ -1,6 +1,5 @@
 import { Schema, model, Document } from "mongoose"
-import { CreateUserGoalDTO, UserGoal } from "./temp.types";
-import { IBasicInformation, IConstraints, IDietPreferences, IEatingHabits, IHealthGoals, ILifeStyle, NutritionPlan } from "@senseii/types";
+import { CreateUserGoalDTO, IBasicInformation, IConstraints, IDietPreferences, IEatingHabits, IHealthGoals, ILifeStyle, NutritionPlan, UserGoal } from "@senseii/types";
 import { getUserId } from "@middlewares/auth";
 
 interface UserGoalDocument extends UserGoal, Document { }

@@ -1,12 +1,10 @@
 import { IFunctionType } from "../functions";
 import { saveInitialGoal, saveNutritionPlan, saveUpdatedUserConstraints, saveUpdatedDietPreferences, saveUpdatedBasicInformaion, saveUpdatedEatingHabits } from "../../../../models/goals";
-import { InitialGoal } from "@senseii/types"
 import { validateResponse } from "@services/openai/utils";
-import { basicInformation, constraints, dietPreferences, eatingHabits } from "@senseii/types";
+import { basicInformation, constraints, createUserGoalDTO, dietPreferences, eatingHabits } from "@senseii/types";
 import { z } from "zod"
 import { createNutritionPlan } from "../nutrition";
 import { infoLogger } from "@utils/logger";
-import { createUserGoalDTO } from "@models/temp.types";
 
 export const coreAssistant = {
   CreateDietPlanFunc: (args: string) => createDietPlanFunc(args)

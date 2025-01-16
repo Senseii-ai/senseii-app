@@ -1,6 +1,5 @@
 import { IAuthRequest } from "@middlewares/auth";
-import { createUserGoalDTO } from "@models/temp.types";
-import { HTTP, Result, createError } from "@senseii/types";
+import { HTTP, Result, createError, createUserGoalDTO } from "@senseii/types";
 import { userProfileService } from "@services/userProfile/userProfileService";
 import { infoLogger, routeLogger } from "@utils/logger";
 import { Response } from "express";

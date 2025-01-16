@@ -6,6 +6,7 @@ import { basicInformation, constraints, dietPreferences, eatingHabits } from "@s
 import { z } from "zod"
 import { createNutritionPlan } from "../nutrition";
 import { infoLogger } from "@utils/logger";
+import { createUserGoalDTO } from "@models/temp.types";
 
 export const coreAssistant = {
   CreateDietPlanFunc: (args: string) => createDietPlanFunc(args)
@@ -13,7 +14,7 @@ export const coreAssistant = {
 
 const createDietPlanFunc = async (args: string) => {
   const response = await createNutritionPlan(args)
-  if (await saveNutritionPlan(response.nutritionPlan)) {
+  if (await saveNutritionPlan(response)) {
     return "User Diet Plan Created Successfully"
   }
   return "User Diet Plan Creation Failed"
@@ -23,7 +24,7 @@ const createDietPlanFunc = async (args: string) => {
 // validates them and saves them in the database.
 const createInitialGoalFunc = async (args: string) => {
   infoLogger({ message: "initiating function call" })
-  const validArgs = await getValidArguments({ data: args, validatorSchemaName: "create-initial-goal", validatorSchema: InitialGoal })
+  const validArgs = await getValidArguments({ data: args, validatorSchemaName: "create-initial-goal", validatorSchema: createUserGoalDTO })
   if (await saveInitialGoal(validArgs)) {
     return "User Initial Goal Created Successfully"
   }

@@ -5,6 +5,7 @@ import { AppError, HTTP, createError } from "@senseii/types";
 export const handleDBError = (error: unknown, name: string): AppError => {
   // Mongoose-specific error handling.
   if (error instanceof mongoose.Error.ValidationError) {
+    console.log("ERROR", error.message, error.name)
     infoLogger({ layer: "DB", status: "failed", message: "Invalid data" })
     return createError(HTTP.STATUS.BAD_REQUEST, 'Invalid data', {
       details: Object.values(error.errors).map(err => err.message)

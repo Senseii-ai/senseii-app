@@ -3,7 +3,7 @@ import getOpenAIClient from "./client"
 import { CoreAssistantId } from "./assistants"
 import { userProfileStore } from "@models/userProfile"
 import { infoLogger } from "@utils/logger"
-import { AppError, HTTP, IChat, Result, RunRequestDTO, message } from "@senseii/types"
+import { AppError, HTTP, IChat, Result, RunRequestDTO } from "@senseii/types"
 import { openAIUtils } from "./utils"
 import { summaryAssistant } from "./assistants/summary"
 
@@ -49,7 +49,6 @@ const streamComplete = async (data: RunRequestDTO, handler: StreamHandler, assis
     let assistant_id = assistantId ? assistantId : CoreAssistantId as string
 
     // check if chat exists.
-    console.log("GETTING CHAT FOR STREAMABLE RUN", data.chatId)
     const response = await userProfileStore.GetChat(data.userId, data.chatId)
     if (!response.success) {
       return response

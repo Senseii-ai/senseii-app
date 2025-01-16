@@ -61,6 +61,10 @@ const DailyNutritionPlanSchema: Schema<IDailyNutritionPlanDocument> =
         "Sunday",
       ],
     },
+    userId: {
+      type: String,
+      required: true,
+    },
     meals: { type: [MealsSchema], required: true },
   });
 

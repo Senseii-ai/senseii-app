@@ -5,7 +5,6 @@ import {
 } from "../services/openai/assistants/threads";
 import { IAuthRequest } from "../middlewares/auth";
 import { Response } from "express";
-import { getUserThreads } from "../models/userProfile";
 import { MessagesPage } from "openai/resources/beta/threads/messages";
 
 const client = getOpenAIClient();
@@ -28,16 +27,16 @@ export const getThreadMessaegs = async (req: IAuthRequest, res: Response) => {
   }
 };
 
-export const getThreads = async (req: IAuthRequest, res: Response) => {
-  try {
-    const userId = req.params;
-    const threads = await getUserThreads(userId.id);
-    if (threads === undefined) {
-      return res.status(200).json([]);
-    }
-    return res.status(200).json(threads);
-  } catch (error) {
-    console.error("error", error);
-    res.status(500).json({ message: "Error getting user threads" });
-  }
-};
+// export const getThreads = async (req: IAuthRequest, res: Response) => {
+//   try {
+//     const userId = req.params;
+//     const threads = await getUserThreads(userId.id);
+//     if (threads === undefined) {
+//       return res.status(200).json([]);
+//     }
+//     return res.status(200).json(threads);
+//   } catch (error) {
+//     console.error("error", error);
+//     res.status(500).json({ message: "Error getting user threads" });
+//   }
+// };

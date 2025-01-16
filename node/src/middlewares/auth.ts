@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from "express";
-import { verifyToken } from "../utils/crypt";
 import {
   AsyncLocalStorage,
 } from "async_hooks";
-import { AuthObject, ClerkClient } from "@clerk/express";
+import { AuthObject, getAuth } from "@clerk/express";
+import { infoLogger } from "@utils/logger";
 
 // UserContext interface defines how the userStorage looks.
 type UserContext = Map<string, string>;
@@ -17,6 +17,7 @@ export interface IAuthRequest extends Request {
   auth?: AuthObject
   userId?: string;
 }
+
 
 export const getUserId = () => {
   const store = userStorage.getStore();
@@ -33,20 +34,14 @@ export const authenticateUser = async (
   next: NextFunction
 ) => {
   try {
-    const authHeader = req.headers["authorization"] as string;
-
-    const token = authHeader && authHeader.split(" ")[1];
-    if (!token) {
+    const { userId, getToken } = getAuth(req)
+    const token = await getToken()
+    if (!userId || !token) {
       console.error("Auth Token does not exist");
       return res.status(401).json({ message: "Authentication error" });
     }
 
     try {
-      const userId = verifyToken(token);
-      if (!userId) {
-        throw new Error("Error decoding JWT");
-      }
-
       const store = new Map<string, any>();
       userStorage.run(store, () => {
         store.set("userId", userId);
@@ -57,6 +52,7 @@ export const authenticateUser = async (
       console.error("Token verification failed", error);
       return res.status(403).json({ message: "Authentication error" });
     }
+
   } catch (error) {
     console.error("Unexpected error", error);
     return res.status(400).json({ message: "Authentication error" });

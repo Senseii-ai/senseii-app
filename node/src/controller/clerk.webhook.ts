@@ -136,7 +136,7 @@ export const handleWebhook = async (req: Request, res: Response): Promise<Result
     infoLogger({ message: "New User Created, creating profile" })
     const user = evt.data
     const againCheck = {
-      id: user.id,
+      userId: user.id,
       email: user.email_addresses[0].email_address || "",
       name: user.fullName as string || "new user",
       verified: true,

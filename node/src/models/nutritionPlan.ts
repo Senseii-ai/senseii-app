@@ -1,40 +1,40 @@
 import { Schema, model, Document } from "mongoose";
 import {
-  INutritionPlan,
-  IDailyNutritionPlan,
-  IItems,
-  IMacroNutrients,
-  IMicroNutrients,
-  IMeals,
+  NutritionPlan,
+  DailyNutritionPlan,
+  MealItems,
+  MacroNutrients,
+  MicroNutrients,
+  Meals,
 } from "@senseii/types";
 
-interface IItemsDocument extends IItems, Document { }
-interface IMacroNutrientsDocument extends IMacroNutrients, Document { }
-interface IMicroNutrientsDocument extends IMicroNutrients, Document { }
-interface IMealsDocument extends IMeals, Document { }
-interface IDailyNutritionPlanDocument extends IDailyNutritionPlan, Document { }
-interface INutritionPlanDocument extends INutritionPlan, Document { }
+interface ItemsDocument extends MealItems, Document {}
+interface MacroNutrientsDocument extends MacroNutrients, Document {}
+interface MicroNutrientsDocument extends MicroNutrients, Document {}
+interface MealsDocument extends Meals, Document {}
+interface DailyNutritionPlanDocument extends DailyNutritionPlan, Document {}
+interface NutritionPlanDocument extends NutritionPlan, Document {}
 
-const ItemsSchema: Schema<IItemsDocument> = new Schema({
+const ItemsSchema: Schema<ItemsDocument> = new Schema({
   item: { type: String, required: true },
   proportion: { type: Number, required: true },
   unit: { type: String, enum: ["grams", "kilograms", "count"], required: true },
 });
 
-const MacroNutrientsSchema: Schema<IMacroNutrientsDocument> = new Schema({
+const MacroNutrientsSchema: Schema<MacroNutrientsDocument> = new Schema({
   protein: { type: Number, required: true },
   dietryFat: { type: Number, required: true },
   carbohydrates: { type: Number, required: true },
   water: { type: Number, required: true },
 });
 
-const MicroNutrientsSchema: Schema<IMicroNutrientsDocument> = new Schema({
+const MicroNutrientsSchema: Schema<MicroNutrientsDocument> = new Schema({
   // TODO: Define these more properly
   vitamins: { type: Number, required: true },
   dietryMinerals: { type: Number, required: true },
 });
 
-const MealsSchema: Schema<IMealsDocument> = new Schema({
+const MealsSchema: Schema<MealsDocument> = new Schema({
   type: {
     type: String,
     enum: ["Breakfast", "Lunch", "Dinner", "Snacks"],
@@ -47,8 +47,8 @@ const MealsSchema: Schema<IMealsDocument> = new Schema({
   items: { type: [ItemsSchema], required: true },
 });
 
-const DailyNutritionPlanSchema: Schema<IDailyNutritionPlanDocument> =
-  new Schema({
+const DailyNutritionPlanSchema: Schema<DailyNutritionPlanDocument> = new Schema(
+  {
     day: {
       type: String,
       enum: [
@@ -61,20 +61,21 @@ const DailyNutritionPlanSchema: Schema<IDailyNutritionPlanDocument> =
         "Sunday",
       ],
     },
-    userId: {
-      type: String,
-      required: true,
-    },
     meals: { type: [MealsSchema], required: true },
-  });
+  }
+);
 
-export const NutritionPlanSchema: Schema<INutritionPlanDocument> = new Schema({
-  plan: { type: [DailyNutritionPlanSchema], required: true },
+const NutritionPlanSchema: Schema<NutritionPlanDocument> = new Schema({
+  type: { type: String, default: "nutritionPlan" },
+  userId: { type: String, required: true, ref: "User" },
+  dailyPlan: {
+    plan: { type: [DailyNutritionPlanSchema], required: true },
+  },
 });
 
-const NutritionPlanModel = model<INutritionPlan>(
+const NutritionPlanModel = model<NutritionPlan>(
   "NutritionPlan",
-  NutritionPlanSchema,
+  NutritionPlanSchema
 );
 
 export default NutritionPlanModel;

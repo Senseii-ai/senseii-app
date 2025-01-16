@@ -1,3 +1,4 @@
+import "tsconfig-paths/register"
 import "tsconfig-paths";
 import express, { Express } from "express";
 require("dotenv").config();

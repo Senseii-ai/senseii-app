@@ -1,9 +1,9 @@
-import { INutritionPlan } from "@senseii/types";
+import { NutritionPlan } from "@senseii/types";
 import { infoLogger } from "./logger/logger";
 
 export const ParseJSONToMarkdown = (json: string) => {
   infoLogger({ message: "parsing this now" });
-  const mealPlan: INutritionPlan = JSON.parse(json);
+  const mealPlan: NutritionPlan = JSON.parse(json);
 
   const testOutput = `
 | Month | Savings |

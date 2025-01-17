@@ -1,3 +1,4 @@
+import "tsconfig-paths/register"
 import "tsconfig-paths";
 import express, { Express } from "express";
 require("dotenv").config();
@@ -22,16 +23,15 @@ app.use(cors());
 
 
 app.post("/api/webhooks", bodyParser.raw({ type: 'application/json' }), handleWebhook);
+app.get("/ping", (req, res) => {
+  infoLogger({ message: "PING", status: "alert", layer })
+  res.status(200).json({ message: "pong" })
+})
 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(clerkMiddleware());
 app.use(authenticateUser)
-
-app.get("/ping", (req, res) => {
-  infoLogger({ message: "PING", status: "alert", layer })
-  res.status(200).json({ message: "pong" })
-})
 
 // FIX: for production drop this route below authenticator.
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));

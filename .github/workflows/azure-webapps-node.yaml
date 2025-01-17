@@ -62,7 +62,7 @@ jobs:
           echo "GITHUB_ACTOR=${GITHUB_ACTOR}"
           echo "Repository (lowercased): ${GITHUB_REPOSITORY,,}"
           echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
-          echo "PUBLISH_PROFILE=${secrets.AZURE_WEBAPP_PUBLISH_PROFILE}"
+          echo "PUBLISH_PROFILE=${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}"
 
       - name: Build and push container image to registry
         uses: docker/build-push-action@v5

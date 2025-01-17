@@ -13,10 +13,9 @@ import { clerkMiddleware, requireAuth } from "@clerk/express";
 import { handleWebhook } from "@controller/clerk.webhook";
 import { authenticateUser } from "@middlewares/auth";
 
-const layer = "SERVER"
+const port = process.env.PORT || 9090
 
-// FIX: replace with actual port number
-const port = 9090;
+const layer = "SERVER"
 
 const app: Express = express();
 app.use(cors());

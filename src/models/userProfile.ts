@@ -1,18 +1,66 @@
 import { Schema, Types, model } from "mongoose";
 import { infoLogger } from "../utils/logger/logger";
-import { CreateUserGoalDTO, IChat, Result, User, UserProfile } from "@senseii/types";
+import { CreateUserGoalDTO, IChat, Result, User, UserGoal, UserGoals, UserProfile, userGoalDTO } from "@senseii/types";
 import { handleDBError } from "./utils/error";
 import { UserGoalModel } from "./goals";
 import { ChatModel } from "./chats";
+import { title } from "process";
 
 const layer = "DB";
 const name = "USER PROFILE STORE";
 
 export const userProfileStore = {
+  GetUserGoals: (userId: string) => getUserGoals(userId),
   CreateProfile: (user: User): Promise<Result<null>> => createUserProfile(user),
   AddNewGoal: (args: CreateUserGoalDTO): Promise<Result<string>> => addNewGoal(args),
   GetChat: (userId: string, chatId: string): Promise<Result<IChat>> => getChat(userId, chatId)
 };
+
+
+// FIX: move this to types
+export interface UserGoalItem {
+  goalId: string,
+  userId: string,
+  title: string,
+  chatId: string,
+  description: string,
+  startDate: string,
+  endDate: string
+}
+
+const getUserGoals = async (userId: string): Promise<Result<UserGoalItem[]>> => {
+  try {
+    let goals = await UserProfileModel.findOne({ userId: userId }).populate("goalIds")
+    UserProfileModel
+    if (!goals) {
+      return {
+        success: true,
+        data: []
+      }
+    }
+    console.log("goals", goals?.goalIds)
+    const userGoalList: UserGoalItem[] = goals.goalIds.map((item: any) => {
+      return {
+        goalId: item._id,
+        userId: item.userId,
+        title: item.title,
+        chatId: item.chatId,
+        description: item.description,
+        startDate: item.startDate,
+        endDate: item.endDate,
+      }
+    })
+    return {
+      success: true,
+      data: userGoalList
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: handleDBError(error, name)
+    }
+  }
+}
 
 const addNewGoal = async (args: CreateUserGoalDTO): Promise<Result<string>> => {
   try {

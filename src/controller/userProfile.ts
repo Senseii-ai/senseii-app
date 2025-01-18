@@ -1,7 +1,9 @@
+import { getAuth } from "@clerk/express";
 import { IAuthRequest } from "@middlewares/auth";
+import { userProfileStore } from "@models/userProfile";
 import { HTTP, Result, createError, createUserGoalDTO } from "@senseii/types";
 import { userProfileService } from "@services/userProfile/userProfileService";
-import { infoLogger, routeLogger } from "@utils/logger";
+import { infoLogger } from "@utils/logger";
 import { Response } from "express";
 
 const layer = "CONTROLLER";
@@ -9,7 +11,29 @@ const name = "USER PROFILE";
 
 export const userProfileController = {
   CreateNewGoal: (req: IAuthRequest, res: Response) => createNewGoal(req, res),
+  GetUserGoals: (req: IAuthRequest, res: Response) => getUserGoals(req, res)
 };
+
+const getUserGoals = async (req: IAuthRequest, res: Response) => {
+  infoLogger({ message: `ROUTE: ${req.url} METHOD: ${req.method}` })
+  const { userId } = getAuth(req)
+  const goals = await userProfileStore.GetUserGoals(req.auth?.userId as string)
+  if (!goals.success) {
+    const response = {
+      success: false,
+      error: goals.error
+    }
+    return void res.status(goals.error.code).json(response)
+  }
+
+  console.log("returning this", goals.data)
+
+  infoLogger({ message: "found user goals", status: "success", layer, name })
+  return void res.status(HTTP.STATUS.OK).json({
+    success: true,
+    data: goals.data
+  })
+}
 
 const createNewGoal = async (
   req: IAuthRequest,

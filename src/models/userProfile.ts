@@ -12,7 +12,7 @@ const name = "USER PROFILE STORE";
 export const userProfileStore = {
   GetUserGoals: (userId: string) => getUserGoals(userId),
   CreateProfile: (user: User): Promise<Result<null>> => createUserProfile(user),
-  AddNewGoal: (args: CreateUserGoalDTO): Promise<Result<string>> => addNewGoal(args),
+  AddNewGoal: (args: CreateUserGoalDTO, threadId: string): Promise<Result<string>> => addNewGoal(args, threadId),
   GetChat: (userId: string, chatId: string): Promise<Result<IChat>> => getChat(userId, chatId)
 };
 
@@ -62,10 +62,10 @@ const getUserGoals = async (userId: string): Promise<Result<UserGoalItem[]>> => 
   }
 }
 
-const addNewGoal = async (args: CreateUserGoalDTO): Promise<Result<string>> => {
+const addNewGoal = async (args: CreateUserGoalDTO, threadId: string): Promise<Result<string>> => {
   try {
     infoLogger({ message: "saving new user goal", status: "INFO", layer, name })
-    const newChat = await new ChatModel({ userId: args.userId, messages: [] }).save()
+    const newChat = await new ChatModel({ userId: args.userId, messages: [], threadId: threadId }).save()
     const newGoal = await new UserGoalModel({ ...args, chatId: newChat.id }).save()
     const newGoalId = newGoal.id as string
     const updatedUserProfile = await UserProfileModel.findOneAndUpdate({ userId: args.userId }, { $push: { goalIds: newGoalId } }, { new: true, upsert: true })

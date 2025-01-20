@@ -2,7 +2,14 @@ import { Response, Request } from "express";
 import { infoLogger } from "../utils/logger/logger";
 import { z } from "zod";
 import { createSSEHandler, setSSEHeaders } from "@utils/http";
-import { AppError, HTTP, IChat, Result, createError, serverMessage } from "@senseii/types";
+import {
+  AppError,
+  HTTP,
+  IChat,
+  Result,
+  createError,
+  serverMessage,
+} from "@senseii/types";
 import { openAIService } from "@services/openai/service";
 import { getAuth } from "@clerk/express";
 import { IAuthRequest } from "@middlewares/auth";
@@ -11,7 +18,8 @@ export const openAIController = {
   Chat: (req: IAuthRequest, res: Response): Promise<void> => chat(req, res),
   // GetChats: (req: IAuthRequest, res: Response): Promise<Result<IChat[]>> =>
   // getChats(req, res),
-  GetChatMessages: (req: IAuthRequest, res: Response): Promise<Result<IChat>> => getChatMessages(req, res)
+  GetChatMessages: (req: IAuthRequest, res: Response): Promise<Result<IChat>> =>
+    getChatMessages(req, res),
 };
 
 const layer = "CONTROLLER";
@@ -22,25 +30,30 @@ const runCreateDTO = z.object({
   chatId: z.string(),
 });
 
-const getChatMessages = async (req: IAuthRequest, res: Response): Promise<Result<IChat>> => {
-  infoLogger({ message: `get message for chat: ${req.params.chatId}: user: ${req.auth?.userId}` })
-  const { chatId } = req.params
-  const { userId } = getAuth(req)
+const getChatMessages = async (
+  req: IAuthRequest,
+  res: Response
+): Promise<Result<IChat>> => {
+  infoLogger({
+    message: `get message for chat: ${req.params.chatId}: user: ${req.auth?.userId}`,
+  });
+  const { chatId } = req.params;
+  const { userId } = getAuth(req);
   if (!chatId || !userId) {
     const response = {
       success: false,
-      error: createError(HTTP.STATUS.BAD_REQUEST, "invalid request parameters")
-    }
-    res.status(HTTP.STATUS.BAD_REQUEST).json(response)
+      error: createError(HTTP.STATUS.BAD_REQUEST, "invalid request parameters"),
+    };
+    res.status(HTTP.STATUS.BAD_REQUEST).json(response);
     return {
       success: false,
-      error: response.error
-    }
+      error: response.error,
+    };
   }
-  const chats = await openAIService.GetChatMessages(chatId, userId)
-  res.status(HTTP.STATUS.OK).json(chats)
-  return chats
-}
+  const chats = await openAIService.GetChatMessages(chatId, userId);
+  res.status(HTTP.STATUS.OK).json(chats);
+  return chats;
+};
 
 const chat = async (req: Request, res: Response) => {
   infoLogger({
@@ -54,14 +67,14 @@ const chat = async (req: Request, res: Response) => {
   setSSEHeaders(res);
   // create stream handlers.
   const handler = createSSEHandler(res, requestId);
-  const { userId } = getAuth(req)
+  const { userId } = getAuth(req);
   if (!userId) {
     const response = {
       success: false,
-      error: createError(HTTP.STATUS.UNAUTHORIZED, "Unauthorized")
-    }
-    res.status(HTTP.STATUS.UNAUTHORIZED).json(response)
-    return
+      error: createError(HTTP.STATUS.UNAUTHORIZED, "Unauthorized"),
+    };
+    res.status(HTTP.STATUS.UNAUTHORIZED).json(response);
+    return;
   }
   const validatedObject = runCreateDTO.safeParse(req.body);
   if (!validatedObject.success) {
@@ -80,7 +93,7 @@ const chat = async (req: Request, res: Response) => {
 
 /**
  * getChats returns all the user chats.
-*/
+ */
 // const getChats = async (
 //   req: IAuthRequest,
 //   res: Response

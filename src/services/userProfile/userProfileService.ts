@@ -1,8 +1,13 @@
 import { userProfileStore } from "@models/userProfile";
 import { CreateUserGoalDTO } from "@senseii/types";
+import getOpenAIClient from "@services/openai/client";
+import { openAIUtils } from "@services/openai/utils";
+
+const client = getOpenAIClient()
 
 export const userProfileService = {
   CreateNewGoal: async (args: CreateUserGoalDTO) => {
-    return await userProfileStore.AddNewGoal(args)
+    const threadId = await openAIUtils.CreateEmptyThread()
+    return await userProfileStore.AddNewGoal(args, threadId)
   }
 }

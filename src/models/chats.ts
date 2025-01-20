@@ -1,5 +1,6 @@
-import { IChat } from "@senseii/types";
+import { IChat, serverMessage } from "@senseii/types";
 import { Schema, model } from "mongoose";
+import { z } from "zod";
 
 interface ChatsDocument extends IChat, Document { }
 
@@ -24,6 +25,21 @@ const ChatSchema: Schema<ChatsDocument> = new Schema({
   messages: {
     type: [MessageSchema]
   },
+  threadId: {
+    type: String
+  }
 })
+
+export type ServerMessage = z.infer<typeof serverMessage>
+
+// const chatStore = {
+//   saveChat = (chatId: string, message: ServerMessage )=> {
+//     try{
+//       const response = ChatModel.findOneAndUpdate({id: chatId}, {$push: {messages: message}})
+//     } catch(error){
+//
+//     }
+//   }
+// }
 
 export const ChatModel = model<ChatsDocument>("Chats", ChatSchema)

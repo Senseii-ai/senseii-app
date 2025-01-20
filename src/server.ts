@@ -13,14 +13,12 @@ import { clerkMiddleware, requireAuth } from "@clerk/express";
 import { handleWebhook } from "@controller/clerk.webhook";
 import { authenticateUser } from "@middlewares/auth";
 import cookieParser from "cookie-parser"
-import checkMiddleware from "@middlewares/check";
 
 const port = process.env.PORT || 9090
 
 const layer = "SERVER"
 
 const app: Express = express();
-// app.use(checkMiddleware)
 app.use(cors());
 app.use(cookieParser())
 

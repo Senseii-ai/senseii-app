@@ -141,8 +141,7 @@ async function processStream(
         // handle message streaming delta.
         handler.onMessage(createStreamContent(event.data.delta));
       default:
-        infoLogger({ message: "something weird happened by OpenAI stream", status: "failed" })
-        console.log(event.event)
+      // NOTE: Add more cases for running functions and stuff.
     }
   }
 }

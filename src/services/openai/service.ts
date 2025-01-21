@@ -1,4 +1,4 @@
-import { StreamHandler, createStreamStart } from "@utils/http";
+import { StreamHandler } from "@utils/http";
 import getOpenAIClient from "./client";
 import { CoreAssistantId } from "./assistants";
 import { userProfileStore } from "@models/userProfile";

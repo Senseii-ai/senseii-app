@@ -4,7 +4,11 @@ import { z } from "zod";
 
 interface ChatsDocument extends IChat, Document { }
 
-const MessageSchema = new Schema({
+const MessageSchema = new Schema<ServerMessage>({
+  id: {
+    type: String,
+    required: true,
+  },
   role: {
     type: String,
     enum: ["user", "assistant"], // Matches z.enum(["user", "assistant"])
@@ -30,6 +34,7 @@ const ChatSchema: Schema<ChatsDocument> = new Schema({
   }
 })
 
+// FIX: remove this.
 export type ServerMessage = z.infer<typeof serverMessage>
 
 // const chatStore = {

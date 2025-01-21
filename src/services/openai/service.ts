@@ -1,4 +1,4 @@
-import { StreamHandler, createStreamStart } from "@utils/http";
+import { StreamHandler } from "@utils/http";
 import getOpenAIClient from "./client";
 import { CoreAssistantId } from "./assistants";
 import { userProfileStore } from "@models/userProfile";
@@ -90,7 +90,6 @@ const streamComplete = async (
 
     infoLogger({ message: `getting threads for ${response.data.threadId}` })
     const threadMessages = await client.beta.threads.messages.list(response.data.threadId)
-    threadMessages.data.map(message => console.log(message.id, message.content[0]))
 
     // add the user message to the thread.
     await openAIUtils.AddMessageToThread(client, response.data.threadId, openAIUtils.CreateMessage(data.content, "user"))
@@ -112,9 +111,8 @@ const streamComplete = async (
       name: "OPENAI",
     });
   } catch (error) {
-    console.log("Error processing stream", error);
     infoLogger({
-      message: "error processing stream",
+      message: `error processing stream ${error}`,
       status: "failed",
       layer: "SERVICE",
       name: "OPENAI",

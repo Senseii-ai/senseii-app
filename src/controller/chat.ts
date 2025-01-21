@@ -1,4 +1,4 @@
-import { Response, Request } from "express";
+import { Response, Request, response } from "express";
 import { infoLogger } from "../utils/logger/logger";
 import { z } from "zod";
 import { createSSEHandler, setSSEHeaders } from "@utils/http";
@@ -13,9 +13,11 @@ import {
 import { openAIService } from "@services/openai/service";
 import { getAuth } from "@clerk/express";
 import { IAuthRequest } from "@middlewares/auth";
+import { userProfileService } from "@services/userProfile/userProfileService";
 
 export const openAIController = {
   Chat: (req: IAuthRequest, res: Response): Promise<void> => chat(req, res),
+  SaveChat: (req: IAuthRequest, res: Response): Promise<Result<null>> => saveChat(req, res),
   // GetChats: (req: IAuthRequest, res: Response): Promise<Result<IChat[]>> =>
   // getChats(req, res),
   GetChatMessages: (req: IAuthRequest, res: Response): Promise<Result<IChat>> =>
@@ -24,6 +26,43 @@ export const openAIController = {
 
 const layer = "CONTROLLER";
 const name = "OAI CONTROLLER";
+
+
+const serverMessageSchemaArray = z.array(serverMessage)
+
+const saveChat = async (req: IAuthRequest, res: Response): Promise<Result<null>> => {
+  infoLogger({ message: `ROUTE: ${req.url} METHOD: ${req.method}`, status: "INFO", layer, name })
+  const { chatId } = req.params
+  const { chats } = req.body
+  const parsedData = JSON.parse(chats)
+
+  const validatedData = serverMessageSchemaArray.safeParse(parsedData.chats)
+  if (!validatedData.success) {
+    const response = {
+      success: false,
+      error: createError(HTTP.STATUS.BAD_REQUEST, "invalid request body"),
+    };
+    res.status(HTTP.STATUS.BAD_REQUEST).json(response);
+    return {
+      success: false,
+      error: response.error,
+    };
+  }
+  const response = await userProfileService.SaveChat(validatedData.data, chatId)
+  if (!response.success) {
+    const err = {
+      success: false,
+      error: response.error
+    }
+    res.status(response.error.code).json(err)
+    return {
+      success: false,
+      error: response.error
+    }
+  }
+  res.status(HTTP.STATUS.OK).json(response.data)
+  return response
+}
 
 const runCreateDTO = z.object({
   content: z.string(),

@@ -3,18 +3,37 @@ import { infoLogger } from "../utils/logger/logger";
 import { CreateUserGoalDTO, IChat, Result, User, UserGoal, UserGoals, UserProfile, userGoalDTO } from "@senseii/types";
 import { handleDBError } from "./utils/error";
 import { UserGoalModel } from "./goals";
-import { ChatModel } from "./chats";
+import { ChatModel, ServerMessage } from "./chats";
 import { title } from "process";
 
 const layer = "DB";
 const name = "USER PROFILE STORE";
 
 export const userProfileStore = {
+  SaveChat: (args: ServerMessage[], chatId: string): Promise<Result<null>> => saveChat(args, chatId),
   GetUserGoals: (userId: string) => getUserGoals(userId),
   CreateProfile: (user: User): Promise<Result<null>> => createUserProfile(user),
   AddNewGoal: (args: CreateUserGoalDTO, threadId: string): Promise<Result<string>> => addNewGoal(args, threadId),
   GetChat: (userId: string, chatId: string): Promise<Result<IChat>> => getChat(userId, chatId)
 };
+
+const saveChat = async (args: ServerMessage[], chatId: string): Promise<Result<null>> => {
+  try {
+    const response = await ChatModel.findOneAndUpdate({ _id: chatId }, { $push: { messages: args } }, { new: true })
+    if (!response) {
+      throw new Error("unable to add chat to the user")
+    }
+    return {
+      success: true,
+      data: null
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: handleDBError(error, name)
+    }
+  }
+}
 
 
 // FIX: move this to types
@@ -38,7 +57,6 @@ const getUserGoals = async (userId: string): Promise<Result<UserGoalItem[]>> => 
         data: []
       }
     }
-    console.log("goals", goals?.goalIds)
     const userGoalList: UserGoalItem[] = goals.goalIds.map((item: any) => {
       return {
         goalId: item._id,

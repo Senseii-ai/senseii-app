@@ -26,8 +26,6 @@ const getUserGoals = async (req: IAuthRequest, res: Response) => {
     return void res.status(goals.error.code).json(response)
   }
 
-  console.log("returning this", goals.data)
-
   infoLogger({ message: "found user goals", status: "success", layer, name })
   return void res.status(HTTP.STATUS.OK).json({
     success: true,

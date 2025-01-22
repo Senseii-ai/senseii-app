@@ -4,7 +4,11 @@ import { Response } from "express";
 import { z } from "zod";
 import { infoLogger } from "./logger";
 import { MessageDelta } from "openai/resources/beta/threads/messages";
-import { AppError, ContentMessage, ErrorMessage, StartMessage, StreamMessage, doneMessageSchema, streamMessageSchema } from "@senseii/types";
+import { AppError, ContentMessage, ErrorMessage, StartMessage, StreamMessage, StateChangeMessage, doneMessageSchema, streamMessageSchema, eventMessageSchema } from "@senseii/types";
+import { ServerMessage } from "@models/chats";
+import { AssistantStream } from "openai/lib/AssistantStream";
+import { AssistantStreamEvent } from "openai/resources/beta/assistants";
+import { openAIUtils } from "@services/openai/utils";
 
 export const HTTP = {
   METHOD: {
@@ -253,6 +257,15 @@ export const createStreamContent = (
   return message;
 };
 
+export const createEventMessage = (event: AssistantStreamEvent): Omit<StateChangeMessage, "requestId"> => {
+  const message: Omit<StateChangeMessage, "requestId"> = {
+    type: "event",
+    content: openAIUtils.GetStateChangeMessage(event),
+    timestamp: new Date().toISOString()
+  }
+  return message
+}
+
 export const createStateUpdateMessage = (
   content: string
 ): Omit<ContentMessage, "requestId"> => {
@@ -275,6 +288,7 @@ export type StreamHandler = {
   onMessage: (message: Omit<StreamMessage, "requestId">) => void;
   onError: (error: AppError) => void;
   onComplete: () => void;
+  onStateChange: (event: Omit<StateChangeMessage, "requestId">) => void
 };
 
 export const createSSEHandler = (
@@ -340,6 +354,16 @@ export const createSSEHandler = (
     res.write(`data: ${JSON.stringify(doneMessage)}\n\n`);
     res.end();
   },
+  onStateChange: (stateChange: Omit<StateChangeMessage, "requestId">) => {
+    const eventMessage: StateChangeMessage = {
+      type: "event",
+      content: stateChange.content,
+      timestamp: new Date().toISOString(),
+      requestId,
+    }
+    console.log("writing this", eventMessage)
+    res.write(`event: ${JSON.stringify(eventMessage)}`)
+  }
 });
 
 export const setSSEHeaders = (res: Response) => {

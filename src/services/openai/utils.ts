@@ -9,8 +9,6 @@ import {
 import {
   Message,
   MessageCreateParams,
-  Text,
-  TextDelta,
 } from "openai/resources/beta/threads/messages";
 import { Assistants } from "@services/openai/assistants";
 import {
@@ -24,9 +22,8 @@ import { zodResponseFormat } from "openai/helpers/zod";
 import { AzureOpenAI } from "openai";
 import {
   StreamHandler,
-  createStateUpdateMessage,
+  createEventMessage,
   createStreamContent,
-  createStreamStart,
 } from "@utils/http";
 import { ThreadCreateParams } from "openai/resources/beta/threads/threads";
 import { AssistantStream } from "openai/lib/AssistantStream";
@@ -34,13 +31,13 @@ import {
   RequiredActionFunctionToolCall,
   RunSubmitToolOutputsParams,
 } from "openai/resources/beta/threads/runs/runs";
-import UserProfileModel, { userProfileStore } from "@models/userProfile";
 
 const client = getOpenAIClient();
 const layer = "SERVICE";
 const name = "OAI URILS";
 
 export const openAIUtils = {
+  GetStateChangeMessage: (state: AssistantStreamEvent) => getStateChangeMessage(state),
   CreateEmptyThread: () => createEmptyThread(),
   ProcessStream: (
     stream: AssistantStream,
@@ -69,6 +66,19 @@ export const openAIUtils = {
     message: MessageCreateParams
   ) => addMessageToThread(client, threadId, message),
 };
+
+const getStateChangeMessage = (event: AssistantStreamEvent) => {
+  if (event.event === "thread.run.in_progress") {
+    return "generating"
+  }
+  if (event.event === "thread.run.created") {
+    return "thinking"
+  }
+  if (event.event === "thread.run.requires_action") {
+    return "running tools"
+  }
+  return ""
+}
 
 const createEmptyThread = async (): Promise<string> => {
   const thread = await client.beta.threads.create();
@@ -115,6 +125,7 @@ async function processStream(
         // save messages in the database, we can have a failover for syncinc thread messages with database.
         return;
 
+
       case "thread.run.requires_action":
         // handle tool call
         infoLogger({
@@ -140,8 +151,10 @@ async function processStream(
       case "thread.message.delta":
         // handle message streaming delta.
         handler.onMessage(createStreamContent(event.data.delta));
+        break
       default:
-      // NOTE: Add more cases for running functions and stuff.
+        console.log(event.event)
+        handler.onStateChange(createEventMessage(event))
     }
   }
 }

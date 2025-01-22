@@ -16,12 +16,25 @@ import cookieParser from "cookie-parser"
 
 const port = process.env.PORT || 9090
 
+const allowedOrigins = process.env.NODE_ENV === "production"
+  ? ["https://app.senseii.in"] // Production origin
+  : ["http://localhost:3000"]; // Local development origin
+
 const layer = "SERVER"
 
 const app: Express = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 app.use(cookieParser())
-
+app.use(express.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(clerkMiddleware());
+app.use(authenticateUser)
 
 app.post("/api/webhooks", bodyParser.raw({ type: 'application/json' }), handleWebhook);
 app.get("/ping", (req, res) => {
@@ -29,10 +42,7 @@ app.get("/ping", (req, res) => {
   res.status(200).json({ message: "pong" })
 })
 
-app.use(express.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(clerkMiddleware());
-app.use(authenticateUser)
+
 
 // FIX: for production drop this route below authenticator.
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));

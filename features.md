@@ -6,31 +6,33 @@
 
 #### Backend Architecture
 
-- [ ] Design a modular backend architecture with clearly defined layers:
-  - [ ] API Layer for handling HTTP requests.
-  - [ ] Service Layer for implementing business logic.
-  - [ ] Database Layer for interacting with storage systems.
+- [x] Design a modular backend architecture with clearly defined layers:
+  - [x] API Layer for handling HTTP requests (controller).
+  - [x] Service Layer for implementing business logic (services).
+  - [x] Database Layer for interacting with storage systems (data stores).
 
 #### Database Design
 
-- [ ] Set up a document database (e.g., MongoDB) for storing user profiles,
+- [x] Set up a document database (e.g., MongoDB) for storing user profiles,
       preferences, and plans.
-  - [ ] Create collections: `UserProfile`, `UserPreferences`, `NutritionPlans`,
-        and `WorkoutPlans`.
+  - [x] Create collections: `UserProfile`, `UserPreferences`, `NutritionPlans`,
+        `Goals` and `WorkoutPlans`.
   - [ ] Implement versioning for user preferences/history:
     - [ ] Use a `UserPreferences` collection for current data.
     - [ ] Use a `UserPreferencesHistory` collection for historical records.
     - [ ] Ensure every update triggers a write to the history collection with timestamps.
-- [ ] Set up a time-series database (e.g., InfluxDB or TimescaleDB) for tracking
+- [ ] Set up a time-series database (e.g., [InfluxDB](https://www.influxdata.com/)
+      or [TimescaleDB](https://www.timescale.com/)) for tracking
       user progress over time.
   - [ ] Store metrics like weight, activity, nutrition logs, etc., with timestamps.
 
 #### Plan Generation
 
-- [ ] Integrate Large Language Models (LLMs) for personalized plan generation.
+- [x] Integrate Large Language Model (currently using `O series`) for personalized
+      plan generation.
   - [ ] Design functions to retrieve necessary user data and preferences for
         LLM prompts.
-  - [ ] Implement an API interface to interact with LLMs securely.
+  - [x] Implement an API interface to interact with LLMs securely.
   - [ ] Cache generated plans for efficiency using Redis or a similar solution.
 
 #### Tracking User Progress
@@ -42,28 +44,29 @@
 
 #### Security and Compliance
 
-- [ ] Implement encryption for sensitive data at rest and in transit.
-  - [ ] Use TLS for all API communications.
-  - [ ] Encrypt sensitive fields in databases (e.g., PII).
+- [x] Implement encryption for sensitive data at rest and in transit.
+  - [x] Use TLS for all API communications.
+  - [x] Encrypt sensitive fields in databases (e.g., PII).
 - [ ] Apply role-based access control (RBAC) to ensure only authorized users
       access sensitive information.
-- [ ] Set up logging and monitoring for backend services to detect anomalies.
+- [x] Set up logging and monitoring for backend services to detect anomalies.
 
 #### Frontend Integration
 
-- [ ] Build the web application (PWA) using Next.js.
-  - [ ] Use Ant Design for UI components.
+- [x] Build the web application (PWA) using Next JS (now using Remix).
+  - [x] Use Shadcn for UI components.
   - [ ] Implement push notifications for updates and reminders.
-- [ ] Integrate the web app with backend APIs for retrieving plans, tracking
+- [x] Integrate the web app with backend APIs for retrieving plans, tracking
       progress, and more.
 
 #### Arch Testing and Deployment
 
 - [ ] Write unit and integration tests for backend APIs and business logic.
   - [ ] Use tools like Vitest or Jest for testing.
-- [ ] Set up CI/CD pipelines for deploying backend and frontend services.
-  - [ ] Use Kubernetes for managing deployments.
-  - [ ] Automate database migrations during deployment.
+- [x] Set up CI/CD pipelines for deploying backend and frontend services.
+  - [x] Use Kubernetes for managing deployments.
+  - [ ] Automate database migrations during deployment (No use since we are
+        using NoSQL DB).
 - [ ] Monitor application performance and errors in production using tools
       like Prometheus and Grafana.
 
@@ -82,18 +85,18 @@
 
 #### Native App Development
 
-- [ ] Build a **React Native** application to integrate with native APIs
+- [x] Build a **React Native** application to integrate with native APIs
       (HealthKit for iOS, Google Health Connect for Android).
-- [ ] Implement methods to retrieve data securely from **HealthKit** and
+- [x] Implement methods to retrieve data securely from **HealthKit** and
       **Health Connect** APIs.
 - [ ] Add functionality to push the retrieved data to the backend
-      securely via encrypted communication.
+      securely via encrypted communication (Time series DB setup not done).
 
 #### User Consent and Privacy
 
 - [ ] Create a **consent management flow**:
-  - [ ] Inform users about the specific health data you’ll access.
-  - [ ] Obtain explicit user consent before accessing health data.
+  - [x] Inform users about the specific health data you’ll access.
+  - [x] Obtain explicit user consent before accessing health data.
   - [ ] Provide users with an option to revoke permissions anytime.
 - [ ] Write a detailed **privacy policy**:
   - [ ] Specify what health data is collected (e.g., weight, activity, nutrition).
@@ -101,7 +104,7 @@
   - [ ] State how long the data will be retained.
   - [ ] Include instructions for users to view, manage, or delete their data.
 
-#### Compliance with Regulations
+#### Compliance with Regulations (MAN I NEED HELP WITH THIS :( )
 
 - [ ] Ensure compliance with **local and international laws**:
   - [ ] HIPAA (United States) for handling healthcare data.
@@ -111,10 +114,10 @@
 
 #### Data Security
 
-- [ ] Implement **data encryption**:
-  - [ ] Use HTTPS for secure transmission of data (TLS in transit).
-  - [ ] Use AES encryption (or equivalent) for storing data at rest.
-- [ ] Secure backend APIs to ensure that only authorized users can upload
+- [x] Implement **data encryption**:
+  - [x] Use HTTPS for secure transmission of data (TLS in transit).
+  - [x] Use AES encryption (or equivalent) for storing data at rest.
+- [x] Secure backend APIs to ensure that only authorized users can upload
       or retrieve health data.
 
 #### User Access and Control

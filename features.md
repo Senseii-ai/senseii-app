@@ -26,6 +26,17 @@
       user progress over time.
   - [ ] Store metrics like weight, activity, nutrition logs, etc., with timestamps.
 
+#### User Management system
+
+- [x] Implement Auth System.
+- [x] Move to Clerk for more robustness.
+
+#### Function Calls
+
+- [x] Write Function calls for interactions between different assistants.
+- [x] use `o1-mini` for getting structured response before storing things into
+      the database and calling other assistants.
+
 #### Plan Generation
 
 - [x] Integrate Large Language Model (currently using `O series`) for personalized
@@ -51,15 +62,7 @@
       access sensitive information.
 - [x] Set up logging and monitoring for backend services to detect anomalies.
 
-#### Frontend Integration
-
-- [x] Build the web application (PWA) using Next JS (now using Remix).
-  - [x] Use Shadcn for UI components.
-  - [ ] Implement push notifications for updates and reminders.
-- [x] Integrate the web app with backend APIs for retrieving plans, tracking
-      progress, and more.
-
-#### Arch Testing and Deployment
+#### Arch Testing (lol) and Deployment
 
 - [ ] Write unit and integration tests for backend APIs and business logic.
   - [ ] Use tools like Vitest or Jest for testing.

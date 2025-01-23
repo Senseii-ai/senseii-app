@@ -21,8 +21,9 @@ const createDietPlanFunc = async (args: string) => {
 // createInitialGoalFunction gets the string format funciton calling input
 // validates them and saves them in the database.
 const createInitialGoalFunc = async (args: string) => {
-  infoLogger({ message: "initiating function call" })
+  console.log("initial goal creation", args)
   const validArgs = await getValidArguments({ data: args, validatorSchemaName: "create-initial-goal", validatorSchema: createUserGoalDTO })
+  console.log("valid args", validArgs)
   if (await saveInitialGoal(validArgs)) {
     return "User Initial Goal Created Successfully"
   }

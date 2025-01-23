@@ -63,6 +63,11 @@ export const saveUpdatedUserConstraints = async (data: IConstraints) => {
   return await UserGoalModel.updateOne({ user: getUserId() }, { $set: { ["preferences.constraints"]: data } })
 }
 
+// NOTE:
+// Update this to create or update initial user goal.
+// - get the chatId from the system (or no need to update it)
+// - startDate: try to get current date.
+// - endDate: try to get the correct date. (or add capability to the assistant to run a script to get current time.)
 export const saveInitialGoal = async (data: CreateUserGoalDTO) => {
   const userGoalData: CreateUserGoalDTO = {
     userId: getUserId(),

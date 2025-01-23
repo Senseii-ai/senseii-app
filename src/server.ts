@@ -18,7 +18,7 @@ const port = process.env.PORT || 9090
 
 const allowedOrigins = process.env.NODE_ENV === "production"
   ? ["https://app.senseii.in"] // Production origin
-  : ["http://localhost:3000"]; // Local development origin
+  : ["http://localhost:5173"]; // Local development origin
 
 const layer = "SERVER"
 

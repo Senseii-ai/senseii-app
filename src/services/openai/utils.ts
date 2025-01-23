@@ -134,6 +134,7 @@ async function processStream(
           layer,
           name,
         });
+        handler.onStateChange(createEventMessage(event))
         const newStream = await handleToolAction(
           event,
           client,
@@ -190,6 +191,8 @@ async function handleToolAction(
       "internal server error"
     );
   }
+
+  toolCalls.map(item => console.log(item.function.name))
 
   try {
     // execute tools in parallel.
@@ -251,6 +254,7 @@ const executeTool = async (
   }
 
   const output = await toolFunction.function(tool.function.arguments);
+  console.log(`output for ${tool.function.name}`, output)
   infoLogger({
     message: `tool executed successfully: ${tool.function.name}`,
     status: "success",

@@ -1,12 +1,14 @@
 import { IFunctionType } from "../functions";
 import { saveInitialGoal, saveNutritionPlan, saveUpdatedUserConstraints, saveUpdatedDietPreferences, saveUpdatedBasicInformaion, saveUpdatedEatingHabits } from "../../../../models/goals";
 import { validateResponse } from "@services/openai/utils";
-import { basicInformation, constraints, createUserGoalDTO, dietPreferences, eatingHabits, userGoalDTO } from "@senseii/types";
+import { basicInformation, constraints, dietPreferences, eatingHabits } from "@senseii/types";
 import { z } from "zod"
 import { createNutritionPlan } from "../nutrition";
 import { getUserId } from "@middlewares/auth";
 import HealthCalculator from "@services/scientific/metrics.calculator";
 
+
+// FIX: This needs to be changed
 const createDietPlanFunc = async (args: string) => {
   const response = await createNutritionPlan(args)
   if (await saveNutritionPlan(response, getUserId())) {
@@ -59,6 +61,7 @@ const updateUserBasicInfoFunc = async (args: string) => {
 
 const updateEatingHabitsFunc = async (args: string) => {
   const validArgs = await getValidArguments({ data: args, validatorSchema: eatingHabits, validatorSchemaName: "update-eating-habits" })
+  console.log("valid args", validArgs)
   if (await saveUpdatedEatingHabits(validArgs, getUserId())) {
     return "User Eating Habits Updated Successfully"
   }
@@ -67,6 +70,7 @@ const updateEatingHabitsFunc = async (args: string) => {
 
 const updateUserConstraints = async (args: string) => {
   const validArgs = await getValidArguments({ data: args, validatorSchema: constraints, validatorSchemaName: "update-user-constraints" })
+  console.log("valid args", validArgs)
   if (await saveUpdatedUserConstraints(validArgs, getUserId())) {
     return "User Constraints Updated Successfully"
   }
@@ -75,6 +79,7 @@ const updateUserConstraints = async (args: string) => {
 
 const updateDietPreferencesFunc = async (args: string) => {
   const validArgs = await getValidArguments({ data: args, validatorSchema: dietPreferences, validatorSchemaName: "update-diet-preferences" })
+  console.log("valid args", validArgs)
   if (await saveUpdatedDietPreferences(validArgs, getUserId())) {
     return `User Diet Preferences Updated Successfully`
   }

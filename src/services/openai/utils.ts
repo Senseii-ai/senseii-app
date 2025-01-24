@@ -69,15 +69,16 @@ export const openAIUtils = {
 
 const getStateChangeMessage = (event: AssistantStreamEvent) => {
   if (event.event === "thread.run.in_progress") {
-    return "generating"
+    return "generating ..."
   }
   if (event.event === "thread.run.created") {
-    return "thinking"
+    return "thinking ..."
   }
   if (event.event === "thread.run.requires_action") {
-    return "running tools"
+    return "running tools ..."
   }
-  return ""
+  console.log("status", event.event)
+  return "processing ..."
 }
 
 const createEmptyThread = async (): Promise<string> => {
@@ -177,6 +178,7 @@ async function handleToolAction(
     layer: "SERVICE",
     name: "OAI UTILS",
   });
+
   const toolCalls = event.data.required_action?.submit_tool_outputs.tool_calls;
 
   if (!toolCalls || toolCalls.length === 0) {
@@ -222,6 +224,8 @@ async function handleToolAction(
       status: "failed",
     });
     console.error("Error handling tool action:", error);
+    console.error("cancelling run")
+    await client.beta.threads.runs.cancel(threadId, event.data.id)
     handler.onError?.(
       createError(HTTP.STATUS.INTERNAL_SERVER_ERROR, "internal server error")
     );

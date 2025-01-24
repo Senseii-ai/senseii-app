@@ -9,6 +9,7 @@ import { ServerMessage } from "@models/chats";
 import { AssistantStream } from "openai/lib/AssistantStream";
 import { AssistantStreamEvent } from "openai/resources/beta/assistants";
 import { openAIUtils } from "@services/openai/utils";
+import { AzureOpenAI } from "openai";
 
 export const HTTP = {
   METHOD: {

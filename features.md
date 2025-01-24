@@ -34,6 +34,7 @@
 #### Function Calls
 
 - [x] Write Function calls for interactions between different assistants.
+- [ ] Modify the Core Assistant instructoins to give it a better name.
 - [x] use `o1-mini` for getting structured response before storing things into
       the database and calling other assistants.
 

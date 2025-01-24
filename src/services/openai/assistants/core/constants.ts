@@ -1,14 +1,12 @@
 import { AssistantCreateParams, FunctionTool } from "openai/resources/beta/assistants"
 
-// calculate_metrics: CalculateMetricsFunc
-
 export const CALCULATE_METRICS: FunctionTool = {
   type: "function",
   function: {
     name: "calculate_metrics",
     description:
-      `Run this function when all the necessary information about the user has been collected and the profiles
-has been updated.`
+      `Run this function when the following functions have been run:
+- create_initial_goal, update_basic_information, update_eating_habits, update_user_diet_preferences, update_constraints otherwise the system will FAIL`
   }
 }
 

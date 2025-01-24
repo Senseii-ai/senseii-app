@@ -1,6 +1,7 @@
 import { Schema, model, Document } from "mongoose"
-import { CreateUserGoalDTO, IBasicInformation, IConstraints, IDietPreferences, IEatingHabits, IHealthGoals, ILifeStyle, NutritionPlan, UserGoal } from "@senseii/types";
+import { CreateUserGoalDTO, IBasicInformation, IConstraints, IDietPreferences, IEatingHabits, IHealthGoals, ILifeStyle, NutritionPlan, UserGoal, userGoalDTO } from "@senseii/types";
 import { getUserId } from "@middlewares/auth";
+import { CreateInitialGoalDTO } from "@services/openai/assistants/core";
 
 interface UserGoalDocument extends UserGoal, Document { }
 
@@ -68,17 +69,33 @@ export const saveUpdatedUserConstraints = async (data: IConstraints) => {
 // - get the chatId from the system (or no need to update it)
 // - startDate: try to get current date.
 // - endDate: try to get the correct date. (or add capability to the assistant to run a script to get current time.)
-export const saveInitialGoal = async (data: CreateUserGoalDTO) => {
-  const userGoalData: CreateUserGoalDTO = {
-    userId: getUserId(),
+export const saveInitialGoal = async (data: CreateInitialGoalDTO) => {
+
+  const startDate = new Date(); // Current date
+  let endDate
+  if (data.endDate <= 0) {
+    endDate = "N/A"
+  } else {
+    endDate = (new Date(startDate.getTime() + 4 * 7 * 24 * 60 * 60 * 1000)).toISOString()
+  }
+
+  // there is just one user goal in the system.
+  const goal = await UserGoalModel.findOne({ userId: getUserId() })
+  if (!goal) {
+    throw new Error('unable to find user')
+  }
+
+  const updatedUserGoalData: CreateUserGoalDTO = {
+    userId: goal.userId,
     title: data.title,
     description: data.description,
-    startDate: data.startDate,
-    endDate: data.endDate,
-    chatId: data.chatId
+    startDate: startDate.toISOString(),
+    endDate: endDate,
+    chatId: goal.chatId
   }
-  const newGoal = new UserGoalModel(userGoalData)
-  return await newGoal.save()
+
+  const response = await UserGoalModel.findOneAndReplace({ userId: goal.userId }, updatedUserGoalData)
+  return response
 }
 
 export const saveUpdateUserHealthGoals = async (data: IHealthGoals) => {

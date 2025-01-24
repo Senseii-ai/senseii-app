@@ -242,6 +242,8 @@ const executeTool = async (
     layer: "SERVICE",
     name: "OAI UTILS",
   });
+
+  console.log("tool arguments", tool.function.arguments)
   const toolFunction = supportedFunctions[tool.function.name];
 
   if (!toolFunction) {
@@ -333,7 +335,7 @@ export const chatComplete = async <T extends z.ZodTypeAny>({
     }
     infoLogger({
       message: "chat complete -> success",
-      status: "failed",
+      status: "success",
       layer: "SERVICE",
       name: "OPENAI",
     });

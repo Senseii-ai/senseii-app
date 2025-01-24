@@ -1,7 +1,7 @@
 import { IFunctionType } from "../functions";
 import { saveInitialGoal, saveNutritionPlan, saveUpdatedUserConstraints, saveUpdatedDietPreferences, saveUpdatedBasicInformaion, saveUpdatedEatingHabits } from "../../../../models/goals";
 import { validateResponse } from "@services/openai/utils";
-import { basicInformation, constraints, createUserGoalDTO, dietPreferences, eatingHabits } from "@senseii/types";
+import { basicInformation, constraints, createUserGoalDTO, dietPreferences, eatingHabits, userGoalDTO } from "@senseii/types";
 import { z } from "zod"
 import { createNutritionPlan } from "../nutrition";
 
@@ -13,12 +13,18 @@ const createDietPlanFunc = async (args: string) => {
   return "User Diet Plan Creation Failed"
 }
 
+
+// FIX: This needs to be moved in a separate place.
+export const createInitialGoalDTO = userGoalDTO
+  .omit({ preferences: true, nutritionPlan: true, workoutPlan: true, endDate: true, startDate: true })
+  .extend({ endDate: z.number() });
+
+export type CreateInitialGoalDTO = z.infer<typeof createInitialGoalDTO>
+
 // createInitialGoalFunction gets the string format funciton calling input
 // validates them and saves them in the database.
 const createInitialGoalFunc = async (args: string) => {
-  console.log("initial goal creation", args)
-  const validArgs = await getValidArguments({ data: args, validatorSchemaName: "create-initial-goal", validatorSchema: createUserGoalDTO })
-  console.log("valid args", validArgs)
+  const validArgs = await getValidArguments({ data: args, validatorSchemaName: "create-initial-goal", validatorSchema: createInitialGoalDTO })
   if (await saveInitialGoal(validArgs)) {
     return "User Initial Goal Created Successfully"
   }

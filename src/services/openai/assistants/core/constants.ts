@@ -207,7 +207,7 @@ export const UPDATE_EATING_HABITS: FunctionTool = {
 export const UPDATE_CONSTRAINTS: FunctionTool = {
   type: "function",
   function: {
-    name: "update-user-constraints",
+    name: "update_constraints",
     description:
       `Run this funciton when user provides any of the following constraints:
         - fincancial
@@ -215,44 +215,45 @@ export const UPDATE_CONSTRAINTS: FunctionTool = {
     parameters: {
       type: "object",
       required: ["constraints"],
-      constraints: {
-        type: "object",
-        required: [
-          "financial",
-          "geographical"
-        ],
-        properties: {
-          financial: {
-            type: "object",
-            properties: {
-              budget: {
-                type: "number",
-                description: "The user's budget"
+      properties: {
+        constraints: {
+          type: "object",
+          required: [
+            "financial",
+            "geographical"
+          ],
+          properties: {
+            financial: {
+              type: "object",
+              properties: {
+                budget: {
+                  type: "number",
+                  description: "The user's budget"
+                },
+                budgetType: {
+                  type: "string",
+                  description: "user budget frequency, allowed types 'daily', 'weekly', 'monthly'"
+                }
               },
-              budgetType: {
-                type: "string",
-                description: "user budget frequency, allowed types 'daily', 'weekly', 'monthly'"
-              }
+              required: [
+                "budget",
+                "budgetType"
+              ]
             },
-            required: [
-              "budget",
-              "budgetType"
-            ]
+            geographical: {
+              type: "object",
+              properties: {
+                location: {
+                  type: "string",
+                  description: "user's country"
+                }
+              },
+              required: [
+                "location"
+              ]
+            }
           },
-          geographical: {
-            type: "object",
-            properties: {
-              location: {
-                type: "string",
-                description: "user's country"
-              }
-            },
-            required: [
-              "location"
-            ]
-          }
-        },
-
+        }
       }
     }
   }

@@ -4,10 +4,11 @@ import { validateResponse } from "@services/openai/utils";
 import { basicInformation, constraints, createUserGoalDTO, dietPreferences, eatingHabits, userGoalDTO } from "@senseii/types";
 import { z } from "zod"
 import { createNutritionPlan } from "../nutrition";
+import { getUserId } from "@middlewares/auth";
 
 const createDietPlanFunc = async (args: string) => {
   const response = await createNutritionPlan(args)
-  if (await saveNutritionPlan(response)) {
+  if (await saveNutritionPlan(response, getUserId())) {
     return "User Diet Plan Created Successfully"
   }
   return "User Diet Plan Creation Failed"
@@ -33,7 +34,11 @@ const createInitialGoalFunc = async (args: string) => {
 
 const updateUserBasicInfoFunc = async (args: string) => {
   const validArgs = await getValidArguments({ data: args, validatorSchemaName: "update-basic-information", validatorSchema: basicInformation })
-  if (await saveUpdatedBasicInformaion(validArgs)) {
+  type BasicInformation = z.infer<typeof basicInformation>
+  console.log("valid Args", validArgs)
+  const userId = getUserId()
+  console.log("userId", userId)
+  if (await saveUpdatedBasicInformaion(validArgs, userId)) {
     return "User Basic Information Updated Successfully"
   }
   return "User Basic Information Update Failed"
@@ -41,7 +46,7 @@ const updateUserBasicInfoFunc = async (args: string) => {
 
 const updateEatingHabitsFunc = async (args: string) => {
   const validArgs = await getValidArguments({ data: args, validatorSchema: eatingHabits, validatorSchemaName: "update-eating-habits" })
-  if (await saveUpdatedEatingHabits(validArgs)) {
+  if (await saveUpdatedEatingHabits(validArgs, getUserId())) {
     return "User Eating Habits Updated Successfully"
   }
   return "User Eating Habits Update Failed"
@@ -49,7 +54,7 @@ const updateEatingHabitsFunc = async (args: string) => {
 
 const updateUserConstraints = async (args: string) => {
   const validArgs = await getValidArguments({ data: args, validatorSchema: constraints, validatorSchemaName: "update-user-constraints" })
-  if (await saveUpdatedUserConstraints(validArgs)) {
+  if (await saveUpdatedUserConstraints(validArgs, getUserId())) {
     return "User Constraints Updated Successfully"
   }
   return "User Constraints Update Failed"
@@ -57,7 +62,7 @@ const updateUserConstraints = async (args: string) => {
 
 const updateDietPreferencesFunc = async (args: string) => {
   const validArgs = await getValidArguments({ data: args, validatorSchema: dietPreferences, validatorSchemaName: "update-diet-preferences" })
-  if (await saveUpdatedDietPreferences(validArgs)) {
+  if (await saveUpdatedDietPreferences(validArgs, getUserId())) {
     return `User Diet Preferences Updated Successfully`
   }
   return "User Diet Preferences Update Failed"

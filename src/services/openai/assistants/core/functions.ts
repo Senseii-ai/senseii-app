@@ -14,7 +14,6 @@ const createDietPlanFunc = async (args: string) => {
   return "User Diet Plan Creation Failed"
 }
 
-
 // FIX: This needs to be moved in a separate place.
 export const createInitialGoalDTO = userGoalDTO
   .omit({ preferences: true, nutritionPlan: true, workoutPlan: true, endDate: true, startDate: true })
@@ -66,6 +65,39 @@ const updateDietPreferencesFunc = async (args: string) => {
     return `User Diet Preferences Updated Successfully`
   }
   return "User Diet Preferences Update Failed"
+}
+
+const calculateMetrics = async (args: string) => {
+  const calculateBMR = () => {
+    return "BMR"
+  }
+
+  const calculateBMI = () => {
+    return "BMI"
+  }
+
+  const calculateTDEE = () => {
+    return "TDEE"
+  }
+
+  const macros = () => {
+    return "Protein, Carbohydrates, Fats"
+  }
+
+  const response = {
+    TDEE: calculateTDEE(),
+    BMI: calculateBMI(),
+    MACROS: macros(),
+    BMR: calculateBMR()
+  }
+
+  return JSON.stringify(response)
+}
+
+export const CalculateMetricsFunc: IFunctionType = {
+  name: "calculateMetrics",
+  function: calculateMetrics,
+  functionalityType: "CORE"
 }
 
 export const UpdateUserConstraintsFunc: IFunctionType = {

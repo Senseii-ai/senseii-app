@@ -5,6 +5,7 @@ import { basicInformation, constraints, createUserGoalDTO, dietPreferences, eati
 import { z } from "zod"
 import { createNutritionPlan } from "../nutrition";
 import { getUserId } from "@middlewares/auth";
+import HealthCalculator from "@services/scientific/metrics.calculator";
 
 const createDietPlanFunc = async (args: string) => {
   const response = await createNutritionPlan(args)
@@ -14,17 +15,31 @@ const createDietPlanFunc = async (args: string) => {
   return "User Diet Plan Creation Failed"
 }
 
-// FIX: This needs to be moved in a separate place.
-export const createInitialGoalDTO = userGoalDTO
-  .omit({ preferences: true, nutritionPlan: true, workoutPlan: true, endDate: true, startDate: true })
-  .extend({ endDate: z.number() });
 
-export type CreateInitialGoalDTO = z.infer<typeof createInitialGoalDTO>
+// FIX: remove this later.
+export const healthGoals = z.object({
+  weightGoal: z.enum(["gain", "loss", "maintain"]),
+  specificNutritionGoal: z.string(),
+  // TODO: medical conditions need better handling.
+  medicalConditions: z.string()
+})
+
+const initialGoalDTO = z.object({
+  userId: z.string(),
+  title: z.string(),
+  description: z.string(),
+  endDate: z.number(),
+  chatId: z.string(),
+  healthGoal: healthGoals
+})
+
+// FIX: This needs to be moved in a separate place.
+export type CreateInitialGoalDTO = z.infer<typeof initialGoalDTO>
 
 // createInitialGoalFunction gets the string format funciton calling input
 // validates them and saves them in the database.
 const createInitialGoalFunc = async (args: string) => {
-  const validArgs = await getValidArguments({ data: args, validatorSchemaName: "create-initial-goal", validatorSchema: createInitialGoalDTO })
+  const validArgs = await getValidArguments({ data: args, validatorSchemaName: "create-initial-goal", validatorSchema: initialGoalDTO })
   if (await saveInitialGoal(validArgs)) {
     return "User Initial Goal Created Successfully"
   }
@@ -33,7 +48,6 @@ const createInitialGoalFunc = async (args: string) => {
 
 const updateUserBasicInfoFunc = async (args: string) => {
   const validArgs = await getValidArguments({ data: args, validatorSchemaName: "update-basic-information", validatorSchema: basicInformation })
-  type BasicInformation = z.infer<typeof basicInformation>
   console.log("valid Args", validArgs)
   const userId = getUserId()
   console.log("userId", userId)
@@ -67,31 +81,8 @@ const updateDietPreferencesFunc = async (args: string) => {
   return "User Diet Preferences Update Failed"
 }
 
-const calculateMetrics = async (args: string) => {
-  const calculateBMR = () => {
-    return "BMR"
-  }
-
-  const calculateBMI = () => {
-    return "BMI"
-  }
-
-  const calculateTDEE = () => {
-    return "TDEE"
-  }
-
-  const macros = () => {
-    return "Protein, Carbohydrates, Fats"
-  }
-
-  const response = {
-    TDEE: calculateTDEE(),
-    BMI: calculateBMI(),
-    MACROS: macros(),
-    BMR: calculateBMR()
-  }
-
-  return JSON.stringify(response)
+const calculateMetrics = async () => {
+  return await HealthCalculator.CalculateHealthMetrics(getUserId())
 }
 
 export const CalculateMetricsFunc: IFunctionType = {

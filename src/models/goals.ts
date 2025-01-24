@@ -8,19 +8,41 @@ import {
   IHealthGoals,
   ILifeStyle,
   NutritionPlan,
+  Result,
   UserGoals,
 } from "@senseii/types";
 import { getUserId } from "@middlewares/auth";
 import { CreateInitialGoalDTO } from "@services/openai/assistants/core";
 import { infoLogger } from "@utils/logger";
+import { handleDBError } from "./utils/error";
 
 const layer = "DB";
 const name = "GOAL STORE";
 
-interface UserGoalDocument extends UserGoals, Document {}
-interface UserBasicInformationDocument extends IBasicInformation, Document {}
-interface UserLifeStyleDocument extends ILifeStyle, Document {}
-interface UserDietPreferencesDocument extends IDietPreferences, Document {}
+export const goalStore = {
+  getUserGoal: async (userId: string): Promise<Result<UserGoals>> => {
+    try {
+      const response = await UserGoalModel.findOne({ userId: userId })
+      if (!response) {
+        throw new Error("User not found")
+      }
+      return {
+        success: true,
+        data: response
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: handleDBError(error, name)
+      }
+    }
+  }
+}
+
+interface UserGoalDocument extends UserGoals, Document { }
+interface UserBasicInformationDocument extends IBasicInformation, Document { }
+interface UserLifeStyleDocument extends ILifeStyle, Document { }
+interface UserDietPreferencesDocument extends IDietPreferences, Document { }
 
 const UserBasicInformation: Schema<UserBasicInformationDocument> = new Schema({
   height: {
@@ -116,6 +138,19 @@ const ConstraintsSchema: Schema<Document & IConstraints> = new Schema({
   },
 });
 
+const HealthGoalsSchema: Schema<Document & IHealthGoals> = new Schema({
+  weightGoal: {
+    type: String,
+    enum: ["gain", "loss", "maintain"],
+  },
+  specificNutritionGoal: {
+    type: String,
+  },
+  medicalConditions: {
+    type: String,
+  },
+});
+
 const UserGoalSchema: Schema<UserGoalDocument> = new Schema({
   userId: {
     type: String,
@@ -154,6 +189,7 @@ const UserGoalSchema: Schema<UserGoalDocument> = new Schema({
   eatingHabits: EatingHabitsSchema,
   dietPreferences: DietPreferencesSchema,
   lifeStyle: UserLifeStyleSchema,
+  healthGoal: HealthGoalsSchema
 });
 
 export const UserGoalModel = model<UserGoalDocument>("Goals", UserGoalSchema);

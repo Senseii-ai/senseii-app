@@ -4,11 +4,6 @@ import { validateResponse } from "@services/openai/utils";
 import { basicInformation, constraints, createUserGoalDTO, dietPreferences, eatingHabits } from "@senseii/types";
 import { z } from "zod"
 import { createNutritionPlan } from "../nutrition";
-import { infoLogger } from "@utils/logger";
-
-export const coreAssistant = {
-  CreateDietPlanFunc: (args: string) => createDietPlanFunc(args)
-}
 
 const createDietPlanFunc = async (args: string) => {
   const response = await createNutritionPlan(args)

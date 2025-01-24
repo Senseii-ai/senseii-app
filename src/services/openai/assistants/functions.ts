@@ -8,10 +8,10 @@ export interface IFunctionType {
 }
 
 export const supportedFunctions: Record<string, IFunctionType> = {
+  create_initial_goal: CreateInitialGoalFunc,
   create_nutrition_plan: CreateDietPlanFunc,
   update_user_basic_information: UpdateUserBasicInfoFunc,
   update_eating_habits: UpdateEatingHabitsFunc,
   update_user_diet_preferences: UpdateDietPreferencesFunc,
   update_user_constraints: UpdateUserConstraintsFunc,
-  create_initial_goal: CreateInitialGoalFunc,
 };

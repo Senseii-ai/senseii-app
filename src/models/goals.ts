@@ -1,14 +1,161 @@
-import { Schema, model, Document } from "mongoose"
-import { CreateUserGoalDTO, IBasicInformation, IConstraints, IDietPreferences, IEatingHabits, IHealthGoals, ILifeStyle, NutritionPlan, UserGoal } from "@senseii/types";
+import { Schema, model, Document } from "mongoose";
+import {
+  CreateUserGoalDTO,
+  IBasicInformation,
+  IConstraints,
+  IDietPreferences,
+  IEatingHabits,
+  IHealthGoals,
+  ILifeStyle,
+  NutritionPlan,
+  Result,
+  UserGoals,
+} from "@senseii/types";
 import { getUserId } from "@middlewares/auth";
+import { CreateInitialGoalDTO } from "@services/openai/assistants/core";
+import { infoLogger } from "@utils/logger";
+import { handleDBError } from "./utils/error";
 
-interface UserGoalDocument extends UserGoal, Document { }
+const layer = "DB";
+const name = "GOAL STORE";
+
+export const goalStore = {
+  getUserGoal: async (userId: string): Promise<Result<UserGoals>> => {
+    try {
+      const response = await UserGoalModel.findOne({ userId: userId })
+      if (!response) {
+        throw new Error("User not found")
+      }
+      return {
+        success: true,
+        data: response
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: handleDBError(error, name)
+      }
+    }
+  }
+}
+
+interface UserGoalDocument extends UserGoals, Document { }
+interface UserBasicInformationDocument extends IBasicInformation, Document { }
+interface UserLifeStyleDocument extends ILifeStyle, Document { }
+interface UserDietPreferencesDocument extends IDietPreferences, Document { }
+
+const UserBasicInformation: Schema<UserBasicInformationDocument> = new Schema({
+  height: {
+    value: {
+      type: Number,
+    },
+    unit: {
+      type: String,
+    },
+  },
+  gender: {
+    type: String,
+  },
+  age: {
+    type: Number,
+  },
+  weight: {
+    value: {
+      type: Number,
+    },
+    unit: {
+      type: String,
+    },
+  },
+});
+
+const UserLifeStyleSchema: Schema<UserLifeStyleDocument> = new Schema({
+  dailyRoutine: {
+    type: String,
+    enum: ["sedenatry", "light", "moderate", "heavy", "very heavy"],
+  },
+  exerciseRoutine: [
+    {
+      exerciseType: {
+        type: String,
+        enum: ["cardio", "strength", "flexibility", "balance", "none"],
+      },
+      frequency: {
+        type: String,
+        enum: ["daily", "weekly", "monthly"],
+      },
+    },
+  ],
+});
+
+const DietPreferencesSchema: Schema<UserDietPreferencesDocument> = new Schema({
+  preference: {
+    type: String,
+    enum: [
+      "vegetarian",
+      "non-vegetarian",
+      "vegan",
+      "pescatarian",
+      "omnivore",
+      "ketogenic",
+      "paleo",
+    ],
+  },
+  allergies: [String],
+  intolerances: [String],
+  dislikedFood: [String],
+  favouriteFood: [String],
+});
+
+const EatingHabitsSchema: Schema<Document & IEatingHabits> = new Schema({
+  mealsPerDay: {
+    type: Number,
+  },
+  mealComplexity: {
+    type: String,
+    enum: ["simple", "moderate", "complex"],
+  },
+  cookingTime: {
+    type: String,
+    enum: ["less than 30 minutes", "30-60 minutes", "more than 60 minutes"],
+  },
+});
+
+const ConstraintsSchema: Schema<Document & IConstraints> = new Schema({
+  financial: {
+    budget: {
+      type: Number,
+    },
+    budgetType: {
+      type: String,
+      enum: ["daily", "weekly", "monthly"],
+    },
+  },
+  geographical: {
+    location: {
+      type: String,
+    },
+  },
+});
+
+const HealthGoalsSchema: Schema<Document & IHealthGoals> = new Schema({
+  weightGoal: {
+    type: String,
+    enum: ["gain", "loss", "maintain"],
+  },
+  specificNutritionGoal: {
+    type: String,
+  },
+  medicalConditions: {
+    type: String,
+  },
+});
 
 const UserGoalSchema: Schema<UserGoalDocument> = new Schema({
   userId: {
     type: String,
     required: true,
-    ref: "UserProfile"
+    ref: "UserProfile",
   },
   title: {
     type: String,
@@ -21,7 +168,7 @@ const UserGoalSchema: Schema<UserGoalDocument> = new Schema({
   chatId: {
     type: String,
     required: true,
-    ref: "Chats"
+    ref: "Chats",
   },
   workoutPlan: {
     type: String,
@@ -35,85 +182,180 @@ const UserGoalSchema: Schema<UserGoalDocument> = new Schema({
   },
   nutritionPlan: {
     type: String,
-    ref: "NutritionPlans"
+    ref: "NutritionPlans",
   },
-})
+  basicInformation: UserBasicInformation,
+  constraints: ConstraintsSchema,
+  eatingHabits: EatingHabitsSchema,
+  dietPreferences: DietPreferencesSchema,
+  lifeStyle: UserLifeStyleSchema,
+  healthGoal: HealthGoalsSchema
+});
 
-export const UserGoalModel = model<UserGoalDocument>('Goals', UserGoalSchema)
+export const UserGoalModel = model<UserGoalDocument>("Goals", UserGoalSchema);
 
-// NOTE: mayne this can be improved in the future.
-// updateBasicInformation updates the basic information field of a user document
-export const saveUpdatedBasicInformaion = async (data: IBasicInformation) => {
-  return await UserGoalModel.updateOne({ user: getUserId() }, { $set: { ["preferences.basicInformation"]: data } })
-}
+export const saveUpdatedBasicInformaion = async (
+  data: IBasicInformation,
+  userId: string
+) => {
+  infoLogger({
+    message: "saving updated user Basic Information",
+    status: "INFO",
+    layer,
+    name,
+  });
 
-export const saveUpdatedDietPreferences = async (data: IDietPreferences) => {
-  return await UserGoalModel.updateOne({ user: getUserId() }, { $set: { ["preferences.dietPreferences"]: data } })
-}
+  const response = await UserGoalModel.updateOne(
+    { userId: userId },
+    { $set: { basicInformation: data } }
+  );
 
-export const saveUpdatedEatingHabits = async (data: IEatingHabits) => {
-  return await UserGoalModel.updateOne({ user: getUserId() }, { $set: { ["preferences.eatingHabits"]: data } })
-}
+  return response;
+};
 
-export const saveNutritionPlan = async (data: NutritionPlan) => {
-  return await UserGoalModel.updateOne({ user: getUserId() }, { $set: { ["nutritionPlan"]: data } })
-}
+export const saveUpdatedDietPreferences = async (
+  data: IDietPreferences,
+  userId: string
+) => {
+  infoLogger({
+    message: "saving updated user Diet Preferences",
+    status: "INFO",
+    layer,
+    name,
+  });
 
-export const saveUpdatedUserConstraints = async (data: IConstraints) => {
-  return await UserGoalModel.updateOne({ user: getUserId() }, { $set: { ["preferences.constraints"]: data } })
-}
+  const response = await UserGoalModel.updateOne(
+    { userId: userId },
+    { $set: { dietPreferences: data } }
+  );
 
-// NOTE:
-// Update this to create or update initial user goal.
-// - get the chatId from the system (or no need to update it)
-// - startDate: try to get current date.
-// - endDate: try to get the correct date. (or add capability to the assistant to run a script to get current time.)
-export const saveInitialGoal = async (data: CreateUserGoalDTO) => {
-  const userGoalData: CreateUserGoalDTO = {
-    userId: getUserId(),
+  return response;
+};
+
+export const saveUpdatedEatingHabits = async (
+  data: IEatingHabits,
+  userId: string
+) => {
+  infoLogger({
+    message: "saving updated user Eating Habits",
+    status: "INFO",
+    layer,
+    name,
+  });
+
+  const response = await UserGoalModel.updateOne(
+    { userId: userId },
+    { $set: { eatingHabits: data } }
+  );
+
+  return response;
+};
+
+export const saveNutritionPlan = async (
+  data: NutritionPlan,
+  userId: string
+) => {
+  infoLogger({
+    message: "saving updated Nutrition Plan",
+    status: "INFO",
+    layer,
+    name,
+  });
+
+  const response = await UserGoalModel.updateOne(
+    { userId: userId },
+    { $set: { nutritionPlan: data } }
+  );
+
+  return response;
+};
+
+export const saveUpdatedUserConstraints = async (
+  data: IConstraints,
+  userId: string
+) => {
+  infoLogger({
+    message: "saving updated user Constraints",
+    status: "INFO",
+    layer,
+    name,
+  });
+
+  const response = await UserGoalModel.updateOne(
+    { userId: userId },
+    { $set: { constraints: data } }
+  );
+
+  return response;
+};
+
+export const saveInitialGoal = async (data: CreateInitialGoalDTO) => {
+  const startDate = new Date(); // Current date
+  let endDate;
+  if (data.endDate <= 0) {
+    endDate = "N/A";
+  } else {
+    endDate = new Date(
+      startDate.getTime() + 4 * 7 * 24 * 60 * 60 * 1000
+    ).toISOString();
+  }
+
+  // there is just one user goal in the system.
+  const goal = await UserGoalModel.findOne({ userId: getUserId() });
+  if (!goal) {
+    throw new Error("unable to find user");
+  }
+
+  const updatedUserGoalData: CreateUserGoalDTO = {
+    userId: goal.userId,
     title: data.title,
     description: data.description,
-    startDate: data.startDate,
-    endDate: data.endDate,
-    chatId: data.chatId
-  }
-  const newGoal = new UserGoalModel(userGoalData)
-  return await newGoal.save()
-}
+    startDate: startDate.toISOString(),
+    endDate: endDate,
+    chatId: goal.chatId,
+  };
 
-export const saveUpdateUserHealthGoals = async (data: IHealthGoals) => {
-  return await UserGoalModel.updateOne({ user: getUserId() }, { ["preferences.healthGoals"]: data })
-}
+  const response = await UserGoalModel.findOneAndReplace(
+    { userId: goal.userId },
+    updatedUserGoalData
+  );
+  return response;
+};
 
-export const saveUpdatedLifeStyle = async (data: ILifeStyle) => {
-  return await UserGoalModel.updateOne({ user: getUserId() }, { ["preferences.lifeStyle"]: data })
-}
+export const saveUpdateUserHealthGoals = async (
+  data: IHealthGoals,
+  userId: string
+) => {
+  infoLogger({
+    message: "saving updated user Health Goals",
+    status: "INFO",
+    layer,
+    name,
+  });
 
-// createUserGoal
-// FIX: This needs to be fixed.
-// export const saveUserGoal = async (args: string): Promise<UserGoalDocument> => {
-//   try {
-//     // NOTE: currently gpt-4o doesn't support structured function calling, so this implementation 
-//     // is a workaround using gpt-4o-mini chat completions.
-//     infoLogger({ status: "alert", message: "calling create-goal function" })
-//     const validatedResponse = await validateResponse({ prompt: args, validatorSchema: UserGoalDTO, validatorSchemaName: "create-user-goal" })
-//     const userId = getUserId()
-//     const data: CreateUserGoalDTO= {
-//       userId: userId,
-//       preferences: validatedResponse.preferences,
-//       title: validatedResponse.goalName,
-//       description: validatedResponse.description,
-//       startDate: Date.now().toLocaleString()
-//     }
-//     // NOTE: maybe this is useless check
-//     const validatedData = UserGoalDTO.parse(data)
-//     infoLogger({ message: "user goal valid", status: "INFO" })
-//     const userGoal = new UserGoalModel(validatedData)
-//     return await userGoal.save()
-//   } catch (error) {
-//     if (error instanceof z.ZodError) {
-//       throw new Error(`Validation Error, ${error.message}`)
-//     }
-//     throw error
-//   }
-// }
+  const response = await UserGoalModel.updateOne(
+    { userId: userId },
+    { $set: { healthGoals: data } }
+  );
+
+  return response;
+};
+
+export const saveUpdatedLifeStyle = async (
+  data: ILifeStyle,
+  userId: string
+) => {
+  infoLogger({
+    message: "saving updated user Life Style",
+    status: "INFO",
+    layer,
+    name,
+  });
+
+  const response = await UserGoalModel.updateOne(
+    { userId: userId },
+    { $set: { lifeStyle: data } }
+  );
+
+  return response;
+};

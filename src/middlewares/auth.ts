@@ -3,7 +3,6 @@ import {
   AsyncLocalStorage,
 } from "async_hooks";
 import { AuthObject, getAuth } from "@clerk/express";
-import { infoLogger } from "@utils/logger";
 
 // UserContext interface defines how the userStorage looks.
 type UserContext = Map<string, string>;

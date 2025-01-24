@@ -1,4 +1,4 @@
-import { CreateDietPlanFunc, CreateInitialGoalFunc, UpdateDietPreferencesFunc, UpdateEatingHabitsFunc, UpdateUserBasicInfoFunc, UpdateUserConstraintsFunc } from "@services/openai/assistants/core";
+import { CalculateMetricsFunc, CreateDietPlanFunc, CreateInitialGoalFunc, UpdateDietPreferencesFunc, UpdateEatingHabitsFunc, UpdateUserBasicInfoFunc, UpdateUserConstraintsFunc } from "@services/openai/assistants/core";
 
 // each function will have these three properties
 export interface IFunctionType {
@@ -8,10 +8,11 @@ export interface IFunctionType {
 }
 
 export const supportedFunctions: Record<string, IFunctionType> = {
+  create_initial_goal: CreateInitialGoalFunc,
   create_nutrition_plan: CreateDietPlanFunc,
   update_user_basic_information: UpdateUserBasicInfoFunc,
   update_eating_habits: UpdateEatingHabitsFunc,
   update_user_diet_preferences: UpdateDietPreferencesFunc,
-  update_user_constraints: UpdateUserConstraintsFunc,
-  create_initial_goal: CreateInitialGoalFunc,
+  update_constraints: UpdateUserConstraintsFunc,
+  calculate_metrics: CalculateMetricsFunc
 };

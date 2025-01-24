@@ -1,5 +1,17 @@
 import { AssistantCreateParams, FunctionTool } from "openai/resources/beta/assistants"
 
+// calculate_metrics: CalculateMetricsFunc
+
+export const CALCULATE_METRICS: FunctionTool = {
+  type: "function",
+  function: {
+    name: "calculate_metrics",
+    description:
+      `Run this function when all the necessary information about the user has been collected and the profiles
+has been updated.`
+  }
+}
+
 export const CREATE_INITIAL_GOAL_FUNC: FunctionTool = {
   type: "function",
   function: {
@@ -541,7 +553,7 @@ You are the Core Assistant of a multi-agent fitness system, embodying the person
 
 ---
 
-### **Responsibilities**
+### **Responsibilities to be strictily followed In Order**
 1. **Onboarding**:
    - Collect data in this order, like a master assessing a student:
      1. Primary goal: To have a good understanding what the user wants and once provided, call the create_initial_goal tool.

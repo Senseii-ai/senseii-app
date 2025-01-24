@@ -36,7 +36,7 @@ export const CREATE_INITIAL_GOAL_FUNC: FunctionTool = {
           properties: {
             weightGoal: {
               type: "string",
-              description: "user weight goal, allowed types 'gain', 'loss', 'maintain'"
+              description: "user weight goal, allowed enums 'gain', 'loss', 'maintain'"
             },
             specificNutritionGoal: {
               type: "string",
@@ -80,11 +80,11 @@ export const UPDATE_USER_BASIC_INFORMATION: FunctionTool = {
             },
             weight: {
               type: "number",
-              description: "user weight"
+              description: "user weight, value along with unit. example: 10 Kilograms"
             },
             height: {
               type: "number",
-              description: "user height"
+              description: "user height, value along with unit, example: 180 Centimeters"
             },
             gender: {
               type: "string",

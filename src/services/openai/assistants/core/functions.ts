@@ -1,23 +1,12 @@
 import { IFunctionType } from "../functions";
 import { saveInitialGoal, saveNutritionPlan, saveUpdatedUserConstraints, saveUpdatedDietPreferences, saveUpdatedBasicInformaion, saveUpdatedEatingHabits, saveUpdatedLifeStyle, saveUpdateUserHealthGoals } from "../../../../models/goals";
-import { validateResponse } from "@services/openai/utils";
-import { basicInformation, constraints, dietPreferences, eatingHabits, lifeStyle } from "@senseii/types";
+import { chatComplete, validateResponse } from "@services/openai/utils";
+import { NutritionPlan, basicInformation, constraints, dietPreferences, eatingHabits, lifeStyle, nutritionPlanObject, userPreferencesValidatorObject } from "@senseii/types";
 import { z } from "zod"
-import { createNutritionPlan } from "../nutrition";
+import { createNutritionPlan, getNutritionSystemPrompt } from "../nutrition";
 import { getUserId } from "@middlewares/auth";
 import HealthCalculator from "@services/scientific/metrics.calculator";
-import { getUser } from "@controller/user";
-
-
-// FIX: This needs to be changed
-const createDietPlanFunc = async (args: string) => {
-  const response = await createNutritionPlan(args)
-  if (await saveNutritionPlan(response, getUserId())) {
-    return "User Diet Plan Created Successfully"
-  }
-  return "User Diet Plan Creation Failed"
-}
-
+import { valid } from "joi";
 
 // FIX: remove this later.
 export const healthGoals = z.object({
@@ -47,6 +36,17 @@ const createInitialGoalFunc = async (args: string) => {
     return "User Initial Goal Created Successfully"
   }
   return "User Initial Goal Creation Failed"
+}
+
+const createDietPlanFunc = async (args: string) => {
+  const validArgs = await getValidArguments({ data: args, validatorSchema: userPreferencesValidatorObject, validatorSchemaName: "create-nutrition-plan" })
+  const nutritionPlan: NutritionPlan = await chatComplete({ prompt: JSON.stringify(validArgs), systemPrompt: getNutritionSystemPrompt("Monday"), validatorSchemaName: "create-nutrition-plan", validatorSchema: nutritionPlanObject })
+  if (await saveNutritionPlan(nutritionPlan, getUserId())) {
+    console.log("Diet Plan not saved")
+    return "User Diet Plan Created Successfully"
+  }
+  console.log("Diet Plan saved successfully")
+  return "User Diet Plan Creation Failed"
 }
 
 const updateLifeStyleFunc = async (args: string): Promise<string> => {

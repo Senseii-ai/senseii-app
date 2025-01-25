@@ -299,6 +299,7 @@ export const chatComplete = async <T extends z.ZodTypeAny>({
 }): Promise<z.infer<T>> => {
   try {
     infoLogger({ message: "initiating chat completion" });
+    // FIX: convert this into streaming.
     const completion = await client.beta.chat.completions.parse({
       model: model,
       response_format: zodResponseFormat(validatorSchema, validatorSchemaName),

@@ -15,6 +15,7 @@ import { getUserId } from "@middlewares/auth";
 import { CreateInitialGoalDTO } from "@services/openai/assistants/core";
 import { infoLogger } from "@utils/logger";
 import { handleDBError } from "./utils/error";
+import NutritionPlanModel from "./nutritionPlan";
 
 const layer = "DB";
 const name = "GOAL STORE";
@@ -263,13 +264,17 @@ export const saveNutritionPlan = async (
     layer,
     name,
   });
+  // FIX: separately save nutrition plan in NutritoinPlan Collection.
+  // Add the plan id in Goal Document.
+  // update the userId with real userId.
 
-  const response = await UserGoalModel.updateOne(
-    { userId: userId },
-    { $set: { nutritionPlan: data } }
-  );
+  data.userId = userId
+  console.log("final response", data)
 
-  return response;
+  const response = await new NutritionPlanModel({ data }).save()
+  console.log("Response", response)
+  const updatedGoal = await UserGoalModel.findOneAndUpdate({ userId: userId }, { $set: { nutritionPlan: response.id } })
+  return updatedGoal;
 };
 
 export const saveUpdatedUserConstraints = async (

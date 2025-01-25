@@ -48,7 +48,6 @@ const HealthCalculator = {
     }
 
     const { data: { basicInformation, lifeStyle, healthGoal } } = goal
-    console.log("destructured", basicInformation, lifeStyle, healthGoal)
 
     if (!basicInformation || !lifeStyle || !healthGoal) {
       let errorMessage = ""
@@ -63,10 +62,7 @@ const HealthCalculator = {
         errorMessage += "**update_health_goal** tool has not been called yet"
       }
 
-      console.log("error message", errorMessage)
-
       const finalMessage = errorMessage + "call the functions in that order and generate a user friendly message notifying them on the situation and telling them to run this **protocol** again."
-      console.log("final message", finalMessage)
       return finalMessage
     }
 

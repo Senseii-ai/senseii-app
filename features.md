@@ -4,6 +4,10 @@
 
 ### Architecture
 
+#### Backlog
+
+- [ ] Make sure clerk webhook works properly to save the new user in the database.
+
 #### Backend Architecture
 
 - [x] Design a modular backend architecture with clearly defined layers:

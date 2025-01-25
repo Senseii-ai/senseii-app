@@ -1,11 +1,12 @@
 import { IFunctionType } from "../functions";
-import { saveInitialGoal, saveNutritionPlan, saveUpdatedUserConstraints, saveUpdatedDietPreferences, saveUpdatedBasicInformaion, saveUpdatedEatingHabits } from "../../../../models/goals";
+import { saveInitialGoal, saveNutritionPlan, saveUpdatedUserConstraints, saveUpdatedDietPreferences, saveUpdatedBasicInformaion, saveUpdatedEatingHabits, saveUpdatedLifeStyle, saveUpdateUserHealthGoals } from "../../../../models/goals";
 import { validateResponse } from "@services/openai/utils";
-import { basicInformation, constraints, dietPreferences, eatingHabits } from "@senseii/types";
+import { basicInformation, constraints, dietPreferences, eatingHabits, lifeStyle } from "@senseii/types";
 import { z } from "zod"
 import { createNutritionPlan } from "../nutrition";
 import { getUserId } from "@middlewares/auth";
 import HealthCalculator from "@services/scientific/metrics.calculator";
+import { getUser } from "@controller/user";
 
 
 // FIX: This needs to be changed
@@ -46,6 +47,28 @@ const createInitialGoalFunc = async (args: string) => {
     return "User Initial Goal Created Successfully"
   }
   return "User Initial Goal Creation Failed"
+}
+
+const updateLifeStyleFunc = async (args: string): Promise<string> => {
+  console.log("before validating", args)
+  const validArgs = await getValidArguments({ data: args, validatorSchemaName: "update_lifestyle", validatorSchema: lifeStyle })
+  const userId = getUserId()
+  console.log("valid args", validArgs, userId)
+  if (await saveUpdatedLifeStyle(validArgs, userId)) {
+    return "User LifeStyle Information updated Successfully"
+  }
+  return "User LifeStyle Information update Failed"
+}
+
+const updateHealthGoalFunc = async (args: string) => {
+  console.log("before validating", args)
+  const validArgs = await getValidArguments({ data: args, validatorSchema: healthGoals, validatorSchemaName: "update_health_goal" })
+  const userId = getUserId()
+  console.log("valid Args", validArgs, userId)
+  if (await saveUpdateUserHealthGoals(validArgs, userId)) {
+    return "User Health Goal Information updated Successfully"
+  }
+  return "User Health Goal Information update Failed"
 }
 
 const updateUserBasicInfoFunc = async (args: string) => {
@@ -129,6 +152,18 @@ export const CreateInitialGoalFunc: IFunctionType = {
 export const UpdateUserBasicInfoFunc: IFunctionType = {
   name: "updateUserBasicInfoFunc",
   function: updateUserBasicInfoFunc,
+  functionalityType: "CORE"
+}
+
+export const UpdateHealthGoalFunc: IFunctionType = {
+  name: "updateHealthGoalFunc",
+  function: updateHealthGoalFunc,
+  functionalityType: "CORE"
+}
+
+export const UpdateLifeStyleFunc: IFunctionType = {
+  name: "updateLifeStyleFunc",
+  function: updateLifeStyleFunc,
   functionalityType: "CORE"
 }
 

@@ -26,6 +26,8 @@ export const goalStore = {
       if (!response) {
         throw new Error("User not found")
       }
+
+      console.log("response", response)
       return {
         success: true,
         data: response
@@ -335,7 +337,7 @@ export const saveUpdateUserHealthGoals = async (
 
   const response = await UserGoalModel.updateOne(
     { userId: userId },
-    { $set: { healthGoals: data } }
+    { $set: { healthGoal: data } }
   );
 
   return response;

@@ -1,21 +1,109 @@
-import { AssistantCreateParams, FunctionTool } from "openai/resources/beta/assistants"
+import {
+  AssistantCreateParams,
+  FunctionTool,
+} from "openai/resources/beta/assistants";
 
-export const CALCULATE_METRICS: FunctionTool = {
+export const UPDATE_HEALTH_GOALS: FunctionTool = {
   type: "function",
   function: {
-    name: "calculate_metrics",
-    description:
-      `Run this function when the following functions have been run:
-- create_initial_goal, update_basic_information, update_eating_habits, update_user_diet_preferences, update_constraints otherwise the system will FAIL`
-  }
-}
+    name: "update_health_goals",
+    description: `Run this function when the user provides their health goals. The health goals information includes:
+        - weightGoal: User's weight goal (gain, loss, maintain)
+        - specificNutritionGoal: User's specific nutrition goal
+        - medicalConditions: List of user's medical conditions`,
+    parameters: {
+      type: "object",
+      required: ["healthGoals"],
+      properties: {
+        healthGoals: {
+          type: "object",
+          required: [
+            "weightGoal",
+            "specificNutritionGoal",
+            "medicalConditions",
+          ],
+          properties: {
+            weightGoal: {
+              type: "string",
+              enum: ["gain", "loss", "maintain"],
+              description: "User's weight goal",
+            },
+            specificNutritionGoal: {
+              type: "string",
+              description: "User's specific nutrition goal",
+            },
+            medicalConditions: {
+              type: "array",
+              items: {
+                type: "string",
+              },
+              description: "List of user's medical conditions",
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
+export const UPDATE_LIFESTYLE: FunctionTool = {
+  type: "function",
+  function: {
+    name: "update_lifestyle",
+    description: `Run this function when the user provides their lifestyle habits. The lifestyle information includes:
+        - dailyRoutine: User's daily activity level (sedentary, light, moderate, heavy, very heavy)
+        - exerciseRoutine: Array of exercise types and their frequency`,
+    parameters: {
+      type: "object",
+      required: ["lifestyle"],
+      properties: {
+        lifestyle: {
+          type: "object",
+          required: ["dailyRoutine", "exerciseRoutine"],
+          properties: {
+            dailyRoutine: {
+              type: "string",
+              enum: ["sedentary", "light", "moderate", "heavy", "very heavy"],
+              description: "User's daily activity level",
+            },
+            exerciseRoutine: {
+              type: "array",
+              items: {
+                type: "object",
+                required: ["exerciseType", "frequency"],
+                properties: {
+                  exerciseType: {
+                    type: "string",
+                    enum: [
+                      "cardio",
+                      "strength",
+                      "flexibility",
+                      "balance",
+                      "none",
+                    ],
+                    description: "Type of exercise the user performs",
+                  },
+                  frequency: {
+                    type: "string",
+                    enum: ["daily", "weekly", "monthly"],
+                    description: "Frequency of the exercise",
+                  },
+                },
+              },
+              description: "Array of exercise types and their frequency",
+            },
+          },
+        },
+      },
+    },
+  },
+};
 
 export const CREATE_INITIAL_GOAL_FUNC: FunctionTool = {
   type: "function",
   function: {
     name: "create_initial_goal",
-    description:
-      `Run this function when the user defines their health or fitness related goal.
+    description: `Run this function when the user defines their health or fitness related goal.
       It is the initial goal when the user hasn't provided any major information except
       the initial basic definition of the goal. The information should include these:
         - weightGoal
@@ -23,48 +111,52 @@ export const CREATE_INITIAL_GOAL_FUNC: FunctionTool = {
       `,
     parameters: {
       type: "object",
-      required: ["goalName", "description", "startDate", "weightGoal", "specificNutritionGoal"],
+      required: [
+        "goalName",
+        "description",
+        "startDate",
+        "weightGoal",
+        "specificNutritionGoal",
+      ],
       properties: {
         goalName: {
           type: "string",
-          description: "Name of the goal (e.g., 'Weight Loss Journey 2024')"
+          description: "Name of the goal (e.g., 'Weight Loss Journey 2024')",
         },
         description: {
           type: "string",
-          description: "Detailed description of what the user wants to achieve"
+          description: "Detailed description of what the user wants to achieve",
         },
         endDate: {
           type: "string",
-          description: "The weekly numerical representation deadline of the goal. If the user provides any deadline to when they want to achieve their goal, For example, if they suggest '3 months from now', the value should be 12."
+          description:
+            "The weekly numerical representation deadline of the goal. If the user provides any deadline to when they want to achieve their goal, For example, if they suggest '3 months from now', the value should be 12.",
         },
         healthGoals: {
           type: "object",
-          required: [
-            "weightGoal",
-            "specificNutritionGoal",
-          ],
+          required: ["weightGoal", "specificNutritionGoal"],
           properties: {
             weightGoal: {
               type: "string",
-              description: "user weight goal, allowed enums 'gain', 'loss', 'maintain'"
+              description:
+                "user weight goal, allowed enums 'gain', 'loss', 'maintain'",
             },
             specificNutritionGoal: {
               type: "string",
-              description: "user nutrition goal"
+              description: "user nutrition goal",
             },
           },
-        }
-      }
-    }
-  }
-}
+        },
+      },
+    },
+  },
+};
 
 export const UPDATE_USER_BASIC_INFORMATION: FunctionTool = {
   type: "function",
   function: {
     name: "update_user_basic_information",
-    description:
-      `Run this function when the user provides all the basic information about them, things that
+    description: `Run this function when the user provides all the basic information about them, things that
       should definitely include:
         - age,
         - height,
@@ -77,42 +169,38 @@ export const UPDATE_USER_BASIC_INFORMATION: FunctionTool = {
       properties: {
         basicInformation: {
           type: "object",
-          required: [
-            "age",
-            "weight",
-            "height",
-            "gender"
-          ],
+          required: ["age", "weight", "height", "gender"],
           properties: {
             age: {
               type: "number",
-              description: "user age"
+              description: "user age",
             },
             weight: {
               type: "number",
-              description: "user weight, value along with unit. example: 10 Kilograms"
+              description:
+                "user weight, value along with unit. example: 10 Kilograms",
             },
             height: {
               type: "number",
-              description: "user height, value along with unit, example: 180 Centimeters"
+              description:
+                "user height, value along with unit, example: 180 Centimeters",
             },
             gender: {
               type: "string",
-              description: "user gender"
-            }
+              description: "user gender",
+            },
           },
-        }
+        },
       },
-    }
-  }
-}
+    },
+  },
+};
 
 export const UPDATE_USER_DIET_PREFERENCES: FunctionTool = {
   type: "function",
   function: {
     name: "update_user_diet_preferences",
-    description:
-      `Run this function when users suggests any changes in their diet preferences. The diet information
+    description: `Run this function when users suggests any changes in their diet preferences. The diet information
       includes the following information:
         - food preferences,
         - allergies,
@@ -125,59 +213,68 @@ export const UPDATE_USER_DIET_PREFERENCES: FunctionTool = {
       properties: {
         dietPreferences: {
           type: "object",
-          "required": [
+          required: [
             "preference",
             "allergies",
             "intolerances",
             "dislikedFood",
-            "favouriteFood"
+            "favouriteFood",
           ],
           properties: {
             preference: {
               type: "string",
-              description: "user diet preference, allowed types 'vegetarian', 'non-vegetarian', 'vegan', 'pescatarian', 'omnivore', 'ketogenic', 'paleo'"
+              description:
+                "user diet preference, allowed types 'vegetarian', 'non-vegetarian', 'vegan', 'pescatarian', 'omnivore', 'ketogenic', 'paleo'",
             },
             allergies: {
               type: "array",
               items: {
-                type: "string"
+                type: "string",
               },
-              description: "user allergies"
+              description: "user allergies",
             },
             intolerances: {
               type: "array",
               items: {
-                type: "string"
+                type: "string",
               },
-              description: "user intolerances for food"
+              description: "user intolerances for food",
             },
             dislikedFood: {
               type: "array",
               items: {
-                type: "string"
+                type: "string",
               },
-              description: "user dislikes"
+              description: "user dislikes",
             },
             favouriteFood: {
               type: "array",
               items: {
-                type: "string"
+                type: "string",
               },
-              description: "user likings"
-            }
+              description: "user likings",
+            },
           },
-        }
-      }
-    }
-  }
-}
+        },
+      },
+    },
+  },
+};
+
+export const CALCULATE_METRICS: FunctionTool = {
+  type: "function",
+  function: {
+    name: "calculate_metrics",
+    description: `Run this function when the following functions have been run:
+- create_initial_goal, update_basic_information, update_eating_habits, update_user_diet_preferences, update_constraints otherwise the system will FAIL`,
+  },
+};
 
 export const UPDATE_EATING_HABITS: FunctionTool = {
   type: "function",
   function: {
     name: "update_eating_habits",
-    description:
-      `Run this funciton when the user has provided all the information needed to update their eating habits. This includes
+    description: `Run this funciton when the user has provided all the information needed to update their eating habits. This includes
       the following information:
         - mealsPerDay,
         - mealComplexity,
@@ -189,37 +286,34 @@ export const UPDATE_EATING_HABITS: FunctionTool = {
       properties: {
         eatingHabits: {
           type: "object",
-          required: [
-            "mealsPerDay",
-            "mealComplexity",
-            "cookingTime"
-          ],
+          required: ["mealsPerDay", "mealComplexity", "cookingTime"],
           properties: {
             mealsPerDay: {
               type: "number",
-              description: "The number of meals that the user has per day"
+              description: "The number of meals that the user has per day",
             },
             mealComplexity: {
               type: "string",
-              description: "meal complexity, allowed types 'simple', 'moderate', 'complex'"
+              description:
+                "meal complexity, allowed types 'simple', 'moderate', 'complex'",
             },
             cookingTime: {
               type: "string",
-              description: "meal cooking type, allowed types 'less than 30 minutes', '30-60 minutes', 'more than 60 minutes'"
-            }
+              description:
+                "meal cooking type, allowed types 'less than 30 minutes', '30-60 minutes', 'more than 60 minutes'",
+            },
           },
-        }
+        },
       },
-    }
+    },
   },
-}
+};
 
 export const UPDATE_CONSTRAINTS: FunctionTool = {
   type: "function",
   function: {
     name: "update_constraints",
-    description:
-      `Run this funciton when user provides any of the following constraints:
+    description: `Run this funciton when user provides any of the following constraints:
         - fincancial
         - location`,
     parameters: {
@@ -228,46 +322,39 @@ export const UPDATE_CONSTRAINTS: FunctionTool = {
       properties: {
         constraints: {
           type: "object",
-          required: [
-            "financial",
-            "geographical"
-          ],
+          required: ["financial", "geographical"],
           properties: {
             financial: {
               type: "object",
               properties: {
                 budget: {
                   type: "number",
-                  description: "The user's budget"
+                  description: "The user's budget",
                 },
                 budgetType: {
                   type: "string",
-                  description: "user budget frequency, allowed types 'daily', 'weekly', 'monthly'"
-                }
+                  description:
+                    "user budget frequency, allowed types 'daily', 'weekly', 'monthly'",
+                },
               },
-              required: [
-                "budget",
-                "budgetType"
-              ]
+              required: ["budget", "budgetType"],
             },
             geographical: {
               type: "object",
               properties: {
                 location: {
                   type: "string",
-                  description: "user's country"
-                }
+                  description: "user's country",
+                },
               },
-              required: [
-                "location"
-              ]
-            }
+              required: ["location"],
+            },
           },
-        }
-      }
-    }
-  }
-}
+        },
+      },
+    },
+  },
+};
 
 // CREATE_NUTRITION_FUNC is called when all the necessary information is available in the thread.
 export const CREATE_NUTRITION_FUNC: FunctionTool = {
@@ -293,7 +380,7 @@ export const CREATE_NUTRITION_FUNC: FunctionTool = {
         "dietPreferences",
         "healthGoals",
         "eatingHabits",
-        "constraints"
+        "constraints",
       ],
       properties: {
         basicInformation: {
@@ -324,12 +411,7 @@ export const CREATE_NUTRITION_FUNC: FunctionTool = {
             },
             gender: { type: "string", description: "Gender of the user" },
           },
-          required: [
-            "age",
-            "weight",
-            "height",
-            "gender"
-          ]
+          required: ["age", "weight", "height", "gender"],
         },
         lifeStyle: {
           type: "object",
@@ -346,7 +428,13 @@ export const CREATE_NUTRITION_FUNC: FunctionTool = {
                 properties: {
                   exerciseType: {
                     type: "string",
-                    enum: ["cardio", "strength", "flexibility", "balance", "none"],
+                    enum: [
+                      "cardio",
+                      "strength",
+                      "flexibility",
+                      "balance",
+                      "none",
+                    ],
                     description: "Type of exercise the user performs",
                   },
                   frequency: {
@@ -354,21 +442,12 @@ export const CREATE_NUTRITION_FUNC: FunctionTool = {
                     enum: ["daily", "weekly", "monthly"],
                     description: "Frequency of the exercise",
                   },
-
                 },
-
               },
-              required: [
-                "exerciseType",
-                "frequency"
-              ],
+              required: ["exerciseType", "frequency"],
             },
-
           },
-          required: [
-            "dailyRoutine",
-            "exerciseRoutine"
-          ]
+          required: ["dailyRoutine", "exerciseRoutine"],
         },
         dietPreferences: {
           type: "object",
@@ -412,8 +491,8 @@ export const CREATE_NUTRITION_FUNC: FunctionTool = {
             "allergies",
             "intolerances",
             "dislikedFood",
-            "favouriteFood"
-          ]
+            "favouriteFood",
+          ],
         },
         healthGoals: {
           type: "object",
@@ -436,8 +515,8 @@ export const CREATE_NUTRITION_FUNC: FunctionTool = {
           required: [
             "weightGoal",
             "specificNutritionGoal",
-            "medicalConditions"
-          ]
+            "medicalConditions",
+          ],
         },
         eatingHabits: {
           type: "object",
@@ -461,18 +540,11 @@ export const CREATE_NUTRITION_FUNC: FunctionTool = {
               description: "Cooking time the user prefers",
             },
           },
-          required: [
-            "mealsPerDay",
-            "mealComplexity",
-            "cookingTime"
-          ]
+          required: ["mealsPerDay", "mealComplexity", "cookingTime"],
         },
         constraints: {
           type: "object",
-          required: [
-            "financial",
-            "geographical"
-          ],
+          required: ["financial", "geographical"],
           properties: {
             financial: {
               type: "object",
@@ -484,10 +556,7 @@ export const CREATE_NUTRITION_FUNC: FunctionTool = {
                   description: "Budget frequency",
                 },
               },
-              required: [
-                "budget",
-                "budgetType"
-              ]
+              required: ["budget", "budgetType"],
             },
             geographical: {
               type: "object",
@@ -500,17 +569,16 @@ export const CREATE_NUTRITION_FUNC: FunctionTool = {
             },
           },
         },
-
       },
-    }
-  }
-}
+    },
+  },
+};
 
 // - For workouts: Call \`generate_workout_plan\`. Summarize as:
 //      \`\`\`markdown
-//      **Day 1: Strength**  
-//      - 3x5 Deadlifts (Progressively heavier)  
-//      - 3x8 Pull-Ups (Full range of motion)  
+//      **Day 1: Strength**
+//      - 3x5 Deadlifts (Progressively heavier)
+//      - 3x8 Pull-Ups (Full range of motion)
 //      \`\`\`
 //
 //
@@ -521,8 +589,15 @@ export const CREATE_NUTRITION_FUNC: FunctionTool = {
 // if you feel like something is too risky you tell them, to avoid liability.
 //
 
-
-export const coreFunctions = [CREATE_INITIAL_GOAL_FUNC, UPDATE_USER_BASIC_INFORMATION, UPDATE_EATING_HABITS, UPDATE_USER_DIET_PREFERENCES, CREATE_NUTRITION_FUNC]
+export const coreFunctions = [
+  CREATE_INITIAL_GOAL_FUNC,
+  UPDATE_USER_BASIC_INFORMATION,
+  UPDATE_EATING_HABITS,
+  UPDATE_USER_DIET_PREFERENCES,
+  CREATE_NUTRITION_FUNC,
+  UPDATE_HEALTH_GOALS,
+  UPDATE_LIFESTYLE
+];
 
 export const CORE_ASSISTANT: AssistantCreateParams = {
   name: "core-assistant",
@@ -559,6 +634,8 @@ You are the Core Assistant of a multi-agent fitness system, embodying the person
      3. Diet Preferences: All the information needed to call the update_user_diet_preferences tool.
      4. Eating Habits: All the infromation needed to call the update_eating_habits tool.
      5. Update Constraints: All the information needed to call the update_constraints tool.
+     6: Update LifeStyle: All the information needed to call the update_lifestyle tool.
+     7: Update HealthGoals: All the information needed to call the update_health_goal tool.
 
 2. **Calculating Baseline Metrics and getting confirmation**:
      1. Calculating Baseline metrics: This includes getting BMR, BMI, TDEE and macros by calling the calculate_metrics tool call and present them to the user.

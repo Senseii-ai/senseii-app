@@ -37,7 +37,8 @@ const layer = "SERVICE";
 const name = "OAI URILS";
 
 export const openAIUtils = {
-  GetStateChangeMessage: (state: AssistantStreamEvent) => getStateChangeMessage(state),
+  GetStateChangeMessage: (state: AssistantStreamEvent) =>
+    getStateChangeMessage(state),
   CreateEmptyThread: () => createEmptyThread(),
   ProcessStream: (
     stream: AssistantStream,
@@ -69,17 +70,17 @@ export const openAIUtils = {
 
 const getStateChangeMessage = (event: AssistantStreamEvent) => {
   if (event.event === "thread.run.in_progress") {
-    return "generating ..."
+    return "generating ...";
   }
   if (event.event === "thread.run.created") {
-    return "thinking ..."
+    return "thinking ...";
   }
   if (event.event === "thread.run.requires_action") {
-    return "running tools ..."
+    return "running tools ...";
   }
-  console.log("status", event.event)
-  return "processing ..."
-}
+  console.log("status", event.event);
+  return "processing ...";
+};
 
 const createEmptyThread = async (): Promise<string> => {
   const thread = await client.beta.threads.create();
@@ -122,10 +123,9 @@ async function processStream(
           layer,
           name,
         });
-        handler.onComplete()
+        handler.onComplete();
         // save messages in the database, we can have a failover for syncinc thread messages with database.
         return;
-
 
       case "thread.run.requires_action":
         // handle tool call
@@ -135,7 +135,7 @@ async function processStream(
           layer,
           name,
         });
-        handler.onStateChange(createEventMessage(event))
+        handler.onStateChange(createEventMessage(event));
         const newStream = await handleToolAction(
           event,
           client,
@@ -153,10 +153,10 @@ async function processStream(
       case "thread.message.delta":
         // handle message streaming delta.
         handler.onMessage(createStreamContent(event.data.delta));
-        break
+        break;
       default:
-        console.log(event.event)
-        handler.onStateChange(createEventMessage(event))
+        console.log(event.event);
+        handler.onStateChange(createEventMessage(event));
     }
   }
 }
@@ -194,43 +194,28 @@ async function handleToolAction(
     );
   }
 
-  toolCalls.map(item => console.log(item.function.name))
 
-  try {
-    // execute tools in parallel.
-    const toolOutputs = await Promise.all(toolCalls.map(executeTool));
+  const toolOutputs = await Promise.all(
+    toolCalls.map(async (callItem) => {
+      return await executeTool(callItem);
+    })
+  );
 
-    // create new stream after submitting tool outputs.
-    const newStream = client.beta.threads.runs.submitToolOutputsStream(
-      threadId,
-      event.data.id,
-      {
-        stream: true,
-        tool_outputs: toolOutputs,
-      }
-    );
-
-    if (!newStream) {
-      throw new Error("unable to start a new run");
+  const newStream = client.beta.threads.runs.submitToolOutputsStream(
+    threadId,
+    event.data.id,
+    {
+      stream: true,
+      tool_outputs: toolOutputs,
     }
+  );
 
-    infoLogger({ message: "Tool Outputs submitted successfully" });
-    return newStream;
-  } catch (error) {
-    infoLogger({
-      message: "below error occured",
-      layer,
-      name,
-      status: "failed",
-    });
-    console.error("Error handling tool action:", error);
-    console.error("cancelling run")
-    await client.beta.threads.runs.cancel(threadId, event.data.id)
-    handler.onError?.(
-      createError(HTTP.STATUS.INTERNAL_SERVER_ERROR, "internal server error")
-    );
-    throw error;
+  if (!newStream) {
+    throw new Error("unable to start a new run");
   }
+
+  infoLogger({ message: "Tool Outputs submitted successfully" });
+  return newStream;
 }
 
 /**
@@ -247,20 +232,21 @@ const executeTool = async (
     name: "OAI UTILS",
   });
 
-  console.log("tool arguments", tool.function.arguments)
+  console.log("tool arguments", tool.function.arguments);
   const toolFunction = supportedFunctions[tool.function.name];
 
   if (!toolFunction) {
     const errorMessage = `Unsupported Tool function: ${tool.function.name}`;
     infoLogger({ message: errorMessage, status: "failed", layer, name });
-    throw createError(
-      HTTP.STATUS.INTERNAL_SERVER_ERROR,
-      "internal server error"
-    );
+    // nothing needs to be throw here, instead tell the tool does not exist.
+    return {
+      tool_call_id: tool.id,
+      output: "**feature is not supported yet**",
+    };
   }
 
   const output = await toolFunction.function(tool.function.arguments);
-  console.log(`output for ${tool.function.name}`, output)
+  console.log(`output for ${tool.function.name}`, output);
   infoLogger({
     message: `tool executed successfully: ${tool.function.name}`,
     status: "success",

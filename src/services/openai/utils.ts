@@ -37,15 +37,15 @@ const layer = "SERVICE";
 const name = "OAI URILS";
 
 export const openAIUtils = {
-  GetStateChangeMessage: (state: AssistantStreamEvent) =>
+  GetStateChangeMessage: (state: AssistantStreamEvent): string =>
     getStateChangeMessage(state),
-  CreateEmptyThread: () => createEmptyThread(),
+  CreateEmptyThread: (): Promise<string> => createEmptyThread(),
   ProcessStream: (
     stream: AssistantStream,
     client: AzureOpenAI,
     threadId: string,
     handler: StreamHandler
-  ) => processStream(stream, client, threadId, handler),
+  ): Promise<void> => processStream(stream, client, threadId, handler),
   CreateThreadWIthMessage: (
     client: AzureOpenAI,
     message: string,
@@ -60,7 +60,7 @@ export const openAIUtils = {
     prompt: string,
     systemPrompt: string,
     model?: string
-  ) => basicChatComplete(client, prompt, systemPrompt, model),
+  ): Promise<string> => basicChatComplete(client, prompt, systemPrompt, model),
   AddMessageToThread: (
     client: AzureOpenAI,
     threadId: string,
@@ -68,7 +68,7 @@ export const openAIUtils = {
   ) => addMessageToThread(client, threadId, message),
 };
 
-const getStateChangeMessage = (event: AssistantStreamEvent) => {
+const getStateChangeMessage = (event: AssistantStreamEvent): string => {
   if (event.event === "thread.run.in_progress") {
     return "generating ...";
   }
@@ -193,7 +193,6 @@ async function handleToolAction(
       "internal server error"
     );
   }
-
 
   const toolOutputs = await Promise.all(
     toolCalls.map(async (callItem) => {
@@ -438,7 +437,6 @@ const createAssistant = async (
 /**
  * write docs for this.
  */
-
 export const validateResponse = async <T extends z.ZodTypeAny>({
   prompt,
   validatorSchema,

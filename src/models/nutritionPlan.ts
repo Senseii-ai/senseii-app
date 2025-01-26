@@ -67,7 +67,7 @@ const DailyNutritionPlanSchema: Schema<DailyNutritionPlanDocument> = new Schema(
 
 const NutritionPlanSchema: Schema<NutritionPlanDocument> = new Schema({
   type: { type: String, default: "nutritionPlan" },
-  userId: { type: String, required: true, ref: "User" },
+  userId: { type: String, required: true, unique: true, ref: "User" },
   dailyPlan: {
     plan: { type: [DailyNutritionPlanSchema], required: true },
   },

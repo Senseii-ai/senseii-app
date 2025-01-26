@@ -21,6 +21,7 @@ const layer = "DB";
 const name = "GOAL STORE";
 
 export const goalStore = {
+  SaveNutritionPlan: async (data: NutritionPlan, userId: string) => saveNutritionPlan(data, userId),
   getUserGoal: async (userId: string): Promise<Result<UserGoals>> => {
     try {
       const response = await UserGoalModel.findOne({ userId: userId })
@@ -257,24 +258,37 @@ export const saveUpdatedEatingHabits = async (
 export const saveNutritionPlan = async (
   data: NutritionPlan,
   userId: string
-) => {
+): Promise<Result<string>> => {
   infoLogger({
     message: "saving updated Nutrition Plan",
     status: "INFO",
     layer,
     name,
   });
-  // FIX: separately save nutrition plan in NutritoinPlan Collection.
-  // Add the plan id in Goal Document.
-  // update the userId with real userId.
+  try {
+    data.userId = userId
+    const response = await new NutritionPlanModel({
+      dailyPlan: data.dailyPlan,
+      userId: userId,
+      type: "nutritionPlan"
+    }).save()
 
-  data.userId = userId
-  console.log("final response", data)
-
-  const response = await new NutritionPlanModel({ data }).save()
-  console.log("Response", response)
-  const updatedGoal = await UserGoalModel.findOneAndUpdate({ userId: userId }, { $set: { nutritionPlan: response.id } })
-  return updatedGoal;
+    const updatedGoal = await UserGoalModel.findOneAndUpdate({ userId: userId }, { $set: { nutritionPlan: response.id } })
+    if (!updatedGoal) {
+      throw new Error("error saving updated goal")
+    }
+    return {
+      success: true,
+      data: "Nutrition Plan saved successfully."
+    }
+  } catch (error) {
+    infoLogger({ message: "Unable to save plan", layer, name, status: "failed" })
+    console.log("error", error)
+    return {
+      success: false,
+      error: handleDBError(error, name)
+    }
+  }
 };
 
 export const saveUpdatedUserConstraints = async (

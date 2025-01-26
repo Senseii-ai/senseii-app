@@ -1,5 +1,5 @@
 import { IFunctionType } from "../functions";
-import { saveInitialGoal, saveNutritionPlan, saveUpdatedUserConstraints, saveUpdatedDietPreferences, saveUpdatedBasicInformaion, saveUpdatedEatingHabits, saveUpdatedLifeStyle, saveUpdateUserHealthGoals } from "../../../../models/goals";
+import { saveInitialGoal, saveNutritionPlan, saveUpdatedUserConstraints, saveUpdatedDietPreferences, saveUpdatedBasicInformaion, saveUpdatedEatingHabits, saveUpdatedLifeStyle, saveUpdateUserHealthGoals, goalStore } from "../../../../models/goals";
 import { chatComplete, validateResponse } from "@services/openai/utils";
 import { NutritionPlan, basicInformation, constraints, dietPreferences, eatingHabits, lifeStyle, nutritionPlanObject, userPreferencesValidatorObject } from "@senseii/types";
 import { z } from "zod"
@@ -37,17 +37,26 @@ const createInitialGoalFunc = async (args: string) => {
   return "User Initial Goal Creation Failed"
 }
 
+/**
+ * @param args - The stringified JSON object holding function call arguments.
+ * @returns The string response from LLM.
+ */
+const saveDietPlanFunc = async (args: string): Promise<string> => {
+  const validArgs = await getValidArguments({ data: args, validatorSchema: nutritionPlanObject, validatorSchemaName: "save-nutrition-plan" })
+  const userId = getUserId()
+  validArgs.userId = userId
+  const response = await goalStore.SaveNutritionPlan(validArgs, userId)
+  if (!response.success) {
+    return "User Diet Plan saving Failed"
+  }
+  return "User Diet Plan Saved Successfully"
+}
+
 const createDietPlanFunc = async (args: string) => {
   const validArgs = await getValidArguments({ data: args, validatorSchema: userPreferencesValidatorObject, validatorSchemaName: "create-nutrition-plan" })
   const nutritionPlan: NutritionPlan = await chatComplete({ prompt: JSON.stringify(validArgs), systemPrompt: getNutritionSystemPrompt("Monday"), validatorSchemaName: "create-nutrition-plan", validatorSchema: nutritionPlanObject })
   console.log(JSON.stringify(nutritionPlan))
   return JSON.stringify(nutritionPlan);
-  if (await saveNutritionPlan(nutritionPlan, getUserId())) {
-    console.log("Diet Plan not saved")
-    return "User Diet Plan Created Successfully"
-  }
-  console.log("Diet Plan saved successfully")
-  return "User Diet Plan Creation Failed"
 }
 
 const updateLifeStyleFunc = async (args: string): Promise<string> => {
@@ -165,6 +174,12 @@ export const UpdateHealthGoalFunc: IFunctionType = {
 export const UpdateLifeStyleFunc: IFunctionType = {
   name: "updateLifeStyleFunc",
   function: updateLifeStyleFunc,
+  functionalityType: "CORE"
+}
+
+export const SaveDietPlanFunc: IFunctionType = {
+  name: "saveDietPlanFunc",
+  function: saveDietPlanFunc,
   functionalityType: "CORE"
 }
 

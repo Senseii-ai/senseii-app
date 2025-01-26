@@ -47,7 +47,8 @@ const saveDietPlanFunc = async (args: string): Promise<string> => {
   validArgs.userId = userId
   const response = await goalStore.SaveNutritionPlan(validArgs, userId)
   if (!response.success) {
-    return "User Diet Plan saving Failed"
+    console.log("message", response.error.message)
+    return response.error.message
   }
   return "User Diet Plan Saved Successfully"
 }

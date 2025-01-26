@@ -22,7 +22,7 @@ export const handleDBError = (error: unknown, name: string): AppError => {
   // Unknown error occured.
   const err = error instanceof Error ? error.message : String(error)
   infoLogger({ layer: "DB", name: name, status: "failed", message: err })
-  return createError(HTTP.STATUS.NOT_FOUND, 'Unexpected Database Error occured', {
+  return createError(HTTP.STATUS.NOT_FOUND, err, {
     originalError: err
   })
 }

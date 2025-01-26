@@ -1,5 +1,5 @@
 import { IFunctionType } from "../functions";
-import { saveInitialGoal, saveNutritionPlan, saveUpdatedUserConstraints, saveUpdatedDietPreferences, saveUpdatedBasicInformaion, saveUpdatedEatingHabits, saveUpdatedLifeStyle, saveUpdateUserHealthGoals, goalStore } from "../../../../models/goals";
+import { saveInitialGoal, saveUpdatedUserConstraints, saveUpdatedDietPreferences, saveUpdatedBasicInformaion, saveUpdatedEatingHabits, saveUpdatedLifeStyle, saveUpdateUserHealthGoals, goalStore } from "@models/goals";
 import { chatComplete, validateResponse } from "@services/openai/utils";
 import { NutritionPlan, basicInformation, constraints, dietPreferences, eatingHabits, lifeStyle, nutritionPlanObject, userPreferencesValidatorObject } from "@senseii/types";
 import { z } from "zod"
@@ -56,15 +56,12 @@ const saveDietPlanFunc = async (args: string): Promise<string> => {
 const createDietPlanFunc = async (args: string) => {
   const validArgs = await getValidArguments({ data: args, validatorSchema: userPreferencesValidatorObject, validatorSchemaName: "create-nutrition-plan" })
   const nutritionPlan: NutritionPlan = await chatComplete({ prompt: JSON.stringify(validArgs), systemPrompt: getNutritionSystemPrompt("Monday"), validatorSchemaName: "create-nutrition-plan", validatorSchema: nutritionPlanObject })
-  console.log(JSON.stringify(nutritionPlan))
   return JSON.stringify(nutritionPlan);
 }
 
 const updateLifeStyleFunc = async (args: string): Promise<string> => {
-  console.log("before validating", args)
   const validArgs = await getValidArguments({ data: args, validatorSchemaName: "update_lifestyle", validatorSchema: lifeStyle })
   const userId = getUserId()
-  console.log("valid args", validArgs, userId)
   if (await saveUpdatedLifeStyle(validArgs, userId)) {
     return "User LifeStyle Information updated Successfully"
   }
@@ -72,10 +69,8 @@ const updateLifeStyleFunc = async (args: string): Promise<string> => {
 }
 
 const updateHealthGoalFunc = async (args: string) => {
-  console.log("before validating", args)
   const validArgs = await getValidArguments({ data: args, validatorSchema: healthGoals, validatorSchemaName: "update_health_goal" })
   const userId = getUserId()
-  console.log("valid Args", validArgs, userId)
   if (await saveUpdateUserHealthGoals(validArgs, userId)) {
     return "User Health Goal Information updated Successfully"
   }
@@ -84,9 +79,7 @@ const updateHealthGoalFunc = async (args: string) => {
 
 const updateUserBasicInfoFunc = async (args: string) => {
   const validArgs = await getValidArguments({ data: args, validatorSchemaName: "update-basic-information", validatorSchema: basicInformation })
-  console.log("valid Args", validArgs)
   const userId = getUserId()
-  console.log("userId", userId)
   if (await saveUpdatedBasicInformaion(validArgs, userId)) {
     return "User Basic Information Updated Successfully"
   }
@@ -95,7 +88,6 @@ const updateUserBasicInfoFunc = async (args: string) => {
 
 const updateEatingHabitsFunc = async (args: string) => {
   const validArgs = await getValidArguments({ data: args, validatorSchema: eatingHabits, validatorSchemaName: "update-eating-habits" })
-  console.log("valid args", validArgs)
   if (await saveUpdatedEatingHabits(validArgs, getUserId())) {
     return "User Eating Habits Updated Successfully"
   }
@@ -104,7 +96,6 @@ const updateEatingHabitsFunc = async (args: string) => {
 
 const updateUserConstraints = async (args: string) => {
   const validArgs = await getValidArguments({ data: args, validatorSchema: constraints, validatorSchemaName: "update-user-constraints" })
-  console.log("valid args", validArgs)
   if (await saveUpdatedUserConstraints(validArgs, getUserId())) {
     return "User Constraints Updated Successfully"
   }
@@ -113,7 +104,6 @@ const updateUserConstraints = async (args: string) => {
 
 const updateDietPreferencesFunc = async (args: string) => {
   const validArgs = await getValidArguments({ data: args, validatorSchema: dietPreferences, validatorSchemaName: "update-diet-preferences" })
-  console.log("valid args", validArgs)
   if (await saveUpdatedDietPreferences(validArgs, getUserId())) {
     return `User Diet Preferences Updated Successfully`
   }

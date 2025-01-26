@@ -53,16 +53,16 @@ const HealthCalculator = {
       let errorMessage = ""
       infoLogger({ message: "previous function calls failed", status: "alert", layer, name })
       if (!basicInformation) {
-        errorMessage += "**update_user_basic_information tool has not been called yet** \n"
+        errorMessage += "update_user_basic_information tool has not been called yet \n"
       }
       if (!lifeStyle) {
-        errorMessage += "**update_lifestyle tool** has not been called yet"
+        errorMessage += "update_lifestyle tool has not been called yet"
       }
       if (!healthGoal) {
-        errorMessage += "**update_health_goal** tool has not been called yet"
+        errorMessage += "update_health_goal tool has not been called yet"
       }
 
-      const finalMessage = errorMessage + "call the functions in that order and generate a user friendly message notifying them on the situation and telling them to run this **protocol** again."
+      const finalMessage = errorMessage + "call the functions in that order and generate a user friendly message notifying them on the situation and telling them to run this protocol again."
       return finalMessage
     }
 

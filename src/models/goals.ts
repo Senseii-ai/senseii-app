@@ -15,11 +15,13 @@ import { getUserId } from "@middlewares/auth";
 import { CreateInitialGoalDTO } from "@services/openai/assistants/core";
 import { infoLogger } from "@utils/logger";
 import { handleDBError } from "./utils/error";
+import NutritionPlanModel from "./nutritionPlan";
 
 const layer = "DB";
 const name = "GOAL STORE";
 
 export const goalStore = {
+  SaveNutritionPlan: async (data: NutritionPlan, userId: string) => saveNutritionPlan(data, userId),
   getUserGoal: async (userId: string): Promise<Result<UserGoals>> => {
     try {
       const response = await UserGoalModel.findOne({ userId: userId })
@@ -256,20 +258,37 @@ export const saveUpdatedEatingHabits = async (
 export const saveNutritionPlan = async (
   data: NutritionPlan,
   userId: string
-) => {
+): Promise<Result<string>> => {
   infoLogger({
     message: "saving updated Nutrition Plan",
     status: "INFO",
     layer,
     name,
   });
+  try {
+    data.userId = userId
+    const response = await new NutritionPlanModel({
+      dailyPlan: data.dailyPlan,
+      userId: userId,
+      type: "nutritionPlan"
+    }).save()
 
-  const response = await UserGoalModel.updateOne(
-    { userId: userId },
-    { $set: { nutritionPlan: data } }
-  );
-
-  return response;
+    const updatedGoal = await UserGoalModel.findOneAndUpdate({ userId: userId }, { $set: { nutritionPlan: response.id } })
+    if (!updatedGoal) {
+      throw new Error("error saving updated goal")
+    }
+    return {
+      success: true,
+      data: "Nutrition Plan saved successfully."
+    }
+  } catch (error) {
+    infoLogger({ message: "Unable to save plan", layer, name, status: "failed" })
+    console.log("error", error)
+    return {
+      success: false,
+      error: handleDBError(error, name)
+    }
+  }
 };
 
 export const saveUpdatedUserConstraints = async (

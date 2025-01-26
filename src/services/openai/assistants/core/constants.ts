@@ -3,6 +3,97 @@ import {
   FunctionTool,
 } from "openai/resources/beta/assistants";
 
+export const SAVE_APPROVED_NUTRITION_PLAN: FunctionTool = {
+  type: "function",
+  function: {
+    name: "save_approved_nutrition_plan",
+    description: `Run this function when the user gives an approval to the suggested nutrition plan`,
+    parameters: {
+      type: "object",
+      required: ["nutritionPlan"],
+      properties: {
+        nutritionPlan: {
+          type: "object",
+          properties: {
+            type: { type: "string", enum: ["nutritionPlan"] },
+            userId: { type: "string" },
+            dailyPlan: {
+              type: "object",
+              properties: {
+                plan: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      day: {
+                        type: "string",
+                        enum: [
+                          "Monday",
+                          "Tuesday",
+                          "Wednesday",
+                          "Thursday",
+                          "Friday",
+                          "Saturday",
+                          "Sunday",
+                        ],
+                      },
+                      meals: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            type: {
+                              type: "string",
+                              enum: ["Breakfast", "Lunch", "Dinner", "Snacks"],
+                            },
+                            food: { type: "string" },
+                            macros: {
+                              type: "object",
+                              properties: {
+                                protein: { type: "number" },
+                                dietryFat: { type: "number" },
+                                carbohydrates: { type: "number" },
+                                water: { type: "number" },
+                              },
+                            },
+                            micros: {
+                              type: "object",
+                              properties: {
+                                vitamins: { type: "number" },
+                                dietryMinerals: { type: "number" },
+                              },
+                            },
+                            calories: { type: "number" },
+                            items: {
+                              type: "array",
+                              items: {
+                                type: "object",
+                                properties: {
+                                  item: { type: "string" },
+                                  proportion: { type: "number" },
+                                  unit: {
+                                    type: "string",
+                                    enum: ["grams", "kilograms", "count"],
+                                  },
+                                },
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          required: ["type", "userId", "dailyPlan"],
+        },
+      },
+    },
+  },
+};
+
 export const UPDATE_HEALTH_GOALS: FunctionTool = {
   type: "function",
   function: {
@@ -596,7 +687,7 @@ export const coreFunctions = [
   UPDATE_USER_DIET_PREFERENCES,
   CREATE_NUTRITION_FUNC,
   UPDATE_HEALTH_GOALS,
-  UPDATE_LIFESTYLE
+  UPDATE_LIFESTYLE,
 ];
 
 export const CORE_ASSISTANT: AssistantCreateParams = {

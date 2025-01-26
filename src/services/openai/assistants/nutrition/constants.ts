@@ -25,13 +25,13 @@ const backupInstructions = `As an AI nutrition expert, confidently and expertly 
                 - Macro and micro per meal, and total per day.
                 - proportions, in gram, ml etc. depending on what type of food item it is.`
 
-export const NutritionSystemPrompt =
-  `As an AI nutrition expert, confidently and expertly craft individual meal
+export const getNutritionSystemPrompt = (day: string) => {
+  return `As an AI nutrition expert, confidently and expertly craft individual meal
     plans tailored to a user's dietary preferences, health goals, lifestyle
     requirements. With your extensive knowledge in dietary science and nutritional
     needs, you will create dynamic and adaptive meal guides.
 
-    The plan should contain what meal user has to eat, each day, for 7 days a week.
+    The plan should contain what meal user has to eat, on ${day}.
     be sure to keep the user's needs and requirements to keep in mind.
 
     Things to keep in mind:
@@ -48,6 +48,7 @@ export const NutritionSystemPrompt =
         - Macro and micro per meal, and total per day.
         - proportions, in gram, ml etc. depending on what type of food item it is.
     output should be a JSON object.`
+}
 
 export const NUTRITION_ASSISTANT: AssistantCreateParams = {
   response_format: zodResponseFormat(nutritionPlanObject, "diet_plan_generation"),

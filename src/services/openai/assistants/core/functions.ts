@@ -1,23 +1,11 @@
 import { IFunctionType } from "../functions";
-import { saveInitialGoal, saveNutritionPlan, saveUpdatedUserConstraints, saveUpdatedDietPreferences, saveUpdatedBasicInformaion, saveUpdatedEatingHabits, saveUpdatedLifeStyle, saveUpdateUserHealthGoals } from "../../../../models/goals";
-import { validateResponse } from "@services/openai/utils";
-import { basicInformation, constraints, dietPreferences, eatingHabits, lifeStyle } from "@senseii/types";
+import { saveInitialGoal, saveUpdatedUserConstraints, saveUpdatedDietPreferences, saveUpdatedBasicInformaion, saveUpdatedEatingHabits, saveUpdatedLifeStyle, saveUpdateUserHealthGoals, goalStore } from "@models/goals";
+import { chatComplete, validateResponse } from "@services/openai/utils";
+import { NutritionPlan, basicInformation, constraints, dietPreferences, eatingHabits, lifeStyle, nutritionPlanObject, userPreferencesValidatorObject } from "@senseii/types";
 import { z } from "zod"
-import { createNutritionPlan } from "../nutrition";
+import { getNutritionSystemPrompt } from "../nutrition";
 import { getUserId } from "@middlewares/auth";
 import HealthCalculator from "@services/scientific/metrics.calculator";
-import { getUser } from "@controller/user";
-
-
-// FIX: This needs to be changed
-const createDietPlanFunc = async (args: string) => {
-  const response = await createNutritionPlan(args)
-  if (await saveNutritionPlan(response, getUserId())) {
-    return "User Diet Plan Created Successfully"
-  }
-  return "User Diet Plan Creation Failed"
-}
-
 
 // FIX: remove this later.
 export const healthGoals = z.object({
@@ -49,11 +37,31 @@ const createInitialGoalFunc = async (args: string) => {
   return "User Initial Goal Creation Failed"
 }
 
+/**
+ * @param args - The stringified JSON object holding function call arguments.
+ * @returns The string response from LLM.
+ */
+const saveDietPlanFunc = async (args: string): Promise<string> => {
+  const validArgs = await getValidArguments({ data: args, validatorSchema: nutritionPlanObject, validatorSchemaName: "save-nutrition-plan" })
+  const userId = getUserId()
+  validArgs.userId = userId
+  const response = await goalStore.SaveNutritionPlan(validArgs, userId)
+  if (!response.success) {
+    console.log("message", response.error.message)
+    return response.error.message
+  }
+  return "User Diet Plan Saved Successfully"
+}
+
+const createDietPlanFunc = async (args: string) => {
+  const validArgs = await getValidArguments({ data: args, validatorSchema: userPreferencesValidatorObject, validatorSchemaName: "create-nutrition-plan" })
+  const nutritionPlan: NutritionPlan = await chatComplete({ prompt: JSON.stringify(validArgs), systemPrompt: getNutritionSystemPrompt("Monday"), validatorSchemaName: "create-nutrition-plan", validatorSchema: nutritionPlanObject })
+  return JSON.stringify(nutritionPlan);
+}
+
 const updateLifeStyleFunc = async (args: string): Promise<string> => {
-  console.log("before validating", args)
   const validArgs = await getValidArguments({ data: args, validatorSchemaName: "update_lifestyle", validatorSchema: lifeStyle })
   const userId = getUserId()
-  console.log("valid args", validArgs, userId)
   if (await saveUpdatedLifeStyle(validArgs, userId)) {
     return "User LifeStyle Information updated Successfully"
   }
@@ -61,10 +69,8 @@ const updateLifeStyleFunc = async (args: string): Promise<string> => {
 }
 
 const updateHealthGoalFunc = async (args: string) => {
-  console.log("before validating", args)
   const validArgs = await getValidArguments({ data: args, validatorSchema: healthGoals, validatorSchemaName: "update_health_goal" })
   const userId = getUserId()
-  console.log("valid Args", validArgs, userId)
   if (await saveUpdateUserHealthGoals(validArgs, userId)) {
     return "User Health Goal Information updated Successfully"
   }
@@ -73,9 +79,7 @@ const updateHealthGoalFunc = async (args: string) => {
 
 const updateUserBasicInfoFunc = async (args: string) => {
   const validArgs = await getValidArguments({ data: args, validatorSchemaName: "update-basic-information", validatorSchema: basicInformation })
-  console.log("valid Args", validArgs)
   const userId = getUserId()
-  console.log("userId", userId)
   if (await saveUpdatedBasicInformaion(validArgs, userId)) {
     return "User Basic Information Updated Successfully"
   }
@@ -84,7 +88,6 @@ const updateUserBasicInfoFunc = async (args: string) => {
 
 const updateEatingHabitsFunc = async (args: string) => {
   const validArgs = await getValidArguments({ data: args, validatorSchema: eatingHabits, validatorSchemaName: "update-eating-habits" })
-  console.log("valid args", validArgs)
   if (await saveUpdatedEatingHabits(validArgs, getUserId())) {
     return "User Eating Habits Updated Successfully"
   }
@@ -93,7 +96,6 @@ const updateEatingHabitsFunc = async (args: string) => {
 
 const updateUserConstraints = async (args: string) => {
   const validArgs = await getValidArguments({ data: args, validatorSchema: constraints, validatorSchemaName: "update-user-constraints" })
-  console.log("valid args", validArgs)
   if (await saveUpdatedUserConstraints(validArgs, getUserId())) {
     return "User Constraints Updated Successfully"
   }
@@ -102,7 +104,6 @@ const updateUserConstraints = async (args: string) => {
 
 const updateDietPreferencesFunc = async (args: string) => {
   const validArgs = await getValidArguments({ data: args, validatorSchema: dietPreferences, validatorSchemaName: "update-diet-preferences" })
-  console.log("valid args", validArgs)
   if (await saveUpdatedDietPreferences(validArgs, getUserId())) {
     return `User Diet Preferences Updated Successfully`
   }
@@ -164,6 +165,12 @@ export const UpdateHealthGoalFunc: IFunctionType = {
 export const UpdateLifeStyleFunc: IFunctionType = {
   name: "updateLifeStyleFunc",
   function: updateLifeStyleFunc,
+  functionalityType: "CORE"
+}
+
+export const SaveDietPlanFunc: IFunctionType = {
+  name: "saveDietPlanFunc",
+  function: saveDietPlanFunc,
   functionalityType: "CORE"
 }
 

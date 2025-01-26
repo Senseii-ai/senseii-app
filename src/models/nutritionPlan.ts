@@ -8,12 +8,12 @@ import {
   Meals,
 } from "@senseii/types";
 
-interface ItemsDocument extends MealItems, Document {}
-interface MacroNutrientsDocument extends MacroNutrients, Document {}
-interface MicroNutrientsDocument extends MicroNutrients, Document {}
-interface MealsDocument extends Meals, Document {}
-interface DailyNutritionPlanDocument extends DailyNutritionPlan, Document {}
-interface NutritionPlanDocument extends NutritionPlan, Document {}
+interface ItemsDocument extends MealItems, Document { }
+interface MacroNutrientsDocument extends MacroNutrients, Document { }
+interface MicroNutrientsDocument extends MicroNutrients, Document { }
+interface MealsDocument extends Meals, Document { }
+interface DailyNutritionPlanDocument extends DailyNutritionPlan, Document { }
+interface NutritionPlanDocument extends NutritionPlan, Document { }
 
 const ItemsSchema: Schema<ItemsDocument> = new Schema({
   item: { type: String, required: true },
@@ -67,13 +67,13 @@ const DailyNutritionPlanSchema: Schema<DailyNutritionPlanDocument> = new Schema(
 
 const NutritionPlanSchema: Schema<NutritionPlanDocument> = new Schema({
   type: { type: String, default: "nutritionPlan" },
-  userId: { type: String, required: true, ref: "User" },
+  userId: { type: String, required: true, unique: true, ref: "User" },
   dailyPlan: {
     plan: { type: [DailyNutritionPlanSchema], required: true },
   },
 });
 
-const NutritionPlanModel = model<NutritionPlan>(
+const NutritionPlanModel = model<NutritionPlanDocument>(
   "NutritionPlan",
   NutritionPlanSchema
 );

@@ -37,15 +37,15 @@ const layer = "SERVICE";
 const name = "OAI URILS";
 
 export const openAIUtils = {
-  GetStateChangeMessage: (state: AssistantStreamEvent) =>
+  GetStateChangeMessage: (state: AssistantStreamEvent): string =>
     getStateChangeMessage(state),
-  CreateEmptyThread: () => createEmptyThread(),
+  CreateEmptyThread: (): Promise<string> => createEmptyThread(),
   ProcessStream: (
     stream: AssistantStream,
     client: AzureOpenAI,
     threadId: string,
     handler: StreamHandler
-  ) => processStream(stream, client, threadId, handler),
+  ): Promise<void> => processStream(stream, client, threadId, handler),
   CreateThreadWIthMessage: (
     client: AzureOpenAI,
     message: string,
@@ -60,7 +60,7 @@ export const openAIUtils = {
     prompt: string,
     systemPrompt: string,
     model?: string
-  ) => basicChatComplete(client, prompt, systemPrompt, model),
+  ): Promise<string> => basicChatComplete(client, prompt, systemPrompt, model),
   AddMessageToThread: (
     client: AzureOpenAI,
     threadId: string,
@@ -68,7 +68,7 @@ export const openAIUtils = {
   ) => addMessageToThread(client, threadId, message),
 };
 
-const getStateChangeMessage = (event: AssistantStreamEvent) => {
+const getStateChangeMessage = (event: AssistantStreamEvent): string => {
   if (event.event === "thread.run.in_progress") {
     return "generating ...";
   }
@@ -194,7 +194,6 @@ async function handleToolAction(
     );
   }
 
-
   const toolOutputs = await Promise.all(
     toolCalls.map(async (callItem) => {
       return await executeTool(callItem);
@@ -233,6 +232,8 @@ const executeTool = async (
   });
 
   console.log("tool arguments", tool.function.arguments);
+  // list of supported functions.
+  Object.entries(supportedFunctions).map(([key, value]) => console.log(value.function.name))
   const toolFunction = supportedFunctions[tool.function.name];
 
   if (!toolFunction) {
@@ -299,6 +300,7 @@ export const chatComplete = async <T extends z.ZodTypeAny>({
 }): Promise<z.infer<T>> => {
   try {
     infoLogger({ message: "initiating chat completion" });
+    // FIX: convert this into streaming.
     const completion = await client.beta.chat.completions.parse({
       model: model,
       response_format: zodResponseFormat(validatorSchema, validatorSchemaName),
@@ -437,7 +439,6 @@ const createAssistant = async (
 /**
  * write docs for this.
  */
-
 export const validateResponse = async <T extends z.ZodTypeAny>({
   prompt,
   validatorSchema,

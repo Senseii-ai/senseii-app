@@ -1,10 +1,11 @@
 import { Schema, Types, model } from "mongoose";
 import { infoLogger } from "../utils/logger/logger";
-import { CreateUserGoalDTO, IChat, Result, User, UserGoal, UserGoals, UserProfile, userGoalDTO } from "@senseii/types";
+import { CreateUserGoalDTO, IChat, NutritionPlan, Result, User, UserGoal, UserGoals, UserProfile, userGoalDTO } from "@senseii/types";
 import { handleDBError } from "./utils/error";
 import { UserGoalModel } from "./goals";
 import { ChatModel, ServerMessage } from "./chats";
 import { title } from "process";
+import NutritionPlanModel from "./nutritionPlan";
 
 const layer = "DB";
 const name = "USER PROFILE STORE";
@@ -44,11 +45,13 @@ export interface UserGoalItem {
   chatId: string,
   description: string,
   startDate: string,
-  endDate: string
+  endDate: string,
+  nutritionPlan: NutritionPlan | null | string
 }
 
 const getUserGoals = async (userId: string): Promise<Result<UserGoalItem[]>> => {
   try {
+    // NOTE: We can keep chaining populate here.
     let goals = await UserProfileModel.findOne({ userId: userId }).populate("goalIds")
     UserProfileModel
     if (!goals) {
@@ -57,6 +60,8 @@ const getUserGoals = async (userId: string): Promise<Result<UserGoalItem[]>> => 
         data: []
       }
     }
+
+
     const userGoalList: UserGoalItem[] = goals.goalIds.map((item: any) => {
       return {
         goalId: item._id,
@@ -66,8 +71,29 @@ const getUserGoals = async (userId: string): Promise<Result<UserGoalItem[]>> => 
         description: item.description,
         startDate: item.startDate,
         endDate: item.endDate,
+        nutritionPlan: item.nutritionPlan
       }
     })
+
+    // get the nutritionPlan Id.
+    const nutritionPlanId = userGoalList[0].nutritionPlan
+    // get the nutritionPlan.
+    if (!nutritionPlanId) {
+      userGoalList[0].nutritionPlan = null
+    } else {
+      const plan = await NutritionPlanModel.findOne({ _id: nutritionPlanId })
+      if (!plan) {
+        userGoalList[0].nutritionPlan = null
+      } else {
+        const nutritionPlan: NutritionPlan = {
+          userId: userId,
+          dailyPlan: plan.dailyPlan,
+          type: plan.type
+        }
+        userGoalList[0].nutritionPlan = nutritionPlan
+      }
+    }
+
     return {
       success: true,
       data: userGoalList

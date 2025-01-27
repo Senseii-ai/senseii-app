@@ -1,0 +1,6 @@
+/**
+  * getUserGoals
+  */
+export const goalService = {
+
+}

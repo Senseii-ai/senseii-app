@@ -1,4 +1,3 @@
-import { User } from "@clerk/express";
 import { userProfileStore } from "@models/userProfile";
 import { HTTP, Result, createError } from "@senseii/types";
 import { infoLogger } from "@utils/logger";
@@ -6,6 +5,7 @@ import { Request, Response } from "express";
 import { Webhook } from "svix";
 
 export const handleWebhook = async (req: Request, res: Response): Promise<Result<null>> => {
+  infoLogger({ message: "Trying to save a new user", status: "INFO" })
   // infoLogger({ message: "handling webhook" })
   const SIGNING_SECRET = process.env.SIGNING_SECRET;
 

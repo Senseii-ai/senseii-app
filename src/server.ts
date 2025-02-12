@@ -30,13 +30,14 @@ app.use(
     credentials: true,
   })
 );
+
+app.post("/api/webhooks", bodyParser.raw({ type: 'application/json' }), handleWebhook);
 app.use(cookieParser())
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(clerkMiddleware());
 app.use(authenticateUser)
 
-app.post("/api/webhooks", bodyParser.raw({ type: 'application/json' }), handleWebhook);
 app.get("/ping", (req, res) => {
   infoLogger({ message: "PING", status: "alert", layer })
   res.status(200).json({ message: "pong" })

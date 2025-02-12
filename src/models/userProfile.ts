@@ -4,7 +4,6 @@ import { CreateUserGoalDTO, IChat, NutritionPlan, Result, User, UserGoal, UserGo
 import { handleDBError } from "./utils/error";
 import { UserGoalModel } from "./goals";
 import { ChatModel, ServerMessage } from "./chats";
-import { title } from "process";
 import NutritionPlanModel from "./nutritionPlan";
 
 const layer = "DB";
@@ -153,35 +152,6 @@ const getChat = async (
   }
 };
 
-// const getAllChats = async (email: string): Promise<Result<IChat[]>> => {
-//   try {
-//     infoLogger({ message: `user: ${email}`, status: "INFO", layer, name });
-//     const userProfile = await ChatModel.findOne({ email: email })
-//       .select("chats")
-//       .exec();
-//     if (!userProfile) {
-//       throw new Error("chats not found");
-//     }
-//
-//     const chats = userProfile.chats;
-//     infoLogger({
-//       message: `chats found for user: ${email}`,
-//       status: "INFO",
-//       layer,
-//       name,
-//     });
-//     return {
-//       success: true,
-//       data: chats,
-//     };
-//   } catch (error) {
-//     return {
-//       success: false,
-//       error: handleDBError(error, name),
-//     };
-//   }
-// };
-
 const createUserProfile = async (user: User): Promise<Result<null>> => {
   try {
     infoLogger({ message: "Creating new User profile", status: "INFO", layer, name })
@@ -211,61 +181,6 @@ const createUserProfile = async (user: User): Promise<Result<null>> => {
   }
 };
 
-// export const addChatToUser = async (
-//   chat: IChat,
-//   userId: string
-// ): Promise<Result<string>> => {
-//   try {
-//     infoLogger({
-//       message: "saving new chat in user profile",
-//       status: "INFO",
-//       layer: "DB",
-//       name: "USER PROFILE STORE",
-//     });
-//
-//     if (!chat.messages || chat.messages.length === 0 || !chat.messages[0]) {
-//       throw new Error("Invalid Chat Object");
-//     }
-//
-//     await UserProfileModel.updateOne(
-//       { id: userId, "chats.id": chat.id }, // Find the user and the specific chat
-//       {
-//         $push: { "chats.$.messages": chat.messages[0] }, // Push the new message to the messages array
-//       },
-//       { upsert: false } // Do not create a new chat if it doesn't exist here
-//     ).exec()
-//
-//     const userProfile = await UserProfileModel.findOne({
-//       id: userId,
-//       "chats.id": chat.id,
-//     });
-//
-//     if (!userProfile) {
-//       await UserProfileModel.updateOne(
-//         { id: userId },
-//         { $push: { chats: chat } }, // Add the new chat to the chats array
-//         { upsert: true } // Ensure the user exists
-//       ).exec();
-//     }
-//
-//     infoLogger({
-//       message: "Profile was updated",
-//       status: "success",
-//       layer: "DB",
-//       name: "USER PROFILE STORE",
-//     });
-//     return {
-//       success: true,
-//       data: chat.id,
-//     };
-//   } catch (error) {
-//     return {
-//       success: false,
-//       error: handleDBError(error, "USER PROFILE STORE"),
-//     };
-//   }
-// };
-
 export const saveNewUserProfile = async (user: UserProfile) => {
   try {
     const newProfile = await new UserProfileModel(user).save();
@@ -287,73 +202,6 @@ export const getUserByUserId = async (userId: string) => {
   }
   return response;
 };
-
-// FIX: Is this Database call costly?
-// export const getUserThreadId = async ({
-//   chatId,
-//   userId,
-// }: {
-//   chatId: string;
-//   userId: string;
-// }): Promise<Result<IChat>> => {
-//   try {
-//     const response = await UserProfileModel.findOne({ id: userId })
-//     if (!response) {
-//       throw new Error(`user:${userId} not found`)
-//     }
-//
-//     response.chats.map(item => console.log("CHAT", item))
-//     // const response = await UserProfileModel.findOne({
-//     //   "chats.id": chatId,
-//     // });
-//     if (!response) {
-//       throw new Error("Chat not Found");
-//     }
-//     const requiredThread = response.chats.find(
-//       (item: IChat) => item.id === chatId
-//     );
-//     if (!requiredThread) {
-//       throw new Error("Thread not Found");
-//     }
-//     return {
-//       success: true,
-//       data: requiredThread,
-//     };
-//   } catch (error) {
-//     return {
-//       success: false,
-//       error: handleDBError(error, "User Profile Store"),
-//     };
-//   }
-// };
-//
-// export const getThreadByChatId = async (chatId: string) => {
-//   const response = await UserProfileModel.findOne({
-//     "chats.id": chatId,
-//   });
-//   const requiredChatId = response?.chats.find((item) => item.id === chatId);
-//   return requiredChatId;
-// };
-//
-// export const getThreadById = async (userId: string, threadId: string) => {
-//   const response = await UserProfileModel.findOne({
-//     user: new Types.ObjectId(userId),
-//   });
-//   const requiredChat = response?.chats.find((item) => item.id === threadId);
-//   return requiredChat;
-// };
-//
-// export const getUserThreads = async (userId: string) => {
-//   const response = await UserProfileModel.findOne({
-//     user: new Types.ObjectId(userId),
-//   });
-//
-//   if (!response) {
-//     throw new Error("Error finding User Profile");
-//   }
-//
-//   return response?.chats;
-// };
 
 interface IUserProfileDocument extends UserProfile, Document { }
 
